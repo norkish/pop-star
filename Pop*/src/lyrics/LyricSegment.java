@@ -10,4 +10,7 @@ public class LyricSegment {
 		this.lyricLines = lyricLines;
 	}
 
+	public List<Lyric> getLine(int lineNum) {
+		return lyricLines.get(lineNum);
+	}
 }

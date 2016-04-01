@@ -6,16 +6,16 @@ import java.util.List;
 import constraint.Constraint;
 import harmony.Chord;
 import lyrics.Lyric;
-import pitch.Pitch;
-import rhythm.Rhythm;
+import pitch.PitchSegment;
+import rhythm.RhythmSegment;
 
 
 public class Substructure {
 	
 	public List<List<Constraint<Lyric>>> lyricConstraints = null;
 	public List<List<Constraint<Chord>>> chordConstraints = null;
-	public List<List<Constraint<Rhythm>>> rhythmConstraints = null;
-	public List<List<Constraint<Pitch>>> pitchConstraints = null;
+	public List<List<Constraint<RhythmSegment>>> rhythmConstraints = null;
+	public List<List<Constraint<PitchSegment>>> pitchConstraints = null;
 	public int linesPerSegment;
 	public int measuresPerLine;
 	public int minWordsPerLine;
@@ -35,14 +35,14 @@ public class Substructure {
 		
 		lyricConstraints = new ArrayList<List<Constraint<Lyric>>>();
 		chordConstraints = new ArrayList<List<Constraint<Chord>>>();
-		rhythmConstraints = new ArrayList<List<Constraint<Rhythm>>>();
-		pitchConstraints = new ArrayList<List<Constraint<Pitch>>>();
+		rhythmConstraints = new ArrayList<List<Constraint<RhythmSegment>>>();
+		pitchConstraints = new ArrayList<List<Constraint<PitchSegment>>>();
 		
 		for (int i = 0; i < linesPerSegment; i++) {
 			lyricConstraints.add(new ArrayList<Constraint<Lyric>>());
 			chordConstraints.add(new ArrayList<Constraint<Chord>>());
-			rhythmConstraints.add(new ArrayList<Constraint<Rhythm>>());
-			pitchConstraints.add(new ArrayList<Constraint<Pitch>>());
+			rhythmConstraints.add(new ArrayList<Constraint<RhythmSegment>>());
+			pitchConstraints.add(new ArrayList<Constraint<PitchSegment>>());
 		}
 	}
 
@@ -54,11 +54,11 @@ public class Substructure {
 		chordConstraints.get(lineNum).add(delayedMatchConstraint);
 	}
 	
-	public void addRhythmConstraint(int lineNum, Constraint<Rhythm> delayedMatchConstraint) {
+	public void addRhythmConstraint(int lineNum, Constraint<RhythmSegment> delayedMatchConstraint) {
 		rhythmConstraints.get(lineNum).add(delayedMatchConstraint);
 	}
 	
-	public void addPitchConstraint(int lineNum, Constraint<Pitch> delayedMatchConstraint) {
+	public void addPitchConstraint(int lineNum, Constraint<PitchSegment> delayedMatchConstraint) {
 		pitchConstraints.get(lineNum).add(delayedMatchConstraint);
 	}
 

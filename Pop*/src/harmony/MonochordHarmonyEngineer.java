@@ -7,13 +7,13 @@ import substructure.Substructure;
 public class MonochordHarmonyEngineer extends HarmonyEngineer {
 
 	@Override
-	protected void applyVariation(Progression segmentProgression, SegmentType segmentType, boolean isLast) {
+	protected void applyVariation(ProgressionSegment segmentProgression, SegmentType segmentType, boolean isLast) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	protected Progression generateSegmentHarmony(Inspiration inspiration, Substructure segmentSubstructures,
+	protected ProgressionSegment generateSegmentHarmony(Inspiration inspiration, Substructure segmentSubstructures,
 			SegmentType segmentKey) {
 		// TODO Auto-generated method stub
 		return null;

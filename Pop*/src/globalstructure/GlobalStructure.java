@@ -11,4 +11,12 @@ public class GlobalStructure {
 	public SegmentType[] getGlobalStructure() {
 		return structure;
 	}
+
+	public int length() {
+		return structure.length;
+	}
+
+	public SegmentType get(int nextSegmentIdx) {
+		return structure[nextSegmentIdx];
+	}
 }

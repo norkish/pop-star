@@ -6,9 +6,13 @@ import globalstructure.SegmentType;
 
 public class Harmony {
 
-	private Map<SegmentType, Progression[]> progressions = null;
+	private Map<SegmentType, ProgressionSegment[]> progressions = null;
 
-	public void setProgression(Map<SegmentType, Progression[]> progressions) {
+	public Map<SegmentType, ProgressionSegment[]> getProgressions() {
+		return progressions;
+	}
+
+	public void setProgressions(Map<SegmentType, ProgressionSegment[]> progressions) {
 		this.progressions  = progressions;
 	}
 

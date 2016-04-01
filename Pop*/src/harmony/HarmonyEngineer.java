@@ -27,24 +27,24 @@ public abstract class HarmonyEngineer {
 		// representing the varied progressions of that segment type (e.g., a list of verse progressions for the 
 		// segment type verse). This is to allow for order-dependent variation between verses, choruses, etc. 
 		Map<SegmentType, Substructure[]> substructures = structure.getSubstructure();
-		Map<SegmentType, Progression[]> progressions = initProgressions(substructures);
+		Map<SegmentType, ProgressionSegment[]> progressions = initProgressions(substructures);
 		
 		for (SegmentType segmentKey : progressions.keySet()) {
-			Progression[] segmentHarmonies = progressions.get(segmentKey);
+			ProgressionSegment[] segmentHarmonies = progressions.get(segmentKey);
 			Substructure[] segmentSubstructures = substructures.get(segmentKey);
 			segmentHarmonies[0] = generateSegmentHarmony(inspiration, segmentSubstructures[0], segmentKey);
 			for (int i = 1; i < segmentHarmonies.length; i++) {
-				segmentHarmonies[i] = (Progression) Utils.deepCopy(segmentHarmonies[i-1]);
+				segmentHarmonies[i] = (ProgressionSegment) Utils.deepCopy(segmentHarmonies[i-1]);
 				applyVariation(segmentHarmonies[i], segmentKey, i == (segmentHarmonies.length-1));
 			}
 		}
 		
-		harmony.setProgression(progressions);
+		harmony.setProgressions(progressions);
 		
 		return harmony;
 	}
 	
-	protected abstract void applyVariation(Progression segmentProgression, SegmentType segmentType, boolean isLast);
+	protected abstract void applyVariation(ProgressionSegment segmentProgression, SegmentType segmentType, boolean isLast);
 	
 	/**
 	 * Generates a chord progression (harmony) for a particular segment according to one 
@@ -54,12 +54,12 @@ public abstract class HarmonyEngineer {
 	 * @param segmentType The segment type for which chords are to be generated
 	 * @return a newly generated harmony
 	 */
-	protected abstract Progression generateSegmentHarmony(Inspiration inspiration, Substructure segmentSubstructures, SegmentType segmentType);
+	protected abstract ProgressionSegment generateSegmentHarmony(Inspiration inspiration, Substructure segmentSubstructures, SegmentType segmentType);
 
-	private Map<SegmentType, Progression[]> initProgressions(Map<SegmentType, Substructure[]> substructure) {
-		Map<SegmentType, Progression[]> harmony = new HashMap<SegmentType, Progression[]>();
+	private Map<SegmentType, ProgressionSegment[]> initProgressions(Map<SegmentType, Substructure[]> substructure) {
+		Map<SegmentType, ProgressionSegment[]> harmony = new HashMap<SegmentType, ProgressionSegment[]>();
 		for (SegmentType segment : substructure.keySet()) {
-			harmony.put(segment, new Progression[substructure.get(segment).length]);
+			harmony.put(segment, new ProgressionSegment[substructure.get(segment).length]);
 		}
 		
 		return harmony;

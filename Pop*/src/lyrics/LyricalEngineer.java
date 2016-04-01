@@ -28,7 +28,7 @@ public abstract class LyricalEngineer {
 			}
 		}
 		
-		lyrics.setLyrics(lyricsBySegment);
+		lyrics.setLyricsBySegment(lyricsBySegment);
 		
 		return lyrics;
 	}

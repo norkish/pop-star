@@ -8,7 +8,7 @@ import constraint.UnaryConstraint;
 import globalstructure.SegmentType;
 import harmony.Chord;
 import lyrics.Lyric;
-import pitch.Pitch;
+import pitch.PitchSegment;
 
 public class TestSubstructureEngineer extends SubstructureEngineer {
 
@@ -31,7 +31,7 @@ public class TestSubstructureEngineer extends SubstructureEngineer {
 		
 		substructure.addChordConstraint(1, new UnaryConstraint<Chord>(Constraint.LAST, new StrongResolutionCondition<Chord>(), false));
 		substructure.addChordConstraint(2, new DelayedBinaryConstraint<Chord>(0, Constraint.ALL_POSITIONS, 0, null, false));
-		substructure.addPitchConstraint(2, new DelayedBinaryConstraint<Pitch>(0, Constraint.ALL_POSITIONS, 0, null, false));
+		substructure.addPitchConstraint(2, new DelayedBinaryConstraint<PitchSegment>(0, Constraint.ALL_POSITIONS, 0, null, false));
 		substructure.addLyricConstraint(2, new DelayedBinaryConstraint<Lyric>(1, Constraint.LAST, Constraint.LAST, new RhymeCondition<Lyric>(1.0), true));
 		substructure.addLyricConstraint(3, new DelayedBinaryConstraint<Lyric>(1, Constraint.LAST, Constraint.LAST, new RhymeCondition<Lyric>(1.0), true));
 		substructure.addChordConstraint(3, new UnaryConstraint<Chord>(Constraint.LAST, new StrongResolutionCondition<Chord>(), true));
