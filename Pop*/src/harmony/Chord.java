@@ -12,4 +12,9 @@ public class Chord {
 		return chordName;
 	}
 
+	public String toString()
+	{
+		return chordName;
+	}
+	
 }

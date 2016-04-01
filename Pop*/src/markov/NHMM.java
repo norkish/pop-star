@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import condition.ConstraintCondition;
 import constraint.Constraint;
 
 public class NHMM<T> extends AbstractMarkovModel<T>{
@@ -77,7 +78,7 @@ public class NHMM<T> extends AbstractMarkovModel<T>{
 		}
 		
 		for (Constraint<T> constraint : constraints) {
-			constraint.constrain(this);
+			constrain(constraint);
 			if(!satisfiable())
 			{
 				throw new RuntimeException("Not satisfiable upon addition of constraint: " + constraint);
@@ -428,5 +429,33 @@ public class NHMM<T> extends AbstractMarkovModel<T>{
 
 	public T[] getStates() {
 		return states;
+	}
+
+	public int length() {
+		// TODO Auto-generated method stub
+		return logTransitions.length;
+	}
+
+	public void constrain(Constraint<T> constraint) {
+		Set<PositionedState> posStateToRemove = new HashSet<PositionedState>();
+		int position = constraint.getPosition();
+		ConstraintCondition<T> condition = constraint.getCondition();
+		boolean desiredConditionState = constraint.getDesiredConditionState();
+		
+		for (int stateIndex = 0; stateIndex < states.length; stateIndex++) {
+			// if the considered state satisfies/dissatisfies the condition contrary to what we wanted
+			if(condition.isSatisfiedBy(states[stateIndex]) ^ desiredConditionState)
+			{
+				// remove it
+				posStateToRemove.addAll(removeState(position, stateIndex));
+			}
+		}
+		
+		while(!posStateToRemove.isEmpty())
+		{
+			PositionedState stateToRemove = posStateToRemove.iterator().next();
+			posStateToRemove.remove(stateToRemove);
+			posStateToRemove.addAll(removeState(stateToRemove.getPosition(), stateToRemove.getStateIndex()));
+		}		
 	}
 }

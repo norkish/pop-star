@@ -9,7 +9,7 @@ import lyrics.Lyric;
 import lyrics.LyricSegment;
 import markov.NHMM;
 import markov.SingleOrderMarkovModel;
-import substructure.Substructure;
+import substructure.SegmentSubstructure;
 
 public class TestHarmonyEngineer extends HarmonyEngineer {
 
@@ -22,7 +22,7 @@ public class TestHarmonyEngineer extends HarmonyEngineer {
 	}
 
 	@Override
-	protected ProgressionSegment generateSegmentHarmony(Inspiration inspiration, Substructure segmentSubstructures,
+	protected ProgressionSegment generateSegmentHarmony(Inspiration inspiration, SegmentSubstructure segmentSubstructures,
 			SegmentType segmentType) {
 		if (mModel == null)
 		{
@@ -48,7 +48,7 @@ public class TestHarmonyEngineer extends HarmonyEngineer {
 	}
 
 	private static double[][] loadTestTransitions(int length) {
-		double[][] transitions = new double[length][];
+		double[][] transitions = new double[length][length];
 
 		for (int i = 0; i < length; i++) {
 			for (int j = 0; j < length; j++) {

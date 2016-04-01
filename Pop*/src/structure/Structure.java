@@ -6,7 +6,7 @@ import java.util.Map;
 
 import globalstructure.GlobalStructure;
 import globalstructure.SegmentType;
-import substructure.Substructure;
+import substructure.SegmentSubstructure;
 import utils.Pair;
 import utils.Triple;
 
@@ -36,12 +36,13 @@ public class Structure {
 			SegmentType type = globalStructure.get(nextSegmentIdx);
 			int typeCt = currIdx.get(type);
 			currIdx.put(type, typeCt+1);
+			 nextSegmentIdx++;
 			return new Pair<SegmentType, Integer>(type, typeCt);
 		}
 
 	}
 	
-	public class SegmentIterator<T> implements Iterator<Triple<SegmentType, Integer, Substructure>> {
+	public class SegmentIterator<T> implements Iterator<Triple<SegmentType, Integer, SegmentSubstructure>> {
 
 		Map<SegmentType, Integer> currIdx;
 		int nextSegmentIdx;
@@ -61,28 +62,29 @@ public class Structure {
 		}
 
 		@Override
-		public Triple<SegmentType, Integer, Substructure> next() {
+		public Triple<SegmentType, Integer, SegmentSubstructure> next() {
 			SegmentType type = globalStructure.get(nextSegmentIdx);
 			int typeCt = currIdx.get(type);
-			Substructure substruct = substructure.get(type)[typeCt];
+			SegmentSubstructure substruct = substructure.get(type)[typeCt];
 			currIdx.put(type, typeCt+1);
-			return new Triple<SegmentType, Integer, Substructure>(type, typeCt,substruct);
+			nextSegmentIdx++;
+			return new Triple<SegmentType, Integer, SegmentSubstructure>(type, typeCt,substruct);
 		}
 
 	}
 
 	private GlobalStructure globalStructure = null;
-	private Map<SegmentType, Substructure[]> substructure = null;
+	private Map<SegmentType, SegmentSubstructure[]> substructure = null;
 
 	public void setGlobalStructure(GlobalStructure globalStructure) {
 		this.globalStructure = globalStructure;
 	}
 
-	public void setSubstructure(Map<SegmentType, Substructure[]> substructure) {
+	public void setSubstructure(Map<SegmentType, SegmentSubstructure[]> substructure) {
 		this.substructure = substructure;
 	}
 
-	public Map<SegmentType, Substructure[]> getSubstructure() {
+	public Map<SegmentType, SegmentSubstructure[]> getSubstructure() {
 		return substructure;
 	}
 }

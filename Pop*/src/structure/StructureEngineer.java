@@ -6,7 +6,7 @@ import globalstructure.SegmentType;
 import java.util.Map;
 
 import globalstructure.GlobalStructure;
-import substructure.Substructure;
+import substructure.SegmentSubstructure;
 import substructure.SubstructureEngineer;
 
 public class StructureEngineer {
@@ -28,7 +28,7 @@ public class StructureEngineer {
 		GlobalStructure globalStructure = globalStructureEngineer.generateStructure();
 		structure.setGlobalStructure(globalStructure);
 		
-		Map<SegmentType, Substructure[]> substructure = substructureEngineer.defineSubstructure(globalStructure);
+		Map<SegmentType, SegmentSubstructure[]> substructure = substructureEngineer.defineSubstructure(globalStructure);
 		structure.setSubstructure(substructure);
 		
 		return structure;

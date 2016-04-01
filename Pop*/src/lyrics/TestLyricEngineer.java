@@ -7,14 +7,14 @@ import globalstructure.SegmentType;
 import inspiration.Inspiration;
 import markov.NHMM;
 import markov.SingleOrderMarkovModel;
-import substructure.Substructure;
+import substructure.SegmentSubstructure;
 
 public class TestLyricEngineer extends LyricalEngineer {
 
 	private SingleOrderMarkovModel<Lyric> mModel;
 
 	@Override
-	protected LyricSegment generateSegmentLyrics(Inspiration inspiration, Substructure segmentSubstructures,
+	protected LyricSegment generateSegmentLyrics(Inspiration inspiration, SegmentSubstructure segmentSubstructures,
 			SegmentType segmentKey) {
 		
 		if (mModel == null)
@@ -25,7 +25,7 @@ public class TestLyricEngineer extends LyricalEngineer {
 		int[] testLengths = new int[]{6,5,8,7};
 		List<List<Lyric>> lyricLines = new ArrayList<List<Lyric>>();
 		for (int i = 0; i < segmentSubstructures.linesPerSegment; i++) {
-			NHMM<Lyric> constrainedLyricModel = new NHMM<Lyric>(mModel, testLengths[i], segmentSubstructures.lyricConstraints.get(0));
+			NHMM<Lyric> constrainedLyricModel = new NHMM<Lyric>(mModel, testLengths[i], segmentSubstructures.lyricConstraints.get(i));
 			lyricLines.add(constrainedLyricModel.generate(testLengths[i]));
 		}
 		
@@ -41,7 +41,7 @@ public class TestLyricEngineer extends LyricalEngineer {
 	}
 
 	private static double[][] loadTestTransitions(int length) {
-		double[][] transitions = new double[length][];
+		double[][] transitions = new double[length][length];
 
 		for (int i = 0; i < length; i++) {
 			for (int j = 0; j < length; j++) {

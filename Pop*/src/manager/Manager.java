@@ -113,6 +113,7 @@ public class Manager {
 			break;
 		case TEST:
 			engineer = new TestGlobalStructureEngineer();
+			break;
 		default:
 			throw new RuntimeException("Invalid structure configuration: " + config.globalStructureSource);
 		}
@@ -135,6 +136,7 @@ public class Manager {
 			break;
 		case TEST:
 			engineer = new TestSubstructureEngineer();
+			break;
 		default:
 			throw new RuntimeException("Invalid substructure configuration: " + config.substructureSource);
 		}

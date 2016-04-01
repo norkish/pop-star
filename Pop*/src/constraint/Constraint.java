@@ -1,27 +1,72 @@
 package constraint;
-import markov.NHMM;
+import condition.ConstraintCondition;
 
-public abstract class Constraint<T> {
+public class Constraint<T> {
 
-	public static final int LAST = -1;
-	public static final int ALL_POSITIONS = Integer.MAX_VALUE;
+	public static final int FINAL_POSITION = -1;
 	
+	public boolean getDesiredConditionState() {
+		return desiredConditionState;
+	}
+
+	public int getPosition() {
+		return position;
+	}
+
+	public ConstraintCondition<T> getCondition() {
+		return condition;
+	}
+
 	// We allow for a constraint to enforce a condition or the negation of the condition
-	protected boolean desiredConditionState;
-	
-	abstract public void constrain(NHMM<T> nhmm);
+	private boolean desiredConditionState;
+	private int position;
+	protected ConstraintCondition<T> condition;
 
-	abstract protected String asString();
-	
-	public String toString()
-	{
+	public Constraint(int i, ConstraintCondition<T> condition, boolean desiredConditionState) {
+		this.position = i;
+		this.condition = condition;
+		this.desiredConditionState = desiredConditionState;
+	}
+
+	@Override
+	public String toString() {
 		StringBuilder str = new StringBuilder();
 		
-		str.append(this.getClass());
-		str.append(" - ");
-		str.append(this.asString());
+		str.append("token in ");
+		str.append(getPositionString(position));
+		str.append(" must ");
+		if (!desiredConditionState) 
+			str.append("not ");
+		str.append("be a ");
+		str.append(condition);
 		
 		return str.toString();
 	}
-
+	
+	protected String getPositionString(int i)
+	{
+		String posStr = "the ";
+		if (i == FINAL_POSITION)
+		{
+			posStr += "LAST";
+		}
+		else if (i == 0)
+		{
+			posStr += "FIRST";
+		}
+		else if (i == 1)
+		{
+			posStr += "SECOND";
+		}
+		else if (i == 2)
+		{
+			posStr += "THIRD";
+		}
+		else
+		{
+			posStr += i + "TH";
+		}
+		
+		return posStr + " position";
+	}
 }

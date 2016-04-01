@@ -3,14 +3,14 @@ package lyrics;
 import globalstructure.SegmentType;
 import inspiration.Inspiration;
 import markov.SingleOrderMarkovModel;
-import substructure.Substructure;
+import substructure.SegmentSubstructure;
 
 public class NGramLyricEngineer extends LyricalEngineer {
 
 	private SingleOrderMarkovModel<Lyric> mModel;
 
 	@Override
-	protected LyricSegment generateSegmentLyrics(Inspiration inspiration, Substructure segmentSubstructures,
+	protected LyricSegment generateSegmentLyrics(Inspiration inspiration, SegmentSubstructure segmentSubstructures,
 			SegmentType segmentKey) {
 		//TODO: stuff
 		

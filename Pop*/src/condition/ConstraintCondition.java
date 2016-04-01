@@ -8,8 +8,7 @@ public abstract class ConstraintCondition<T> {
 	{
 		StringBuilder str = new StringBuilder();
 		
-		str.append(this.getClass());
-		str.append(" - ");
+		str.append(this.getClass().getSimpleName());
 		str.append(this.asString());
 		
 		return str.toString();	

@@ -15,9 +15,10 @@ import pitch.Pitches;
 import rhythm.RhythmSegment;
 import rhythm.Rhythms;
 import structure.Structure;
-import substructure.Substructure;
+import substructure.SegmentSubstructure;
 import utils.Pair;
 import utils.Triple;
+import utils.Utils;
 
 public class Composition {
 
@@ -54,17 +55,12 @@ public class Composition {
 		return print(true, true, true, false, true);
 	}
 
-	public String print(boolean printHeader, boolean printSubstructure, boolean printNonMelodicContent, boolean printMelody, boolean printLyrics)
+	public String print(boolean printHeader, boolean printSubstructure, boolean printHarmony, boolean printMelody, boolean printLyrics)
 	{
-		if (!(printHeader || printSubstructure || printNonMelodicContent || printMelody))
+		if (!(printHeader || printSubstructure || printHarmony || printMelody || printLyrics))
 			return "";
 		
 		StringBuilder str = new StringBuilder();
-		
-		Map<SegmentType, LyricSegment[]> lyricsBySegment = lyrics.getLyricsBySegment();
-		Map<SegmentType, ProgressionSegment[]> harmonyBySegment = harmony.getProgressions();
-		Map<SegmentType, RhythmSegment[]> rhythmBySegment = melody.getRhythms().getRhythmBySegment();
-		Map<SegmentType, PitchSegment[]> pitchesBySegment = melody.getPitches().getPitchesBySegment();
 		
 		if (printHeader)
 		{
@@ -72,18 +68,34 @@ public class Composition {
 			str.append('\n');
 			str.append(composer);
 			str.append("\nInspiration: ");
-			str.append(inspiration);
+			str.append(inspiration.getExplaination());
 			str.append("\n\n");
 		}
 		
-		if (printNonMelodicContent || printSubstructure || printMelody)
+		if (printHarmony || printSubstructure || printMelody || printLyrics)
 		{
-			for (Iterator<Triple<SegmentType, Integer, Substructure>> segmentIter = structure.new SegmentIterator<Triple<SegmentType, Integer, Substructure>>(); segmentIter.hasNext();) {
-				Triple<SegmentType, Integer, Substructure> segment = (Triple<SegmentType, Integer, Substructure>) segmentIter.next();
+			Map<SegmentType, LyricSegment[]> lyricsBySegment = null;
+			Map<SegmentType, ProgressionSegment[]> harmonyBySegment = null;
+			Map<SegmentType, RhythmSegment[]> rhythmBySegment = null;
+			Map<SegmentType, PitchSegment[]> pitchesBySegment = null;
+			
+			if (printLyrics) {
+				lyricsBySegment = lyrics.getLyricsBySegment();
+			}
+			if (printHarmony) {
+				harmonyBySegment = harmony.getProgressions();
+			}
+			if (printMelody) {
+				rhythmBySegment = melody.getRhythms().getRhythmBySegment();
+				pitchesBySegment = melody.getPitches().getPitchesBySegment();
+			}
+			
+			for (Iterator<Triple<SegmentType, Integer, SegmentSubstructure>> segmentIter = structure.new SegmentIterator<Triple<SegmentType, Integer, SegmentSubstructure>>(); segmentIter.hasNext();) {
+				Triple<SegmentType, Integer, SegmentSubstructure> segment = (Triple<SegmentType, Integer, SegmentSubstructure>) segmentIter.next();
 				
 				SegmentType segmentType = segment.getFirst();
 				Integer segTypeIdx = segment.getSecond();
-				Substructure substructure = segment.getThird();
+				SegmentSubstructure substructure = segment.getThird();
 				
 				str.append(segmentType);
 				str.append(' ');
@@ -95,26 +107,25 @@ public class Composition {
 					str.append("\n\n");
 				}
 				
-				if (printLyrics || printMelody || printNonMelodicContent) {
+				if (printLyrics || printMelody || printHarmony) {
 					for (int i = 0; i < substructure.linesPerSegment; i++) {
-						if (printNonMelodicContent){
-							str.append(harmonyBySegment.get(segmentType)[segTypeIdx].getLine(i));
+						if (printHarmony){
+							str.append(Utils.join(harmonyBySegment.get(segmentType)[segTypeIdx].getLine(i),"\t"));
 							str.append('\n');
 						}
 						if (printMelody) {
-							str.append(pitchesBySegment.get(segmentType)[segTypeIdx].getLine(i));
+							str.append(Utils.join(pitchesBySegment.get(segmentType)[segTypeIdx].getLine(i),"\t"));
 							str.append('\n');
-							str.append(rhythmBySegment.get(segmentType)[segTypeIdx].getLine(i));
+							str.append(Utils.join(rhythmBySegment.get(segmentType)[segTypeIdx].getLine(i),"\t"));
 							str.append('\n');
 						}
 						if (printLyrics) {
-							str.append(lyricsBySegment.get(segmentType)[segTypeIdx].getLine(i));
+							str.append(Utils.join(lyricsBySegment.get(segmentType)[segTypeIdx].getLine(i)," "));
 							str.append('\n');
 						}
 						str.append('\n');
 					}
 				}
-				
 			}
 		}
 		

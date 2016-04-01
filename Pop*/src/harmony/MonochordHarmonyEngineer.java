@@ -2,7 +2,7 @@ package harmony;
 
 import globalstructure.SegmentType;
 import inspiration.Inspiration;
-import substructure.Substructure;
+import substructure.SegmentSubstructure;
 
 public class MonochordHarmonyEngineer extends HarmonyEngineer {
 
@@ -13,7 +13,7 @@ public class MonochordHarmonyEngineer extends HarmonyEngineer {
 	}
 
 	@Override
-	protected ProgressionSegment generateSegmentHarmony(Inspiration inspiration, Substructure segmentSubstructures,
+	protected ProgressionSegment generateSegmentHarmony(Inspiration inspiration, SegmentSubstructure segmentSubstructures,
 			SegmentType segmentKey) {
 		// TODO Auto-generated method stub
 		return null;

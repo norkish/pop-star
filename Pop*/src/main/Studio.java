@@ -37,9 +37,9 @@ public class Studio {
 		Harmony harmony = harmonyEngineer.generateHarmony(inspiration, structure);
 		newComposition.setHarmony(harmony);
 		
-		MelodyEngineer melodyEngineer = manager.getMelodyEngineer();
-		Melody melody = melodyEngineer.generateMelody(inspiration, structure, lyrics, harmony);
-		newComposition.setMelody(melody);
+//		MelodyEngineer melodyEngineer = manager.getMelodyEngineer();
+//		Melody melody = melodyEngineer.generateMelody(inspiration, structure, lyrics, harmony);
+//		newComposition.setMelody(melody);
 		
 		return newComposition;
 	}

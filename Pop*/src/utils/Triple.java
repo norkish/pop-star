@@ -1,7 +1,7 @@
 package utils;
 
 import globalstructure.SegmentType;
-import substructure.Substructure;
+import substructure.SegmentSubstructure;
 
 public class Triple<S1, S2, S3> {
 

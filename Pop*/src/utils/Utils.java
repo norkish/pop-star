@@ -5,6 +5,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.List;
+
+import harmony.Chord;
 
 public class Utils {
 
@@ -35,5 +38,19 @@ public class Utils {
         }
         return obj;
     }
+
+	public static Object join(List line, String delimiter) {
+		StringBuilder str = new StringBuilder();
+		boolean first = true;
+		for (Object object : line) {
+			if(!first)
+				str.append(delimiter);
+			else
+				first = false;
+			str.append(object);
+		}
+		
+		return str.toString();
+	}
 
 }
