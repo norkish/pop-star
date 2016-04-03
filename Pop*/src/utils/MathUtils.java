@@ -1,7 +1,6 @@
-package markov;
+package utils;
 
-public class Utils {
-
+public class MathUtils {
 	public static double logSum(double logP, double logQ) {
 		if(logQ != Double.NEGATIVE_INFINITY)
 			return logQ + Math.log1p(Math.exp(logP - logQ));
@@ -10,5 +9,4 @@ public class Utils {
 		else
 			return Double.NEGATIVE_INFINITY;
 	}
-
 }

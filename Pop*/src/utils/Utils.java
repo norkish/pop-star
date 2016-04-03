@@ -53,4 +53,30 @@ public class Utils {
 		return str.toString();
 	}
 
+	public static String getPositionString(int i)
+	{
+		String posStr = "the ";
+		if (i == -1)
+		{
+			posStr += "LAST";
+		}
+		else if (i == 0)
+		{
+			posStr += "FIRST";
+		}
+		else if (i == 1)
+		{
+			posStr += "SECOND";
+		}
+		else if (i == 2)
+		{
+			posStr += "THIRD";
+		}
+		else
+		{
+			posStr += i + "TH";
+		}
+		
+		return posStr + " position";
+	}
 }

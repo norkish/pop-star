@@ -8,6 +8,7 @@ import java.util.Set;
 
 import condition.ConstraintCondition;
 import constraint.Constraint;
+import utils.MathUtils;
 
 public class NHMM<T> extends AbstractMarkovModel<T>{
 
@@ -162,7 +163,7 @@ public class NHMM<T> extends AbstractMarkovModel<T>{
 			// calculate sum for each row
 			oldLogAlphas[row] = Double.NEGATIVE_INFINITY;
 			for (int col = 0; col < currentMatrix[row].length; col++) {
-				oldLogAlphas[row] = Utils.logSum(oldLogAlphas[row], currentMatrix[row][col]);
+				oldLogAlphas[row] = MathUtils.logSum(oldLogAlphas[row], currentMatrix[row][col]);
 			}
 			// divide each value by the sum for its row
 			for (int col = 0; col < currentMatrix[row].length; col++) {
@@ -181,7 +182,7 @@ public class NHMM<T> extends AbstractMarkovModel<T>{
 				// new val = currVal * oldAlpha
 				for (int col = 0; col < currentMatrix[row].length; col++) {
 					currentMatrix[row][col] = currentMatrix[row][col] + oldLogAlphas[col];
-					newLogAlphas[row] = Utils.logSum(newLogAlphas[row], currentMatrix[row][col]);
+					newLogAlphas[row] = MathUtils.logSum(newLogAlphas[row], currentMatrix[row][col]);
 				}
 				// normalize
 				for (int col = 0; col < currentMatrix[row].length; col++) {
@@ -197,7 +198,7 @@ public class NHMM<T> extends AbstractMarkovModel<T>{
 		for (int row = 0; row < logPriors.length; row++) {
 			// new val = currVal * oldAlpha
 			logPriors[row] = logPriors[row] + oldLogAlphas[row];
-			tmpSum = Utils.logSum(tmpSum, logPriors[row]);
+			tmpSum = MathUtils.logSum(tmpSum, logPriors[row]);
 		}
 		// normalize
 		for (int row = 0; row < logPriors.length; row++) {
@@ -439,6 +440,7 @@ public class NHMM<T> extends AbstractMarkovModel<T>{
 	public void constrain(Constraint<T> constraint) {
 		Set<PositionedState> posStateToRemove = new HashSet<PositionedState>();
 		int position = constraint.getPosition();
+		position = (position == Constraint.FINAL_POSITION ? logTransitions.length : position);
 		ConstraintCondition<T> condition = constraint.getCondition();
 		boolean desiredConditionState = constraint.getDesiredConditionState();
 		

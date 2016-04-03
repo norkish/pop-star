@@ -29,11 +29,11 @@ public class TestHarmonyEngineer extends HarmonyEngineer {
 			mModel = loadTestModel();
 		}
 		
-		int[] testLengths = new int[]{6,5,8,7};
+		int testChordsPerLine = 4;
 		List<List<Chord>> lyricLines = new ArrayList<List<Chord>>();
 		for (int i = 0; i < segmentSubstructures.linesPerSegment; i++) {
-			NHMM<Chord> constrainedLyricModel = new NHMM<Chord>(mModel, testLengths[i], segmentSubstructures.chordConstraints.get(0));
-			lyricLines.add(constrainedLyricModel.generate(testLengths[i]));
+			NHMM<Chord> constrainedLyricModel = new NHMM<Chord>(mModel, testChordsPerLine, segmentSubstructures.chordConstraints.get(0));
+			lyricLines.add(constrainedLyricModel.generate(testChordsPerLine));
 		}
 		
 		return new ProgressionSegment(lyricLines);

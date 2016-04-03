@@ -3,6 +3,9 @@ package lyrics;
 import java.util.ArrayList;
 import java.util.List;
 
+import condition.ConstraintCondition;
+import condition.DelayedConstraintCondition;
+import constraint.Constraint;
 import globalstructure.SegmentType;
 import inspiration.Inspiration;
 import markov.NHMM;
@@ -25,11 +28,23 @@ public class TestLyricEngineer extends LyricalEngineer {
 		int[] testLengths = new int[]{6,5,8,7};
 		List<List<Lyric>> lyricLines = new ArrayList<List<Lyric>>();
 		for (int i = 0; i < segmentSubstructures.linesPerSegment; i++) {
-			NHMM<Lyric> constrainedLyricModel = new NHMM<Lyric>(mModel, testLengths[i], segmentSubstructures.lyricConstraints.get(i));
+			List<Constraint<Lyric>> constraints = segmentSubstructures.lyricConstraints.get(i);
+			reifyConstraints(constraints,lyricLines);
+			NHMM<Lyric> constrainedLyricModel = new NHMM<Lyric>(mModel, testLengths[i], constraints);
 			lyricLines.add(constrainedLyricModel.generate(testLengths[i]));
 		}
 		
 		return new LyricSegment(lyricLines);
+	}
+
+	public void reifyConstraints(List<Constraint<Lyric>> constraints, List<List<Lyric>> lyricLines) {
+		for (Constraint<Lyric> constraint : constraints) {
+			ConstraintCondition<Lyric> condition = constraint.getCondition();
+			if(condition instanceof DelayedConstraintCondition)
+			{
+				((DelayedConstraintCondition<Lyric>) condition).reify(lyricLines);
+			}
+		}
 	}
 
 	private static SingleOrderMarkovModel<Lyric> loadTestModel() {
@@ -45,9 +60,8 @@ public class TestLyricEngineer extends LyricalEngineer {
 
 		for (int i = 0; i < length; i++) {
 			for (int j = 0; j < length; j++) {
-				// we set transitions from word to next word to .5 and
-				// from word to next after next word to .5 (just to add some noise)
-				if(j == ((i + 1) % length) || j == ((i + 2) % length))
+				// we set transitions from word to next word to .5
+				if(j == (i + 1))
 				{
 					transitions[i][j] = 0.5;
 				}
@@ -64,9 +78,10 @@ public class TestLyricEngineer extends LyricalEngineer {
 	private static double[] loadTestPriors(int length) {
 		double[] priors = new double[length];
 		
-		for (int i = 0; i < priors.length; i++) {
-			priors[i] = 1.0 / length; // all states equally likely to start
-		}
+		priors[0] = .25; // all states equally likely to start
+		priors[6] = .25; // all states equally likely to start
+		priors[11] = .25; // all states equally likely to start
+		priors[19] = .25; // all states equally likely to start
 		
 		return priors;
 	}

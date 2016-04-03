@@ -1,5 +1,6 @@
 package constraint;
 import condition.ConstraintCondition;
+import utils.Utils;
 
 public class Constraint<T> {
 
@@ -33,7 +34,7 @@ public class Constraint<T> {
 		StringBuilder str = new StringBuilder();
 		
 		str.append("token in ");
-		str.append(getPositionString(position));
+		str.append(Utils.getPositionString(position));
 		str.append(" must ");
 		if (!desiredConditionState) 
 			str.append("not ");
@@ -41,32 +42,5 @@ public class Constraint<T> {
 		str.append(condition);
 		
 		return str.toString();
-	}
-	
-	protected String getPositionString(int i)
-	{
-		String posStr = "the ";
-		if (i == FINAL_POSITION)
-		{
-			posStr += "LAST";
-		}
-		else if (i == 0)
-		{
-			posStr += "FIRST";
-		}
-		else if (i == 1)
-		{
-			posStr += "SECOND";
-		}
-		else if (i == 2)
-		{
-			posStr += "THIRD";
-		}
-		else
-		{
-			posStr += i + "TH";
-		}
-		
-		return posStr + " position";
 	}
 }
