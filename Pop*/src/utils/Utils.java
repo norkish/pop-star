@@ -74,7 +74,7 @@ public class Utils {
 		}
 		else
 		{
-			posStr += i + "TH";
+			posStr += (i+1) + "TH";
 		}
 		
 		return posStr + " position";

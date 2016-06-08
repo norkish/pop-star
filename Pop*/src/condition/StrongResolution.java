@@ -1,10 +1,14 @@
 package condition;
 
+import harmony.Chord;
+
 public class StrongResolution<T> extends ConstraintCondition<T> {
 
 	@Override
 	public boolean isSatisfiedBy(T t) {
-		// TODO Auto-generated method stub
+		if (t instanceof Chord) {
+			return ((Chord) t).getChordName().equals("C");
+		}
 		return false;
 	}
 

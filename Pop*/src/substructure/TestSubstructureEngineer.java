@@ -1,6 +1,7 @@
 package substructure;
 
 import condition.ExactBinaryMatch;
+import condition.ExactUnaryMatch;
 import condition.Rhyme;
 import condition.StrongResolution;
 import constraint.Constraint;
@@ -27,9 +28,13 @@ public class TestSubstructureEngineer extends SubstructureEngineer {
 		boolean relativeMinorKey = false;
 
 		SegmentSubstructure substructure = new SegmentSubstructure(linesPerSegment, measuresPerLine, minWordsPerLine, maxWordsPerLine, substructureRepetitions, relativeMinorKey);
+
+		substructure.addLyricConstraint(0, new Constraint<Lyric>(0, new ExactUnaryMatch<Lyric>(new Lyric[]{new Lyric("It's")}), true));
 		
+		substructure.addLyricConstraint(1, new Constraint<Lyric>(0, new ExactUnaryMatch<Lyric>(new Lyric[]{new Lyric("The")}), true));
 		substructure.addChordConstraint(1, new Constraint<Chord>(Constraint.FINAL_POSITION, new StrongResolution<Chord>(), false));
 		
+		substructure.addLyricConstraint(2, new Constraint<Lyric>(0, new ExactUnaryMatch<Lyric>(new Lyric[]{new Lyric("There's")}), true));
 		for (int i = 0; i < 4; i++) {
 			substructure.addChordConstraint(2, new Constraint<Chord>(i, new ExactBinaryMatch<Chord>(0,i), true));
 		}
@@ -37,6 +42,7 @@ public class TestSubstructureEngineer extends SubstructureEngineer {
 			substructure.addPitchConstraint(2, new Constraint<Pitch>(i, new ExactBinaryMatch<Pitch>(0, i), true));
 		}
 		
+		substructure.addLyricConstraint(3, new Constraint<Lyric>(0, new ExactUnaryMatch<Lyric>(new Lyric[]{new Lyric("Making")}), true));
 		substructure.addLyricConstraint(3, new Constraint<Lyric>(Constraint.FINAL_POSITION, new Rhyme<Lyric>(1, Constraint.FINAL_POSITION), true));
 		substructure.addChordConstraint(3, new Constraint<Chord>(Constraint.FINAL_POSITION, new StrongResolution<Chord>(), true));
 				

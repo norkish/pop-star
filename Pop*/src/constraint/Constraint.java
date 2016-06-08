@@ -1,5 +1,9 @@
 package constraint;
+import java.util.List;
+
 import condition.ConstraintCondition;
+import condition.DelayedConstraintCondition;
+import lyrics.Lyric;
 import utils.Utils;
 
 public class Constraint<T> {
@@ -29,6 +33,16 @@ public class Constraint<T> {
 		this.desiredConditionState = desiredConditionState;
 	}
 
+	public static <T> void reifyConstraints(List<Constraint<T>> constraints, List<List<T>> tokenLine) {
+		for (Constraint<T> constraint : constraints) {
+			ConstraintCondition<T> condition = constraint.getCondition();
+			if(condition instanceof DelayedConstraintCondition)
+			{
+				((DelayedConstraintCondition<T>) condition).reify(tokenLine);
+			}
+		}
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder str = new StringBuilder();

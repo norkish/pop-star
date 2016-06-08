@@ -64,8 +64,10 @@ public class Composition {
 		
 		if (printHeader)
 		{
+			str.append("Title: ");
 			str.append(title);
 			str.append('\n');
+			str.append("Composer: ");
 			str.append(composer);
 			str.append("\nInspiration: ");
 			str.append(inspiration.getExplaination());
@@ -103,6 +105,7 @@ public class Composition {
 				str.append(":\n\n");
 				
 				if (printSubstructure) {
+					str.append("Structure:\n\n");
 					str.append(substructure);
 					str.append("\n\n");
 				}

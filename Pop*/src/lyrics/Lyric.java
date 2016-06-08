@@ -39,4 +39,29 @@ public class Lyric {
 		
 		return lyric.substring(lastVowelSeqStart);
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((lyric == null) ? 0 : lyric.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof Lyric))
+			return false;
+		Lyric other = (Lyric) obj;
+		if (lyric == null) {
+			if (other.lyric != null)
+				return false;
+		} else if (!lyric.equals(other.lyric))
+			return false;
+		return true;
+	}
 }

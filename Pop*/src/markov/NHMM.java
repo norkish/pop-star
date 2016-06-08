@@ -37,6 +37,11 @@ public class NHMM<T> extends AbstractMarkovModel<T>{
 			}
 		}
 		
+		logTransitions = new double[length-1][][];
+		for (int i = 0; i < logTransitions.length; i++) {
+			logTransitions[i] = deepCopy(model.logTransitions);
+		}
+		
 		for (int i = 0; i < this.logPriors.length; i++) {
 			this.logPriors[i] = model.logPriors[i];
 
@@ -54,25 +59,33 @@ public class NHMM<T> extends AbstractMarkovModel<T>{
 					}
 				}
 			}
+			else { // prior is zero for state
+				for (int j = 0; j < states.length; j++) {
+					logTransitions[0][i][j] = Double.NEGATIVE_INFINITY;
+				}
+			}
 		}
 		
-		logTransitions = new double[length-1][][];
-		for (int i = 0; i < logTransitions.length; i++) {
-			logTransitions[i] = deepCopy(model.logTransitions);
-		}
-
 		for (int i = 1; i < this.inSupport.length; i++) {
 			for (int j = 0; j < states.length; j++) {
-				for (int k = 0; k < states.length; k++) {
-					if (model.logTransitions[j][k] != Double.NEGATIVE_INFINITY)
-					{
-						//there is a non-zero probability of going from j at position i-1 to k at position i
-						this.outSupport[i][j]++;
-						this.inSupport[i][k]++;
+				if (this.inSupport[i - 1][j] > 0) {
+					for (int k = 0; k < states.length; k++) {
+						if (logTransitions[i][j][k] != Double.NEGATIVE_INFINITY)
+						{
+							//there is a non-zero probability of going from j at position i-1 to k at position i
+							this.outSupport[i][j]++;
+							this.inSupport[i][k]++;
+						}
+					}
+				}
+				else {
+					for (int k = 0; k < states.length; k++) {
+						logTransitions[i][j][k] = Double.NEGATIVE_INFINITY;
 					}
 				}
 			}
 		}
+		
 		if(!satisfiable())
 		{
 			throw new RuntimeException("Not satisfiable, even before constraining");

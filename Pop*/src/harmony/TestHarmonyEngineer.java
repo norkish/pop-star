@@ -3,6 +3,7 @@ package harmony;
 import java.util.ArrayList;
 import java.util.List;
 
+import constraint.Constraint;
 import globalstructure.SegmentType;
 import inspiration.Inspiration;
 import lyrics.Lyric;
@@ -30,13 +31,15 @@ public class TestHarmonyEngineer extends HarmonyEngineer {
 		}
 		
 		int testChordsPerLine = 4;
-		List<List<Chord>> lyricLines = new ArrayList<List<Chord>>();
+		List<List<Chord>> chordLines = new ArrayList<List<Chord>>();
 		for (int i = 0; i < segmentSubstructures.linesPerSegment; i++) {
-			NHMM<Chord> constrainedLyricModel = new NHMM<Chord>(mModel, testChordsPerLine, segmentSubstructures.chordConstraints.get(0));
-			lyricLines.add(constrainedLyricModel.generate(testChordsPerLine));
+			List<Constraint<Chord>> constraints = segmentSubstructures.chordConstraints.get(i);
+			Constraint.reifyConstraints(constraints,chordLines);
+			NHMM<Chord> constrainedLyricModel = new NHMM<Chord>(mModel, testChordsPerLine, segmentSubstructures.chordConstraints.get(i));
+			chordLines.add(constrainedLyricModel.generate(testChordsPerLine));
 		}
 		
-		return new ProgressionSegment(lyricLines);
+		return new ProgressionSegment(chordLines);
 	}
 
 	private static SingleOrderMarkovModel<Chord> loadTestModel() {
@@ -66,7 +69,7 @@ public class TestHarmonyEngineer extends HarmonyEngineer {
 		transitions[5][6] = 1.0;
 		transitions[6][7] = 1.0;
 		transitions[7][0] = 1.0;
-		
+		transitions[8][0] = 1.0;
 		
 		return transitions;
 	}

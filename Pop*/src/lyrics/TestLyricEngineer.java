@@ -29,7 +29,7 @@ public class TestLyricEngineer extends LyricalEngineer {
 		List<List<Lyric>> lyricLines = new ArrayList<List<Lyric>>();
 		for (int i = 0; i < segmentSubstructures.linesPerSegment; i++) {
 			List<Constraint<Lyric>> constraints = segmentSubstructures.lyricConstraints.get(i);
-			reifyConstraints(constraints,lyricLines);
+			Constraint.reifyConstraints(constraints,lyricLines);
 			NHMM<Lyric> constrainedLyricModel = new NHMM<Lyric>(mModel, testLengths[i], constraints);
 			lyricLines.add(constrainedLyricModel.generate(testLengths[i]));
 		}
@@ -37,15 +37,7 @@ public class TestLyricEngineer extends LyricalEngineer {
 		return new LyricSegment(lyricLines);
 	}
 
-	public void reifyConstraints(List<Constraint<Lyric>> constraints, List<List<Lyric>> lyricLines) {
-		for (Constraint<Lyric> constraint : constraints) {
-			ConstraintCondition<Lyric> condition = constraint.getCondition();
-			if(condition instanceof DelayedConstraintCondition)
-			{
-				((DelayedConstraintCondition<Lyric>) condition).reify(lyricLines);
-			}
-		}
-	}
+	
 
 	private static SingleOrderMarkovModel<Lyric> loadTestModel() {
 		Lyric[] states = loadTestStates();

@@ -1,7 +1,6 @@
 package condition;
 
 import lyrics.Lyric;
-import utils.Utils;
 
 public class Rhyme<T> extends DelayedConstraintCondition<Lyric> {
 
@@ -19,10 +18,4 @@ public class Rhyme<T> extends DelayedConstraintCondition<Lyric> {
 		
 		return tEnd.equals(sEnd);
 	}
-
-	@Override
-	protected String asString() {
-		return " with the token at line " + prevLineNumber + ", " + Utils.getPositionString(prevPos) + " (" + (prevT == null? "" : prevT) + ")";
-	}
-
 }

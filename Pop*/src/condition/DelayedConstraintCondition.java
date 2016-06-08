@@ -3,6 +3,7 @@ package condition;
 import java.util.List;
 
 import constraint.Constraint;
+import utils.Utils;
 
 public abstract class DelayedConstraintCondition<T> extends ConstraintCondition<T> {
 	protected T prevT = null;
@@ -29,8 +30,8 @@ public abstract class DelayedConstraintCondition<T> extends ConstraintCondition<
 		this.prevT = prevT;
 	}
 
-	public void reify(List<List<T>> lyricLines) {
-		List<T> prevLine = lyricLines.get(prevLineNumber);
+	public void reify(List<List<T>> tokenLines) {
+		List<T> prevLine = tokenLines.get(prevLineNumber);
 		if (prevPos == Constraint.FINAL_POSITION){
 			setPrevT(prevLine.get(prevLine.size()-1));		
 		}
@@ -39,5 +40,7 @@ public abstract class DelayedConstraintCondition<T> extends ConstraintCondition<
 		}
 	}
 	
-	
+	public String asString() {
+		return " with the token at line " + prevLineNumber + ", " + Utils.getPositionString(prevPos) + " (" + (prevT == null? "" : prevT) + ")";
+	}
 }
