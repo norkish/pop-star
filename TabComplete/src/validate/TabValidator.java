@@ -1,4 +1,4 @@
-package alignment;
+package validate;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 
+import alignment.Aligner;
+import alignment.ProgressiveMSA;
+import alignment.SequencePair;
 import harmony.Chord;
 import raw.ChordSheet;
 import raw.LyricSheet;

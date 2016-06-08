@@ -32,9 +32,10 @@ public class SegmentStructureAnalyzer {
 	private static final double SIMILARITY_THRESH = 0.9;
 	private static final int CHORUS_HALO = 4;
 	private static final double DISTRIBUTION_WEIGHT = 1.0;
-	private static final double LENGTH_WEIGHT = 4.0;
+	private static final double LENGTH_WEIGHT = 1.0;
 	private static final double REPETITIONS_WEIGHT = 1.0;
-	private static final int MAX_CHORUS_SIZE_FOR_BONUS = 4;
+	private static final int MIN_CHORUS_COUNT = 2;
+	private static final int MAX_CHORUS_COUNT = 7;
 
 	public static char[] extractSegmentStructure(List<String> words, List<SortedMap<Integer, Chord>> chords, char[] scheme) {
 		int lineCount = words.size();
@@ -58,9 +59,40 @@ public class SegmentStructureAnalyzer {
 		System.out.println("IDENITIFYING VERSES");
 		extractVerse(chords, structure, firstLyricLine, lastLyricLine, scheme);
 		
+		fillInBridgesAndIntroOutro(structure);
+		
 		return structure;
 	}
 	
+	private static void fillInBridgesAndIntroOutro(char[] structure) {
+		int i;
+		for (i = 0; i < structure.length; i++) {
+			if(structure[i] == '\0') {
+				structure[i] = 'I';
+			}
+			if(structure[i] != 'I') {
+				i++;
+				break;
+			}
+		}
+		
+		int o;
+		for (o = structure.length-1; o > i ; o--) {
+			if(structure[o] == '\0') {
+				structure[o] = 'O';
+			}
+			if(structure[o] != 'O') {
+				break;
+			}
+		}
+		
+		for (int b = i; b < o; b++) {
+			if(structure[b] == '\0') {
+				structure[b] = 'B';
+			}
+		}
+	}
+
 	/**
 	 * Identify and label lines that belong to verse segments
 	 * @pre This function assumes that choruses have already been identified.
@@ -103,7 +135,7 @@ public class SegmentStructureAnalyzer {
 				}
 				
 				aln = Aligner.alignNW(new ChordSequencePair(line_i,line_j));
-				System.out.println(aln);
+//				System.out.println(aln);
 				score = aln.getFinalScore();
 				
 				score /= (double) Math.min(line_i.size(),line_j.size());
@@ -132,7 +164,7 @@ public class SegmentStructureAnalyzer {
 			}
 		}
 		
-		System.out.println("Chose " + verse);
+		System.out.println("Chose " + verse + " with score " + scoreCandidate(verse.getSecond(),verse.getFirst(),lastLyricLine+1-firstLyricLine));
 		
 		Integer chorusLen = verse.getSecond();
 		for (Integer start : verse.getFirst()) {
@@ -141,7 +173,7 @@ public class SegmentStructureAnalyzer {
 			}
 		}
 		
-		Utils.print2DMatrixInt(binary_matrix);
+//		Utils.print2DMatrixInt(binary_matrix);
 	}
 
 	/**
@@ -205,7 +237,7 @@ public class SegmentStructureAnalyzer {
 			}
 		}
 		
-		System.out.println("Chose " + chorus);
+		System.out.println("Chose " + chorus + " with score " + scoreCandidate(chorus.getSecond(),chorus.getFirst(),lastLyricLine+1-firstLyricLine));
 		
 		Integer chorusLen = chorus.getSecond();
 		for (Integer start : chorus.getFirst()) {
@@ -214,7 +246,7 @@ public class SegmentStructureAnalyzer {
 			}
 		}
 		
-		Utils.print2DMatrixInt(binary_matrix);
+//		Utils.print2DMatrixInt(binary_matrix);
 	}
 
 	private static Pair<SortedSet<Integer>,Integer> judgeCandidates(SortedMap<Integer, SortedMap<Integer, SortedSet<Integer>>> candidateChoruses, int wordsLength) {
@@ -263,10 +295,20 @@ public class SegmentStructureAnalyzer {
 		score += DISTRIBUTION_WEIGHT * coverage/wordsLength;
 
 		// length score
-		score += LENGTH_WEIGHT * len*len / (double) wordsLength;
+		score += LENGTH_WEIGHT * (len-1) / (double) wordsLength;
 		
 		// repetitions score
-		score += REPETITIONS_WEIGHT * Math.min(MAX_CHORUS_SIZE_FOR_BONUS, candidate.size())/ (double) (wordsLength-1);
+		
+		int repetitions = candidate.size();
+		double repetitionScore = 0;
+		
+		if (repetitions == MIN_CHORUS_COUNT || repetitions == MAX_CHORUS_COUNT) {
+			repetitionScore = .5;
+		} else if (repetitions > MIN_CHORUS_COUNT && repetitions < MAX_CHORUS_COUNT) {
+			repetitionScore = 1.0; 
+		}
+		
+		score += REPETITIONS_WEIGHT * repetitionScore;
 		
 		return score;
 	}

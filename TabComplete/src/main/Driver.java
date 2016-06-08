@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import alignment.TabValidator;
 import raw.ChordSheet;
 import raw.LyricSheet;
 import raw.RawDataLoader;
@@ -19,6 +18,7 @@ public class Driver {
 	private static String serializedLyrics = serializedDataDir + "/lyrics.ser";
 	private static String serializedTabs = serializedDataDir + "/tabs.ser";
 	
+	@SuppressWarnings("unchecked")
 	public static void main(String[] args) throws IOException {
 		
 		Map<String, Map<String, List<LyricSheet>>> lyricSheets = (deserialize? (Map<String, Map<String, List<LyricSheet>>>) Serializer.load(serializedLyrics): RawDataLoader.loadLyricSheets());

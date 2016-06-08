@@ -165,6 +165,7 @@ public class Aligner{
 		return alnBldr.renderAlignment();
 	}
 	
+	@SuppressWarnings("unused")
 	private static void printMatrixPointer(char[][] backtrack) {
 		System.out.println("___________");
 		for (char[] row : backtrack) {
@@ -372,7 +373,6 @@ public class Aligner{
 		System.out.println(
 				"Consistency\tXOpt time\tRefactored time\ttotalAlns");
 		// for (int i = 0; i < tests.length; i += 2) {
-		double correct = 0.;
 		double consistent = 0.;
 		double total = 0.;
 		Aligner.setMinPercOverlap(.7);

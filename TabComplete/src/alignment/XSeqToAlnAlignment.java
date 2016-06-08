@@ -76,7 +76,7 @@ public class XSeqToAlnAlignment {
 
 		int i = rows - 1;
 		int j = cols - 1;
-		int left, diag, up, matrixCol, matrixColAbove, colStart, colEnd, row_1, cost, gapCharCount, nonGapCharCount;
+		int left, diag, up, matrixCol, matrixColAbove, colStart, colEnd, row_1, cost, gapCharCount;
 		char charA, charB;
 		boolean headerRow, headerCol;
 		for (int row = 1; row < rows; row++) {
