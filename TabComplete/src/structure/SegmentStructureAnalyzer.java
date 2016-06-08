@@ -39,31 +39,31 @@ public class SegmentStructureAnalyzer {
 
 	public static char[] extractSegmentStructure(List<String> words, List<SortedMap<Integer, Chord>> chords, char[] scheme) {
 		int lineCount = words.size();
-		
+
 		char[] structure = new char[lineCount];
-		
+
 		int firstLyricLine = extractIntro(words, structure);
-		 
+
 		if (firstLyricLine == structure.length) {
 			return structure;
 		}
-		
-		
+
+
 		// Find outro as all ending lines w/o lyrics
 		int lastLyricLine = extractOutro(words, structure); 
-		
+
 		// Find chorus	
 		extractChorusViaBinaryAlnAndCandidateScoring(words, structure, firstLyricLine, lastLyricLine);
-//		extractChorusViaBinaryAln(words, structure, firstLyricLine, lastLyricLine);
-//		extractChorusViaRawScoreAln(words, structure, firstLyricLine, lastLyricLine);
+		//		extractChorusViaBinaryAln(words, structure, firstLyricLine, lastLyricLine);
+		//		extractChorusViaRawScoreAln(words, structure, firstLyricLine, lastLyricLine);
 		System.out.println("IDENITIFYING VERSES");
 		extractVerse(chords, structure, firstLyricLine, lastLyricLine, scheme);
-		
+
 		fillInBridgesAndIntroOutro(structure);
-		
+
 		return structure;
 	}
-	
+
 	private static void fillInBridgesAndIntroOutro(char[] structure) {
 		int i;
 		for (i = 0; i < structure.length; i++) {
@@ -75,7 +75,7 @@ public class SegmentStructureAnalyzer {
 				break;
 			}
 		}
-		
+
 		int o;
 		for (o = structure.length-1; o > i ; o--) {
 			if(structure[o] == '\0') {
@@ -85,7 +85,7 @@ public class SegmentStructureAnalyzer {
 				break;
 			}
 		}
-		
+
 		for (int b = i; b < o; b++) {
 			if(structure[b] == '\0') {
 				structure[b] = 'B';
@@ -107,49 +107,53 @@ public class SegmentStructureAnalyzer {
 		// TODO Auto-generated method stub
 		int [][] binary_matrix = new int[(lastLyricLine+1-firstLyricLine-MIN_DIST_BETWEEN_CHORUSES)][]; 
 		int [] currentRow;
-		
+
 		int line_i_idx, line_j_idx;
 		double score;
 		SortedMap<Integer, Chord> line_i, line_j;
 		Alignment aln;
-		
+
 		SequencePair.setCosts(1, -1, -1, -1);
-		
+
 		for (int offset = 0; offset < binary_matrix.length; offset++) {
 			currentRow = new int[(lastLyricLine+1-firstLyricLine-MIN_DIST_BETWEEN_CHORUSES) - offset];
 			binary_matrix[offset] = currentRow;
-			
+
 			for (int idx = 0; idx < currentRow.length; idx++) {
 				line_i_idx = idx + firstLyricLine; // we're not aligning intro or outro lines so we have to account for the offset due to the intro
 				line_j_idx = line_i_idx + offset + MIN_DIST_BETWEEN_CHORUSES;
-				
+
 				if (structure[line_i_idx] != '\0' || structure[line_j_idx] != '\0') {
 					continue;
 				}
-				
+
 				line_i = chords.get(line_i_idx);
 				line_j = chords.get(line_j_idx);
-				
+
 				if (line_i.size() == 0 || line_j.size() == 0) {
 					continue;
 				}
-				
+
 				aln = Aligner.alignNW(new ChordSequencePair(line_i,line_j));
-//				System.out.println(aln);
+				//				System.out.println(aln);
 				score = aln.getFinalScore();
-				
+
 				score /= (double) Math.min(line_i.size(),line_j.size());
-				
+
 				if (score > SIMILARITY_THRESH) {
 					currentRow[idx] = 1;
 				}
 			}
 		}
-		
+
 		// Find all candidate verses
 		SortedMap<Integer, SortedMap<Integer, SortedSet<Integer>>> candidateVerses = findAllRepeatedSegments(binary_matrix);
+		if (candidateVerses.isEmpty()) {
+			System.out.println("No candidates for verse");
+			return;
+		}
 		Pair<SortedSet<Integer>, Integer> verse = judgeCandidates(candidateVerses, lastLyricLine+1-firstLyricLine);
-		
+
 		for (Integer startPos : candidateVerses.keySet()) {
 			SortedMap<Integer, SortedSet<Integer>> candidatesAtStart = candidateVerses.get(startPos);
 
@@ -163,17 +167,17 @@ public class SegmentStructureAnalyzer {
 				System.out.println();
 			}
 		}
-		
+
 		System.out.println("Chose " + verse + " with score " + scoreCandidate(verse.getSecond(),verse.getFirst(),lastLyricLine+1-firstLyricLine));
-		
+
 		Integer chorusLen = verse.getSecond();
 		for (Integer start : verse.getFirst()) {
 			for (int i = 0; i < chorusLen; i++) {
 				structure[start+i+firstLyricLine] = 'V';
 			}
 		}
-		
-//		Utils.print2DMatrixInt(binary_matrix);
+
+		//		Utils.print2DMatrixInt(binary_matrix);
 	}
 
 	/**
@@ -186,43 +190,47 @@ public class SegmentStructureAnalyzer {
 			int lastLyricLine) {
 		int [][] binary_matrix = new int[(lastLyricLine+1-firstLyricLine-MIN_DIST_BETWEEN_CHORUSES)][]; 
 		int [] currentRow;
-		
+
 		int line_i_idx, line_j_idx;
 		double score;
 		String line_i, line_j;
 		Alignment aln;
-		
+
 		SequencePair.setCosts(1, -1, -1, 0);
-		
+
 		for (int offset = 0; offset < binary_matrix.length; offset++) {
 			currentRow = new int[(lastLyricLine+1-firstLyricLine-MIN_DIST_BETWEEN_CHORUSES) - offset];
 			binary_matrix[offset] = currentRow;
-			
+
 			for (int idx = 0; idx < currentRow.length; idx++) {
 				line_i_idx = idx + firstLyricLine; // we're not aligning intro or outro lines so we have to account for the offset due to the intro
 				line_j_idx = line_i_idx + offset + MIN_DIST_BETWEEN_CHORUSES;
 				line_i = words.get(line_i_idx);
 				line_j = words.get(line_j_idx);
-				
+
 				if (line_i.length() == 0 || line_j.length() == 0) {
 					continue;
 				}
-				
+
 				aln = Aligner.alignNW(new StringPair(line_i,line_j));
 				score = aln.getFinalScore();
-				
+
 				score /= (double) Math.min(line_i.length(),line_j.length());
-				
+
 				if (score > SIMILARITY_THRESH) {
 					currentRow[idx] = 1;
 				}
 			}
 		}
-		
+
 		// Find all candidate choruses
 		SortedMap<Integer, SortedMap<Integer, SortedSet<Integer>>> candidateChoruses = findAllRepeatedSegments(binary_matrix);
+		if (candidateChoruses.isEmpty()) {
+			System.out.println("No candidates for verse");
+			return;
+		}
 		Pair<SortedSet<Integer>, Integer> chorus = judgeCandidates(candidateChoruses, lastLyricLine+1-firstLyricLine);
-		
+
 		for (Integer startPos : candidateChoruses.keySet()) {
 			SortedMap<Integer, SortedSet<Integer>> candidatesAtStart = candidateChoruses.get(startPos);
 
@@ -236,17 +244,17 @@ public class SegmentStructureAnalyzer {
 				System.out.println();
 			}
 		}
-		
+
 		System.out.println("Chose " + chorus + " with score " + scoreCandidate(chorus.getSecond(),chorus.getFirst(),lastLyricLine+1-firstLyricLine));
-		
+
 		Integer chorusLen = chorus.getSecond();
 		for (Integer start : chorus.getFirst()) {
 			for (int i = 0; i < chorusLen; i++) {
 				structure[start+i+firstLyricLine] = 'C';
 			}
 		}
-		
-//		Utils.print2DMatrixInt(binary_matrix);
+
+		//		Utils.print2DMatrixInt(binary_matrix);
 	}
 
 	private static Pair<SortedSet<Integer>,Integer> judgeCandidates(SortedMap<Integer, SortedMap<Integer, SortedSet<Integer>>> candidateChoruses, int wordsLength) {
@@ -259,7 +267,7 @@ public class SegmentStructureAnalyzer {
 			for (Integer len : candidatesByStart.keySet()) {
 				candidate = candidatesByStart.get(len);
 				score = scoreCandidate(len, candidate, wordsLength);
-				
+
 				if (score < bssfScore) {
 					continue;
 				} else 	if (score > bssfScore || len > bssfLen || len == bssfLen && candidate.size() > bssf.size()) {
@@ -270,14 +278,14 @@ public class SegmentStructureAnalyzer {
 				}
 			}
 		}
-		
+
 		return new Pair<SortedSet<Integer>,Integer>(bssf,bssfLen);
 	}
 
 	private static double scoreCandidate(int len, SortedSet<Integer> candidate, int wordsLength) {
 		double score = 0;
 		double coverage = 0.;
-		
+
 		// distribution score
 		int prev = 0;
 		boolean first = true;
@@ -296,42 +304,46 @@ public class SegmentStructureAnalyzer {
 
 		// length score
 		score += LENGTH_WEIGHT * (len-1) / (double) wordsLength;
-		
+
 		// repetitions score
-		
+
 		int repetitions = candidate.size();
 		double repetitionScore = 0;
-		
+
 		if (repetitions == MIN_CHORUS_COUNT || repetitions == MAX_CHORUS_COUNT) {
 			repetitionScore = .5;
 		} else if (repetitions > MIN_CHORUS_COUNT && repetitions < MAX_CHORUS_COUNT) {
 			repetitionScore = 1.0; 
 		}
-		
+
 		score += REPETITIONS_WEIGHT * repetitionScore;
-		
+
 		return score;
 	}
 
 	private static SortedMap<Integer, SortedMap<Integer, SortedSet<Integer>>> findAllRepeatedSegments(int[][] binary_matrix) {
-		SortedMap<Integer, SortedMap<Integer, SortedSet<Integer>>> candidateChoruses = new TreeMap<Integer,SortedMap<Integer,SortedSet<Integer>>>();
+		SortedMap<Integer, SortedMap<Integer, SortedSet<Integer>>> candidateRepeats = new TreeMap<Integer,SortedMap<Integer,SortedSet<Integer>>>();
 		SortedMap<Integer, SortedSet<Integer>> candidatesAtStart;
 		//Start from the end in a dynamic programming approach
 		for (int startPos = binary_matrix[0].length; startPos >= 0 ; startPos--) {
-			candidatesAtStart = findCandidateChorusesStartingAt(startPos, binary_matrix, candidateChoruses);
-			// remove redundancy at same position (e.g., perfectly overlapping candidates of length 1, 2, 3, 4, etc)
-			List<Integer> lengths = new ArrayList<Integer>(candidatesAtStart.keySet());
-			for(int i=lengths.size()-1; i>0;i--){
-				if (candidatesAtStart.get(lengths.get(i)).size() == candidatesAtStart.get(lengths.get(i-1)).size()) {
-					candidatesAtStart.remove(lengths.get(i-1));
-					lengths.remove(i-1);
+			candidatesAtStart = findCandidateRepeatsStartingAt(startPos, binary_matrix, candidateRepeats);
+			if (candidatesAtStart.isEmpty()) {
+				continue; // no candidates
+			} else if (candidatesAtStart.size() > 1) {
+				// remove redundancy at same position (e.g., perfectly overlapping candidates of length 1, 2, 3, 4, etc)
+				List<Integer> lengths = new ArrayList<Integer>(candidatesAtStart.keySet());
+				for(int i=lengths.size()-1; i>0;i--){
+					if (candidatesAtStart.get(lengths.get(i)).size() == candidatesAtStart.get(lengths.get(i-1)).size()) {
+						candidatesAtStart.remove(lengths.get(i-1));
+						lengths.remove(i-1);
+					}
 				}
 			}
-			candidateChoruses.put(startPos, candidatesAtStart);
+			candidateRepeats.put(startPos, candidatesAtStart);
 		}
-		return candidateChoruses;
+		return candidateRepeats;
 	}
-	
+
 	/** Each value v (associated with key k) in the returned map will be a candidate chorus which starts at startPos and has a length of k lines
 	 * A candidate chorus is simply a list of start/stop line numbers where the several instances of the candidate chorus occur
 	 * 
@@ -343,15 +355,15 @@ public class SegmentStructureAnalyzer {
 	 * @param candidateChoruses 
 	 * @return
 	 */
-	private static SortedMap<Integer,SortedSet<Integer>> findCandidateChorusesStartingAt(int startPos, int[][] binary_matrix, SortedMap<Integer, SortedMap<Integer, SortedSet<Integer>>> allCandidateChoruses) {
-		SortedMap<Integer, SortedSet<Integer>> candidateChoruses = new TreeMap<Integer,SortedSet<Integer>>();
-		
+	private static SortedMap<Integer,SortedSet<Integer>> findCandidateRepeatsStartingAt(int startPos, int[][] binary_matrix, SortedMap<Integer, SortedMap<Integer, SortedSet<Integer>>> allCandidateChoruses) {
+		SortedMap<Integer, SortedSet<Integer>> candidateRepeats = new TreeMap<Integer,SortedSet<Integer>>();
+
 		boolean prevLineWasARepeat = false; // keep track of if we've skipped a line that wasn't marked as repetitive
 		int[] currentRow;
 		int matchingLoc;
-		Map<Integer, SortedSet<Integer>> candidateChorusesForMatchingLoc;
-		SortedSet<Integer> candidateChorusesForMatchingLocOfSameSize;
-		SortedSet<Integer> candidateChorusesForLen;
+		SortedMap<Integer, SortedSet<Integer>> candidateRepeatsForMatchingLoc;
+		SortedSet<Integer> candidateRepeatsForMatchingLocOfSameSize;
+		SortedSet<Integer> candidateRepeatsForLen;
 		// for each row of the matrix
 		for (int offset = 0; offset < binary_matrix.length; offset++) {
 			currentRow = binary_matrix[offset];
@@ -360,8 +372,8 @@ public class SegmentStructureAnalyzer {
 			} else if (currentRow[startPos] != 1) { // can't be a candidate at this offset because lines at this offset don't match
 				continue;
 			}
-			
-			
+
+
 			// for each potential chorus length
 			for (int candidateLen = 1; candidateLen <= currentRow.length - startPos; candidateLen++) {
 				if (currentRow[startPos+candidateLen-1] != 1) { // not a repeat
@@ -374,36 +386,40 @@ public class SegmentStructureAnalyzer {
 				} else {
 					prevLineWasARepeat = true;
 				}
-				
-				candidateChorusesForLen = candidateChoruses.get(candidateLen);
-				if (candidateChorusesForLen == null) {
-					candidateChorusesForLen = new TreeSet<Integer>();
-					candidateChoruses.put(candidateLen, candidateChorusesForLen);
-					candidateChorusesForLen.add(startPos);
+
+				candidateRepeatsForLen = candidateRepeats.get(candidateLen);
+				if (candidateRepeatsForLen == null) {
+					candidateRepeatsForLen = new TreeSet<Integer>();
+					candidateRepeats.put(candidateLen, candidateRepeatsForLen);
+					candidateRepeatsForLen.add(startPos);
 				} else {
-					candidateChorusesForLen = candidateChoruses.get(candidateLen);
+					candidateRepeatsForLen = candidateRepeats.get(candidateLen);
 				}
-				
+
 				matchingLoc = startPos+offset + 1;
 				// add the new instance of the repetition
 				// add the matching location
-				candidateChorusesForLen.add(matchingLoc);
-				
+				candidateRepeatsForLen.add(matchingLoc);
+
 				// assume that the matching location doesn't know about this match
-				candidateChorusesForMatchingLoc = allCandidateChoruses.get(matchingLoc);
-				candidateChorusesForMatchingLocOfSameSize = candidateChorusesForMatchingLoc.get(candidateLen);
-				if (candidateChorusesForMatchingLocOfSameSize == null) {
-					candidateChorusesForMatchingLocOfSameSize = new TreeSet<Integer>();
-					candidateChorusesForMatchingLoc.put(candidateLen, candidateChorusesForMatchingLocOfSameSize);
-					candidateChorusesForMatchingLocOfSameSize.add(matchingLoc);
+				candidateRepeatsForMatchingLoc = allCandidateChoruses.get(matchingLoc);
+				if (candidateRepeatsForMatchingLoc == null) {
+					candidateRepeatsForMatchingLoc = new TreeMap<Integer, SortedSet<Integer>>(); 
+					allCandidateChoruses.put(matchingLoc, candidateRepeatsForMatchingLoc);
 				}
-				candidateChorusesForMatchingLocOfSameSize.add(startPos);
-				
+				candidateRepeatsForMatchingLocOfSameSize = candidateRepeatsForMatchingLoc.get(candidateLen);
+				if (candidateRepeatsForMatchingLocOfSameSize == null) {
+					candidateRepeatsForMatchingLocOfSameSize = new TreeSet<Integer>();
+					candidateRepeatsForMatchingLoc.put(candidateLen, candidateRepeatsForMatchingLocOfSameSize);
+					candidateRepeatsForMatchingLocOfSameSize.add(matchingLoc);
+				}
+				candidateRepeatsForMatchingLocOfSameSize.add(startPos);
+
 			}
 
 		}
-				
-		return candidateChoruses;
+
+		return candidateRepeats;
 	}
 
 	/** Each value v (associated with key k) in the returned map will be a candidate chorus which starts at startPos and has a length of k lines
@@ -419,7 +435,7 @@ public class SegmentStructureAnalyzer {
 	 */
 	private static Map<Integer,Set<Integer>> findCandidateChorusesViaCircularizationStartingAt(int startPos, int[][] binary_matrix, Map<Integer, Map<Integer, Set<Integer>>> allCandidateChoruses) {
 		Map<Integer, Set<Integer>> candidateChoruses = new TreeMap<Integer,Set<Integer>>();
-		
+
 		boolean prevLineWasARepeat = false; // keep track of if we've skipped a line that wasn't marked as repetitive
 		int[] currentRow;
 		int matchingLoc;
@@ -434,7 +450,7 @@ public class SegmentStructureAnalyzer {
 			} else if (currentRow[startPos] != 1) { // can't be a candidate at this offset because lines at this offset don't match
 				continue;
 			}
-			
+
 			// for each potential chorus length
 			for (int candidateLen = 1; candidateLen <= currentRow.length - startPos; candidateLen++) {
 				if (currentRow[startPos+candidateLen-1] != 1) { // not a repeat
@@ -447,7 +463,7 @@ public class SegmentStructureAnalyzer {
 				} else {
 					prevLineWasARepeat = true;
 				}
-				
+
 				candidateChorusForLen = candidateChoruses.get(candidateLen);
 				if (candidateChorusForLen == null) {
 					candidateChorusForLen = new HashSet<Integer>();
@@ -458,7 +474,7 @@ public class SegmentStructureAnalyzer {
 				}
 				matchingLoc = startPos+offset + 1;
 				// add the new instance of the repetition
-				
+
 				// and if the matching location already is a matching candidate chorus of the same length
 				candidateChorusesForMatchingLoc = allCandidateChoruses.get(matchingLoc);
 				candidateChorusesForMatchingLocOfSameSize = null;
@@ -472,10 +488,10 @@ public class SegmentStructureAnalyzer {
 					// otherwise just add the matching location
 					candidateChorusForLen.add(matchingLoc);
 				}
-				
+
 			}
 		}
-		
+
 		return candidateChoruses;
 	}
 
@@ -489,65 +505,65 @@ public class SegmentStructureAnalyzer {
 			int lastLyricLine) {
 		int [][] binary_matrix = new int[(lastLyricLine+1-firstLyricLine-MIN_DIST_BETWEEN_CHORUSES)][]; 
 		int [] currentRow;
-		
+
 		int longest_diagonal = 1;
 		Set<Integer> end_pts = new HashSet<Integer>();
-		
+
 		int curr_diagonal, line_i_idx, line_j_idx;
 		double score;
 		String line_i, line_j;
 		Alignment aln;
-		
+
 		SequencePair.setCosts(1, -1, -1, 0);
-		
+
 		for (int offset = 0; offset < binary_matrix.length; offset++) {
 			currentRow = new int[(lastLyricLine+1-firstLyricLine-MIN_DIST_BETWEEN_CHORUSES) - offset];
 			binary_matrix[offset] = currentRow;
-			
+
 			curr_diagonal = 0;
 			for (int idx = 0; idx < currentRow.length; idx++) {
 				line_i_idx = idx + firstLyricLine; // we're not aligning intro or outro lines so we have to account for the offset due to the intro
 				line_j_idx = line_i_idx + offset + MIN_DIST_BETWEEN_CHORUSES;
-			    line_i = words.get(line_i_idx);
+				line_i = words.get(line_i_idx);
 				line_j = words.get(line_j_idx);
-//				System.out.println("LINE i: " + line_i_idx + " " + line_i);
-//				System.out.println("LINE j: " + line_j_idx + " " + line_j);
+				//				System.out.println("LINE i: " + line_i_idx + " " + line_i);
+				//				System.out.println("LINE j: " + line_j_idx + " " + line_j);
 
-	            if (line_i.length() == 0 || line_j.length() == 0) {
-	                curr_diagonal ++;
-	                continue;
-	            }
+				if (line_i.length() == 0 || line_j.length() == 0) {
+					curr_diagonal ++;
+					continue;
+				}
 
-	            aln = Aligner.alignNW(new StringPair(line_i,line_j));
-	            score = aln.getFinalScore();
-	            		
-	            score /= (double) Math.min(line_i.length(),line_j.length());
+				aln = Aligner.alignNW(new StringPair(line_i,line_j));
+				score = aln.getFinalScore();
 
-	            if (score > SIMILARITY_THRESH) {
-	            	currentRow[idx] = 1;
-	                curr_diagonal++;
-	                if (curr_diagonal == longest_diagonal) {
-	                    end_pts.add(line_i_idx);
-	                    end_pts.add(line_j_idx);
-	                } else if (curr_diagonal > longest_diagonal) {
-	                    longest_diagonal = curr_diagonal;
-	                    end_pts.clear();
-	                    end_pts.add(line_i_idx);
-	                    end_pts.add(line_j_idx);
-	                }
-	            } else {
-	                curr_diagonal = 0;
-	            }
+				score /= (double) Math.min(line_i.length(),line_j.length());
+
+				if (score > SIMILARITY_THRESH) {
+					currentRow[idx] = 1;
+					curr_diagonal++;
+					if (curr_diagonal == longest_diagonal) {
+						end_pts.add(line_i_idx);
+						end_pts.add(line_j_idx);
+					} else if (curr_diagonal > longest_diagonal) {
+						longest_diagonal = curr_diagonal;
+						end_pts.clear();
+						end_pts.add(line_i_idx);
+						end_pts.add(line_j_idx);
+					}
+				} else {
+					curr_diagonal = 0;
+				}
 			}
 		}
-		
+
 		for (Integer end_pt : end_pts) {
 			end_pt++;
 			for (int idx = 0; idx < longest_diagonal; idx++) {
 				structure[end_pt - longest_diagonal + idx] = 'C';
 			}
 		}
-		
+
 		Utils.print2DMatrixInt(binary_matrix);
 	}
 
@@ -561,22 +577,22 @@ public class SegmentStructureAnalyzer {
 			int lastLyricLine) {
 		int [][] binary_matrix = new int[(lastLyricLine+1-firstLyricLine-MIN_DIST_BETWEEN_CHORUSES)][]; 
 		int [] currentRow;
-		
+
 		int highest_diagonal_score = 0;
 		double score;
 		SortedMap<Integer, Pair<Integer, Integer>> candidate_chorus_end_indices = new TreeMap<Integer, Pair<Integer, Integer>>();
-		
+
 		int curr_diagonal_score, curr_diagonal_length, line_i_idx, line_j_idx;
 		String line_i, line_j;
 		Alignment aln;
-		
+
 		SequencePair.setCosts(1, -1, -1, -1);
 		Aligner.setMinPercOverlap(.5);
-		
+
 		for (int offset = 0; offset < binary_matrix.length; offset++) {
 			currentRow = new int[(lastLyricLine+1-firstLyricLine-MIN_DIST_BETWEEN_CHORUSES) - offset];
 			binary_matrix[offset] = currentRow;
-			
+
 			curr_diagonal_score = 0;
 			curr_diagonal_length = 0;
 			for (int idx = 0; idx < currentRow.length; idx++) {
@@ -584,27 +600,27 @@ public class SegmentStructureAnalyzer {
 				line_j_idx = line_i_idx + offset + MIN_DIST_BETWEEN_CHORUSES;
 				line_i = words.get(line_i_idx);
 				line_j = words.get(line_j_idx);
-//				System.out.println("LINE i: " + line_i_idx + " " + line_i);
-//				System.out.println("LINE j: " + line_j_idx + " " + line_j);
-				
+				//				System.out.println("LINE i: " + line_i_idx + " " + line_i);
+				//				System.out.println("LINE j: " + line_j_idx + " " + line_j);
+
 				if (line_i.length() == 0 || line_j.length() == 0) {
 					curr_diagonal_length++;
 					continue;
 				}
-				
+
 				aln = Aligner.alignNW(new StringPair(line_i,line_j));
 				score = aln.getFinalScore();
 				System.out.println(aln);
-				
+
 				curr_diagonal_score += score;
 				curr_diagonal_length++;
 				if (curr_diagonal_score < 0) {
 					curr_diagonal_score = 0;
 					curr_diagonal_length = 0;
 				}
-				
+
 				currentRow[idx] = curr_diagonal_score;
-				
+
 				if (curr_diagonal_score > highest_diagonal_score * SIMILARITY_THRESH) {
 					if (curr_diagonal_score > highest_diagonal_score) {
 						System.out.println("NEW LONGEST");
@@ -614,17 +630,17 @@ public class SegmentStructureAnalyzer {
 							candidate_chorus_end_indices.get(line_i_idx).getFirst() < curr_diagonal_score) {
 						candidate_chorus_end_indices.put(line_i_idx, new Pair<Integer, Integer>(curr_diagonal_score, curr_diagonal_length));
 					}
-					
+
 					if (!candidate_chorus_end_indices.containsKey(line_j_idx) ||
 							candidate_chorus_end_indices.get(line_j_idx).getFirst() < curr_diagonal_score) {
 						candidate_chorus_end_indices.put(line_j_idx, new Pair<Integer, Integer>(curr_diagonal_score, curr_diagonal_length));
 					}
 					System.out.println("CANDIDATE FOR LONGEST");
 				}
-				
+
 			}
 		}
-		
+
 		Pair<Integer, Integer> score_length;
 		int length;
 		for (Integer end_idx : candidate_chorus_end_indices.keySet()) {
@@ -640,7 +656,7 @@ public class SegmentStructureAnalyzer {
 			}
 		}
 		System.out.println("High Score: " + highest_diagonal_score);
-		
+
 		Utils.print2DMatrixInt(binary_matrix);
 	}
 
@@ -684,7 +700,7 @@ public class SegmentStructureAnalyzer {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

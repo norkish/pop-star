@@ -2,6 +2,7 @@ package validate;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -15,6 +16,7 @@ import raw.LyricSheet;
 import raw.RawDataLoader;
 import rhyme.RhymeStructureAnalyzer;
 import structure.SegmentStructureAnalyzer;
+import tab.CompletedTab;
 import utils.Pair;
 import utils.Utils;
 
@@ -23,8 +25,9 @@ public class TabValidator {
 	/**
 	 * @param lyricSheetsByArtist
 	 * @param chordSheetsByArtist
+	 * @return 
 	 */
-	public static void validateTabs(Map<String, Map<String, List<LyricSheet>>> lyricSheetsByArtist,
+	public static List<CompletedTab> validateTabs(Map<String, Map<String, List<LyricSheet>>> lyricSheetsByArtist,
 			Map<String, Map<String, List<ChordSheet>>> chordSheetsByArtist) {
 		
 		Map<String, List<LyricSheet>> lyricSheetsForArtist;
@@ -43,6 +46,8 @@ public class TabValidator {
 		Aligner.setMinPercOverlap(.7);
 		SequencePair.setCosts(1,-1, 0,0);
 		
+		List<CompletedTab> completedTabs = new ArrayList<CompletedTab>();
+		CompletedTab tabComplete;
 		for (String artist : chordSheetsByArtist.keySet()) {
 			lyricSheetsForArtist = lyricSheetsByArtist.get(artist);
 			if (lyricSheetsForArtist == null) continue;
@@ -86,10 +91,13 @@ public class TabValidator {
 					for (int i = 0; i < structure.length; i++) {
 						System.out.println("" + i + "\t" + structure[i] + "\t" + scheme[i] + "\t" + words.get(i));
 					}
-					Utils.promptEnterKey("");
+					
+					tabComplete = new CompletedTab(words,chords,scheme,structure);
+					completedTabs.add(tabComplete);
 				}
 			}
 		}
+		return completedTabs;
 	}
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException {

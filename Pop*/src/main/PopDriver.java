@@ -5,7 +5,7 @@ import composition.Composition;
 /*
  * Generates a new song inspired from a system-selected inspiring idea
  */
-public class Driver {
+public class PopDriver {
 	public static void main(String[] args)
 	{
 		ProgramArgs.loadProgramArgs(args);

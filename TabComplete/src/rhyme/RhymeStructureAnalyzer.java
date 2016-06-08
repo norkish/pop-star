@@ -39,8 +39,23 @@ public class RhymeStructureAnalyzer {
 		int lineCount = words.size();
 		List<List<StressedPhone[]>> wordsPhones = new ArrayList<List<StressedPhone[]>>();
 		
+		String line;
+		int spacePos, secondSpacePos;
+		// for each line, store the syllables for the last few words
 		for (int i = 0; i < lineCount; i++) {
-			wordsPhones.add(Phonetecizer.getPhones(words.get(i)));
+			line = words.get(i);
+			spacePos = line.lastIndexOf(" ");
+			if (spacePos != -1) {
+				secondSpacePos = line.lastIndexOf(" ", spacePos);
+				if (secondSpacePos != -1)
+				{
+					wordsPhones.add(Phonetecizer.getPhones(line.substring(secondSpacePos)));
+				} else {
+					wordsPhones.add(Phonetecizer.getPhones(line.substring(spacePos)));
+				}
+			} else {
+				wordsPhones.add(Phonetecizer.getPhones(line));
+			}
 		}
 		
 		char groupCounter = 'A', currGroup;
