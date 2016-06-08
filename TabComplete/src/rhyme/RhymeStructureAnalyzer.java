@@ -33,7 +33,7 @@ public class RhymeStructureAnalyzer {
 	 * of the LOOKAHEAD lines following line i, j[0] was the highest matching rhyme 
 	 * above THRESHOLD and j[1] syllables matched
 	 */
-	public static char[] extractRhymeScheme(List<String> words) {
+	public static int[] extractRhymeScheme(List<String> words) {
 		// For each line we want to return the number of syllables in the line 
 		// and any rhyming information
 		int lineCount = words.size();
@@ -58,8 +58,8 @@ public class RhymeStructureAnalyzer {
 			}
 		}
 		
-		char groupCounter = 'A', currGroup;
-		char[] scheme = new char[lineCount];
+		int[] scheme = new int[lineCount];
+		Arrays.fill(scheme, -1);
 		
 		List<StressedPhone[]> line1Phones, line2Phones;
 		double rhymeScore, maxRhymeScoreForLine, maxRhymeScoreForLines;
@@ -67,19 +67,11 @@ public class RhymeStructureAnalyzer {
 		for (int i = 0; i < lineCount; i++) {
 			line1Phones = wordsPhones.get(i);
 			if (line1Phones == null){
-				scheme[i] = '\0';
 				continue;
-			}
-			else {
-				currGroup = scheme[i];
-				if(currGroup == '\0') {
-					currGroup = groupCounter++;
-					scheme[i] = currGroup;
-				}
 			}
 //			System.out.println("COMPUTING RHYME SCORES FOR LINE:");
 			System.out.print(i + "\t");
-			System.out.print(currGroup + "\t");
+			System.out.print(scheme[i] + "\t");
 			System.out.print(words.get(i) + "\t");
 			maxRhymeScoreForLines = -1.0;
 			for (int j = i+1; j < Math.min(i+LOOKAHEAD+1, lineCount); j++) {
@@ -104,7 +96,7 @@ public class RhymeStructureAnalyzer {
 			}
 			
 			if(maxRhymeScoreForLines >= MATCHING_LINE_THRESHOLD) {
-				scheme[maxJ] = currGroup;
+				scheme[maxJ] = i;
 				System.out.print(maxRhymeScoreForLines + "\t" + maxJ);
 			}
 			System.out.println();

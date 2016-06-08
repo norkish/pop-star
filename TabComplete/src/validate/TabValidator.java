@@ -84,9 +84,9 @@ public class TabValidator {
 						System.out.println(words.get(i));
 					}
 					
-					char[] scheme = RhymeStructureAnalyzer.extractRhymeScheme(words);
+					int[] scheme = RhymeStructureAnalyzer.extractRhymeScheme(words);
 					
-					char[] structure = SegmentStructureAnalyzer.extractSegmentStructure(words, chords, scheme);
+					char[] structure = SegmentStructureAnalyzer.extractSegmentStructure(words, chords);
 					
 					for (int i = 0; i < structure.length; i++) {
 						System.out.println("" + i + "\t" + structure[i] + "\t" + scheme[i] + "\t" + words.get(i));

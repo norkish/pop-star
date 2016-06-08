@@ -37,7 +37,7 @@ public class SegmentStructureAnalyzer {
 	private static final int MIN_CHORUS_COUNT = 2;
 	private static final int MAX_CHORUS_COUNT = 7;
 
-	public static char[] extractSegmentStructure(List<String> words, List<SortedMap<Integer, Chord>> chords, char[] scheme) {
+	public static char[] extractSegmentStructure(List<String> words, List<SortedMap<Integer, Chord>> chords) {
 		int lineCount = words.size();
 
 		char[] structure = new char[lineCount];
@@ -57,7 +57,7 @@ public class SegmentStructureAnalyzer {
 		//		extractChorusViaBinaryAln(words, structure, firstLyricLine, lastLyricLine);
 		//		extractChorusViaRawScoreAln(words, structure, firstLyricLine, lastLyricLine);
 		System.out.println("IDENITIFYING VERSES");
-		extractVerse(chords, structure, firstLyricLine, lastLyricLine, scheme);
+		extractVerse(chords, structure, firstLyricLine, lastLyricLine);
 
 		fillInBridgesAndIntroOutro(structure);
 
@@ -103,7 +103,7 @@ public class SegmentStructureAnalyzer {
 	 * @param scheme
 	 */
 	private static void extractVerse(List<SortedMap<Integer, Chord>> chords, char[] structure, int firstLyricLine,
-			int lastLyricLine, char[] scheme) {
+			int lastLyricLine) {
 		// TODO Auto-generated method stub
 		int [][] binary_matrix = new int[(lastLyricLine+1-firstLyricLine-MIN_DIST_BETWEEN_CHORUSES)][]; 
 		int [] currentRow;
