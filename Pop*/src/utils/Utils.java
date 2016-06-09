@@ -86,16 +86,16 @@ public class Utils {
 		return posStr + " position";
 	}
 
-	public static Map<String, Integer> sort(Map<String, Integer> unsortMap, final boolean order)
+	public static <T extends Comparable<T>> Map<T, Integer> sort(Map<T, Integer> unsortMap, final boolean order)
     {
 
-        List<Entry<String, Integer>> list = new LinkedList<Entry<String, Integer>>(unsortMap.entrySet());
+        List<Entry<T, Integer>> list = new LinkedList<Entry<T, Integer>>(unsortMap.entrySet());
 
         // Sorting the list based on values
-        Collections.sort(list, new Comparator<Entry<String, Integer>>()
+        Collections.sort(list, new Comparator<Entry<T, Integer>>()
         {
-            public int compare(Entry<String, Integer> o1,
-                    Entry<String, Integer> o2)
+            public int compare(Entry<T, Integer> o1,
+                    Entry<T, Integer> o2)
             {
                 if (order)
                 {
@@ -110,8 +110,8 @@ public class Utils {
         });
 
         // Maintaining insertion order with the help of LinkedList
-        Map<String, Integer> sortedMap = new LinkedHashMap<String, Integer>();
-        for (Entry<String, Integer> entry : list)
+        Map<T, Integer> sortedMap = new LinkedHashMap<T, Integer>();
+        for (Entry<T, Integer> entry : list)
         {
             sortedMap.put(entry.getKey(), entry.getValue());
         }

@@ -6,13 +6,16 @@ import java.util.Random;
 public class Distribution<T> {
 
 	private Map<T, Integer> distribution;
-	private int accumulatedCount;
+	private int accumulatedCount = 0;
 	
 	private static Random rand = new Random();
 
-	public Distribution(Map<T, Integer> distribution, int accumulatedCount) {
+	public Distribution(Map<T, Integer> distribution) {
 		this.distribution = distribution;
-		this.accumulatedCount = accumulatedCount;
+		for (Integer i : distribution.values()) {
+			accumulatedCount += i;
+		}
+		
 	}
 
 	public T sampleRandomly() {
@@ -27,7 +30,6 @@ public class Distribution<T> {
 			}
 		}
 		
-		assert(false);
 		return null;
 	}
 	

@@ -46,20 +46,20 @@ public class SegmentSubstructure {
 		}
 	}
 
-	public void addLyricConstraint(int lineNum, Constraint<Lyric> delayedMatchConstraint) {
-		lyricConstraints.get(lineNum).add(delayedMatchConstraint);
+	public void addLyricConstraint(int lineNum, Constraint<Lyric> constraint) {
+		lyricConstraints.get(lineNum).add(constraint);
 	}
 	
-	public void addChordConstraint(int lineNum, Constraint<Chord> delayedMatchConstraint) {
-		chordConstraints.get(lineNum).add(delayedMatchConstraint);
+	public void addChordConstraint(int lineNum, Constraint<Chord> constraint) {
+		chordConstraints.get(lineNum).add(constraint);
 	}
 	
-	public void addRhythmConstraint(int lineNum, Constraint<RhythmSegment> delayedMatchConstraint) {
-		rhythmConstraints.get(lineNum).add(delayedMatchConstraint);
+	public void addRhythmConstraint(int lineNum, Constraint<RhythmSegment> constraint) {
+		rhythmConstraints.get(lineNum).add(constraint);
 	}
 	
-	public void addPitchConstraint(int lineNum, Constraint<Pitch> delayedMatchConstraint) {
-		pitchConstraints.get(lineNum).add(delayedMatchConstraint);
+	public void addPitchConstraint(int lineNum, Constraint<Pitch> constraint) {
+		pitchConstraints.get(lineNum).add(constraint);
 	}
 
 	public String toString()
