@@ -1,11 +1,13 @@
 package tab;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.SortedMap;
 
 import harmony.Chord;
 
-public class CompletedTab {
+@SuppressWarnings("serial")
+public class CompletedTab implements Serializable {
 
 	public List<String> words;
 	public List<SortedMap<Integer, Chord>> chords;
@@ -17,6 +19,14 @@ public class CompletedTab {
 		this.chords = chords;
 		this.scheme = scheme;
 		this.structure = structure;
+	}
+
+	public int length() {
+		return scheme.length;
+	}
+
+	public char segmentLabelAt(int i) {
+		return structure[i];
 	}
 
 }

@@ -20,6 +20,7 @@ public class TabDriver {
 	private static String serializedDataDir = "/Users/norkish/Archive/2015_BYU/ComputationalCreativity/data/ser";
 	private static String serializedLyrics = serializedDataDir + "/lyrics.ser";
 	private static String serializedTabs = serializedDataDir + "/tabs.ser";
+	private static String serializedCompleteTabs = serializedDataDir + "/complete_tabs.ser";
 	
 	public static void main(String[] args) throws IOException {
 		
@@ -35,6 +36,7 @@ public class TabDriver {
 	public static List<CompletedTab> loadValidatedTabs() {
 		Map<String, Map<String, List<LyricSheet>>> lyricSheets = null;
 		Map<String, Map<String, List<ChordSheet>>> chordSheets = null;
+		List<CompletedTab> validatedTabs = null;
 		try {
 			lyricSheets = (deserialize? (Map<String, Map<String, List<LyricSheet>>>) Serializer.load(serializedLyrics): RawDataLoader.loadLyricSheets());
 			if (lyricSheets == null) return null;
@@ -64,11 +66,14 @@ public class TabDriver {
 	//		}
 	//		Utils.promptEnterKey("");
 			
+			validatedTabs = (deserialize? (List<CompletedTab>) Serializer.load(serializedCompleteTabs) : TabValidator.validateTabs(lyricSheets, chordSheets));
+			if(!deserialize && serialize) {
+				Serializer.serialize(validatedTabs, serializedCompleteTabs);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(-1);
 		}
-		List<CompletedTab> validatedTabs = TabValidator.validateTabs(lyricSheets, chordSheets);
 		return validatedTabs;
 	}
 }
