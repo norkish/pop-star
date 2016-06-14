@@ -19,8 +19,8 @@ import alignment.ChordSequencePair;
 import alignment.SequencePair;
 import alignment.StringPair;
 import harmony.Chord;
+import tabutils.Utils;
 import utils.Pair;
-import utils.Utils;
 
 /**
  * @author norkish
@@ -59,12 +59,12 @@ public class SegmentStructureAnalyzer {
 		System.out.println("IDENITIFYING VERSES");
 		extractVerse(chords, structure, firstLyricLine, lastLyricLine);
 
-		fillInBridgesAndIntroOutro(structure);
+		fillInBridgesInterludesAndIntroOutro(structure, words);
 
 		return structure;
 	}
 
-	private static void fillInBridgesAndIntroOutro(char[] structure) {
+	private static void fillInBridgesInterludesAndIntroOutro(char[] structure, List<String> words) {
 		int i;
 		for (i = 0; i < structure.length; i++) {
 			if(structure[i] == '\0') {
@@ -88,7 +88,11 @@ public class SegmentStructureAnalyzer {
 
 		for (int b = i; b < o; b++) {
 			if(structure[b] == '\0') {
-				structure[b] = 'B';
+				if (words.get(b).length() > 0) {
+					structure[b] = 'B';
+				} else { 
+					structure[b] = 'N';
+				}
 			}
 		}
 	}

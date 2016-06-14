@@ -17,8 +17,8 @@ import org.apache.commons.lang3.StringUtils;
 import alignment.SequencePair.AlignmentBuilder;
 import raw.LyricSheet;
 import raw.RawDataLoader;
-import utils.StopWatch;
-import utils.Utils;
+import tabutils.StopWatch;
+import tabutils.Utils;
 
 /**
  * @author norkish

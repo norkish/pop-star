@@ -20,6 +20,7 @@ import org.jsoup.parser.Parser;
 
 import alignment.Aligner;
 import alignment.SequencePair.AlignmentBuilder;
+import filter.DirtyFilter;
 import alignment.XGenericPairwiseAlignment;
 import alignment.StringPair;
 import alignment.StringPairAlignment;
@@ -27,10 +28,15 @@ import harmony.Chord;
 import harmony.Chord.ChordQuality;
 import normalize.ChordNormalizer;
 import pitch.Pitch;
+import tabutils.Utils;
 import utils.Pair;
-import utils.Utils;
 
 public class ChordSheet implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	private static final boolean DEBUG = false;
 
 	static int barRepeatsTot = 0;
@@ -61,7 +67,7 @@ public class ChordSheet implements Serializable {
 	private String type;
 	private String rating;
 	private String difficulty;
-	private String key;
+	private int key;
 	private List<List<String>> lyricBlocks = new ArrayList<List<String>>();
 	private List<List<SortedMap<Integer, Chord>>> chordBlocks = new ArrayList<List<SortedMap<Integer, Chord>>>();
 	private List<Integer> lostCharacters = new ArrayList<Integer>();
@@ -77,6 +83,8 @@ public class ChordSheet implements Serializable {
 
 	// Pattern looks for all chars ≠ "<" up to <u>...</u> and then all chars ≠ "<"
 	private Pattern markedChordPattern = Pattern.compile("([^<]*)?(<u>([^>]*?)</u>)?([^<]*)");
+
+	private static int chordSheetsIgnoredBecauseOfLanguage = 0;
 
 	public ChordSheet(CSVRecord csvRecord, String artistName, boolean ug) {
 		this.artist = artistName;
@@ -138,19 +146,25 @@ public class ChordSheet implements Serializable {
 			}
 		}
 
+		if (DirtyFilter.isProfane(rawTab)){
+			chordSheetsIgnoredBecauseOfLanguage++;
+			System.out.println("Ignoring " + this.url + " for explicit language");
+			return;
+		}
+		
 		parseTab(rawTab);
 
 		this.title = Utils.removeParen(this.title).trim();
 
 		this.difficulty = csvRecord.get(DIFFICULTY_COL).trim();
-		this.key = csvRecord.get(KEY_COL);
+		this.key = Pitch.getPitchValue(csvRecord.get(KEY_COL));
 		this.contributor = csvRecord.get(CONTRIBUTOR_COL).trim();
 
-		normalizeChords(Pitch.getPitchValue(key));
+		this.key = normalizeChords(this.key);
 	}
 
-	private void normalizeChords(int key) {
-		ChordNormalizer.normalize(chordBlocks,key);
+	private int normalizeChords(int key) {
+		return ChordNormalizer.normalize(chordBlocks,key);
 	}
 
 	private static void removeComments(Node node) {
@@ -790,6 +804,7 @@ public class ChordSheet implements Serializable {
 		str.append("singleBlockTabs = " + singleBlockTabsTot + "\n");
 		str.append("blocksWithRoleIndicated = " + blocksWithRoleIndicatedTot + "\n");
 		str.append("tabsWithChorusMarked = " + tabsWithChorusMarkedTot + "\n");
+		str.append("chordSheetsIgnoredBecauseOfLanguage = " + chordSheetsIgnoredBecauseOfLanguage + "\n");
 
 		return str.toString();
 	}
@@ -958,5 +973,9 @@ public class ChordSheet implements Serializable {
 		System.out.println("Of " + consensus.length() + " chars, " + lyricCharMatchCount + " were matched by the tab");
 		
 		return new Pair<List<SortedMap<Integer, Chord>>, List<String>>(finalTabChords, finalTabLyrics);
+	}
+
+	public int getKey() {
+		return key;
 	}
 }

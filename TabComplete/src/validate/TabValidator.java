@@ -17,8 +17,8 @@ import raw.RawDataLoader;
 import rhyme.RhymeStructureAnalyzer;
 import structure.SegmentStructureAnalyzer;
 import tab.CompletedTab;
+import tabutils.Utils;
 import utils.Pair;
-import utils.Utils;
 
 public class TabValidator {
 
@@ -92,7 +92,7 @@ public class TabValidator {
 						System.out.println("" + i + "\t" + structure[i] + "\t" + scheme[i] + "\t" + words.get(i));
 					}
 					
-					tabComplete = new CompletedTab(words,chords,scheme,structure);
+					tabComplete = new CompletedTab(chordSheet.getKey(), words,chords,scheme,structure);
 					completedTabs.add(tabComplete);
 				}
 			}

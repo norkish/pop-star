@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -133,22 +134,33 @@ public class Phonetecizer {
 	public static void main(String[] args) throws IOException {
 		System.out.println("Loading CMU...");
 		Phonetecizer.loadCMUDict();
+		String[] tests = new String[]{"Hey, wind, oh","Hey, wind,", "aw","","aw, aw, aw,"};
 		
-//		for (String string : cmuDict.keySet()) {
-//			List<StressedPhone[]> list = cmuDict.get(string);
-//				System.out.println(string + " has " + list.size() + " pronunciations:");
-//				paths = converter.phoneticize(string,3);
-//				for (int i = 0; i < list.size(); i++) {
-//					System.out.println("\t\t" + Arrays.toString(readable(list.get(i))));
-//				}
-//				System.out.println("\tCOMPARED WITH:");
-//				for(Path path: paths){
-//					System.out.println("\t\t"+ path.getPath());
-//				}
-//		}
-//		
+		for (int k = 0; k < tests.length; k++) {
+			for (int j = 0; j < 5; j++) {
+				System.out.println("Getting last " + j + " syllables of " + tests[k]);
+				List<StressedPhone[]> phones = getPhonesForXLastSyllables(tests[k], j);
+				for (StressedPhone[] stressedPhones : phones) {
+					System.out.println("\t" + Arrays.toString(readable(stressedPhones)));
+				}
+			}
+		}
 		
-		String[] tests = new String[]{"Potatoes, tomatoes, windy","hey-you, i.o.u. nu__in","namaste","schtoikandikes","lichtenstein","avadacadabrax"};
+		for (String string : cmuDict.keySet()) {
+			List<StressedPhone[]> list = cmuDict.get(string);
+				System.out.println(string + " has " + list.size() + " pronunciations:");
+				ArrayList<Path> paths = converter.phoneticize(string,3);
+				for (int i = 0; i < list.size(); i++) {
+					System.out.println("\t\t" + Arrays.toString(readable(list.get(i))));
+				}
+				System.out.println("\tCOMPARED WITH:");
+				for(Path path: paths){
+					System.out.println("\t\t"+ path.getPath());
+				}
+		}
+		
+		
+		tests = new String[]{"Potatoes, tomatoes, windy","hey-you, i.o.u. nu__in","namaste","schtoikandikes","lichtenstein","avadacadabrax"};
 		for (String test : tests) {
 			System.out.println("Pronunciation for \"" + test + "\"");
 			List<StressedPhone[]> phones = getPhones(test);
@@ -230,19 +242,89 @@ public class Phonetecizer {
 		return returnVal;
 	}
 	
-	public static List<StressedPhone[]> getPhonesForLastSyllables(String string, int num) {
-		List<StressedPhone[]> phones = getPhones(string);
-		return getPhonesForLastSyllables(phones, num);
-	}
-
-	private static List<StressedPhone[]> getPhonesForLastSyllables(List<StressedPhone[]> phones, int num) {
-		List<StressedPhone[]> newPhones = new ArrayList<StressedPhone[]>();
+	public static List<StressedPhone[]> getPhonesForXLastSyllables(String string, int num) {
+		if (num == 0 || string.length() == 0)
+			return new ArrayList<StressedPhone[]>();
 		
-		for (StressedPhone[] stressedPhones : phones) {
-			newPhones.add(getPhonesForLastSyllables(stressedPhones, num));
+		List<StressedPhone[]> returnList = new ArrayList<StressedPhone[]>(), pronunciationChoices;
+		Map<StressedPhone[],Integer> prevPhones = null, nextPhones = null;
+		String[] words = string.toUpperCase().trim().split("[^A-Z0-9']+");
+		int vowelCount, vowelCountForPrevPhone, start;
+		String s;
+		for (int i = words.length-1; i >= 0; i--) {
+			s = words[i];
+			if (s.length() == 0 || stopRhymes.contains(s)) continue;
+			pronunciationChoices = cmuDict.get(s);
+			
+			if (pronunciationChoices == null) {
+				pronunciationChoices = new ArrayList<StressedPhone[]>();
+				for(Path path: converter.phoneticize(s.replaceAll("[^A-Z0-9]", " "),3)) {
+					pronunciationChoices.add(parse(path));
+				}
+			}
+			
+			if (prevPhones == null) { // if this is the first word
+				nextPhones = new HashMap<StressedPhone[],Integer>();
+				// go through each pronunciation and 
+				for (StressedPhone[] phones: pronunciationChoices) {
+					vowelCount = 0;
+					start = phones.length;
+					while (vowelCount < num && start > 0) {
+						if (reversePhonesDict.get(phones[--start].phone).getSecond() == PhoneCategory.vowel) {
+							vowelCount++;
+							if (vowelCount == num) {
+								break;
+							}
+						}
+					}
+					//if it has sufficient syllables, 
+					if (vowelCount == num) {
+						// add it to the return list
+						returnList.add(Arrays.copyOfRange(phones, start, phones.length));
+					} else {
+						// otherwise it will be extended
+						nextPhones.put(phones,vowelCount);
+					}
+				}
+			} else {
+				nextPhones = new HashMap<StressedPhone[], Integer>();
+				for (Entry<StressedPhone[],Integer> prevPhone : prevPhones.entrySet()) {
+					vowelCountForPrevPhone = prevPhone.getValue();
+					for (StressedPhone[] pronunciationChoice: pronunciationChoices) {
+						vowelCount = 0;
+						start = pronunciationChoice.length;
+						while (vowelCount < num && start > 0) {
+							if (reversePhonesDict.get(pronunciationChoice[--start].phone).getSecond() == PhoneCategory.vowel) {
+								vowelCount++;
+								if (vowelCount + vowelCountForPrevPhone == num) {
+									break;
+								}
+							}
+						}
+						//if it has sufficient syllables, 
+						if (vowelCount + vowelCountForPrevPhone == num) {
+							// add it to the return list
+							returnList.add(ArrayUtils.addAll(Arrays.copyOfRange(pronunciationChoice, start, pronunciationChoice.length),prevPhone.getKey()));
+						} else {
+							// otherwise it will be extended
+							nextPhones.put(ArrayUtils.addAll(pronunciationChoice,prevPhone.getKey()),vowelCount + vowelCountForPrevPhone);
+						}
+					}
+				}
+			}
+			
+			if (nextPhones.size() == 0) {
+				break;
+			} else {
+				prevPhones = nextPhones;
+			}
 		}
 		
-		return newPhones;
+		if (nextPhones != null && nextPhones.size() > 0) {
+			returnList.addAll(nextPhones.keySet());
+		}
+		
+		return returnList;
 	}
 
 	public static StressedPhone[] getPhonesForLastSyllables(StressedPhone[] phones, int num) {

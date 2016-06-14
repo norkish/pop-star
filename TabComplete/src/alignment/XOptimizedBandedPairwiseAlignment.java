@@ -8,8 +8,8 @@ import java.util.Map;
 
 import raw.LyricSheet;
 import raw.RawDataLoader;
-import utils.StopWatch;
-import utils.Utils;
+import tabutils.StopWatch;
+import tabutils.Utils;
 
 public class XOptimizedBandedPairwiseAlignment extends XGenericPairwiseAlignment {
 

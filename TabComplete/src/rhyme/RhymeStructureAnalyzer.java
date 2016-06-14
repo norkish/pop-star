@@ -9,8 +9,8 @@ import alignment.Aligner;
 import alignment.SequencePair;
 import alignment.StressedPhonePair;
 import alignment.StressedPhonePairAlignment;
+import tabutils.Utils;
 import utils.Pair;
-import utils.Utils;
 
 
 public class RhymeStructureAnalyzer {
@@ -28,10 +28,12 @@ public class RhymeStructureAnalyzer {
 	private static double[][] hMatrix = HirjeeMatrix.load();
 	private static List<Pair<String, PhoneCategory>> phoneDict = Phonetecizer.loadReversePhonesDict();
 
-	/*
+	/**
 	 * In the returned structure the ith element, j, is an array where 
 	 * of the LOOKAHEAD lines following line i, j[0] was the highest matching rhyme 
 	 * above THRESHOLD and j[1] syllables matched
+	 * 
+	 * return scheme in which a number n at line i means that line i rhymes with line i-n
 	 */
 	public static int[] extractRhymeScheme(List<String> words) {
 		// For each line we want to return the number of syllables in the line 
@@ -39,27 +41,12 @@ public class RhymeStructureAnalyzer {
 		int lineCount = words.size();
 		List<List<StressedPhone[]>> wordsPhones = new ArrayList<List<StressedPhone[]>>();
 		
-		String line;
-		int spacePos, secondSpacePos;
 		// for each line, store the syllables for the last few words
 		for (int i = 0; i < lineCount; i++) {
-			line = words.get(i);
-			spacePos = line.lastIndexOf(" ");
-			if (spacePos != -1) {
-				secondSpacePos = line.lastIndexOf(" ", spacePos);
-				if (secondSpacePos != -1)
-				{
-					wordsPhones.add(Phonetecizer.getPhones(line.substring(secondSpacePos)));
-				} else {
-					wordsPhones.add(Phonetecizer.getPhones(line.substring(spacePos)));
-				}
-			} else {
-				wordsPhones.add(Phonetecizer.getPhones(line));
-			}
+			wordsPhones.add(Phonetecizer.getPhonesForXLastSyllables(words.get(i), 1));
 		}
 		
 		int[] scheme = new int[lineCount];
-		Arrays.fill(scheme, -1);
 		
 		List<StressedPhone[]> line1Phones, line2Phones;
 		double rhymeScore, maxRhymeScoreForLine, maxRhymeScoreForLines;
@@ -96,7 +83,7 @@ public class RhymeStructureAnalyzer {
 			}
 			
 			if(maxRhymeScoreForLines >= MATCHING_LINE_THRESHOLD) {
-				scheme[maxJ] = i;
+				scheme[maxJ] = maxJ-i;
 				System.out.print(maxRhymeScoreForLines + "\t" + maxJ);
 			}
 			System.out.println();
@@ -304,7 +291,7 @@ public class RhymeStructureAnalyzer {
 		for (int i = 0; i < words.length; i++) {
 			//TODO: get last 3-4 syllables (i.e., not phones) for each word, not whole thing
 //			stressedPhones[i] = CMULoader.getPhones(words[i]);
-			stressedPhones.add(Phonetecizer.getPhonesForLastSyllables(words[i],1));
+			stressedPhones.add(Phonetecizer.getPhonesForXLastSyllables(words[i],1));
 		}
 		
 //		double[][] scores = new double[words.length][words.length];

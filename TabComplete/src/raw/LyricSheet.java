@@ -9,10 +9,15 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import utils.Utils;
+import filter.DirtyFilter;
+import tabutils.Utils;
 
 public class LyricSheet implements Serializable{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	public static final int LYRICS_COL = 0;
 	public static final int TITLE_COL = 1;
 	public static final int URL_COL = 2;
@@ -28,6 +33,8 @@ public class LyricSheet implements Serializable{
 	private String title;
 	private String url;
 	private String artist;
+	
+	private static int lyricSheetsIgnoredBecauseOfLanguage = 0;
 
 	public LyricSheet(CSVRecord csvRecord, String artistName, int provider) {
 		artist = artistName;
@@ -36,6 +43,12 @@ public class LyricSheet implements Serializable{
 		url = csvRecord.get(URL_COL);
 
 		String lyrics = csvRecord.get(LYRICS_COL).trim();
+		
+		if (DirtyFilter.isProfane(lyrics)){
+			lyricSheetsIgnoredBecauseOfLanguage++;
+			return;
+		}
+		
 		if (provider == LYRICSNET) {
 			lyrics = lyrics.replaceAll("\\r\\n", "<br>").replaceAll("\\n", "<br>");
 
@@ -144,7 +157,7 @@ public class LyricSheet implements Serializable{
 	}
 
 	public static String parseSummary() {
-		String summary = "COMPLETE";
+		String summary = "lyricSheetsIgnoredBecauseOfLanguage = " + lyricSheetsIgnoredBecauseOfLanguage + "\n";
 		return summary;
 	}
 

@@ -4,12 +4,13 @@ import java.util.List;
 import java.util.SortedMap;
 
 import harmony.Chord;
+import pitch.Pitch;
 
 public class ChordNormalizer {
 
-	public static void normalize(List<List<SortedMap<Integer, Chord>>> chordBlocks, int key) {
-		if (chordBlocks.size() == 0 || key == -1)
-			return;
+	public static int normalize(List<List<SortedMap<Integer, Chord>>> chordBlocks, int key) {
+		if (chordBlocks.size() == 0 || key == Pitch.NO_KEY)
+			return key;
 		SortedMap<Integer, Chord> firstLine = chordBlocks.get(0).get(0);
 		List<SortedMap<Integer, Chord>> lastBlock = chordBlocks.get(chordBlocks.size()-1);
 		SortedMap<Integer, Chord> lastLine = lastBlock.get(lastBlock.size()-1);
@@ -43,6 +44,8 @@ public class ChordNormalizer {
 		System.out.print(lastChord.getRoot() + (lastChord.isMinor()?"m":"") + ",");
 		
 		System.out.println(key);
+		
+		return key;
 	}
 	
 	public static void main(String[] args) {

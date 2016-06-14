@@ -9,8 +9,8 @@ import java.util.Map;
 import alignment.SequencePair.AlignmentBuilder;
 import raw.LyricSheet;
 import raw.RawDataLoader;
-import utils.StopWatch;
-import utils.Utils;
+import tabutils.StopWatch;
+import tabutils.Utils;
 
 /*
  * This is a generic, banded, linear-time, linear-space, pairwise aligner

@@ -9,7 +9,7 @@ import raw.ChordSheet;
 import raw.LyricSheet;
 import raw.RawDataLoader;
 import tab.CompletedTab;
-import utils.Serializer;
+import tabutils.Serializer;
 import validate.TabValidator;
 
 public class TabDriver {
