@@ -102,29 +102,17 @@ public class Chord implements Serializable{
 	private static String[] symbs = new String[]{"Δ","+","°","ø","Ø","o"};
 	private static Set<String> augDimSymbols = new HashSet<String>(Arrays.asList(symbs));
 
-	String chordName;
 	private int root;
 	private ChordQuality quality;
-	
-	public Chord(String chord) {
-		this.chordName = chord;
-		this.root = -1;
-		this.quality = new ChordQuality();
-	}
 
 	public Chord(int root, ChordQuality quality) {
-		this.chordName = "";
 		this.root = root;
 		this.quality = quality;
 	}
 
-	public String getChordName() {
-		return chordName;
-	}
-
 	public String toString()
 	{
-		return chordName + Pitch.getPitchName(root) + quality;
+		return Pitch.getPitchName(root) + quality;
 	}
 
 	

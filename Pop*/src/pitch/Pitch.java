@@ -1,12 +1,11 @@
 package pitch;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 public class Pitch {
+	public final static int NO_KEY = 13;
+	
 	private final static  Map<String,Integer> valueByName;
 	static {
 		valueByName = new HashMap<String,Integer>();
@@ -42,11 +41,16 @@ public class Pitch {
 	
 	public static int getPitchValue(String name) {
 		if (!valueByName.containsKey(name))
-			return -1;
+			return NO_KEY;
 		return valueByName.get(name);
 	}
 
 	public static String getPitchName(int value) {//, int key) {
+		if (value == NO_KEY) {
+			return "X";
+		} else if (value < 0) {
+			return "-1";
+		}
 //		if (!accidentals.contains(value)) {
 //			return nameByValue[value];
 //		}

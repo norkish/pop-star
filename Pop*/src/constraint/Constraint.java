@@ -3,7 +3,6 @@ import java.util.List;
 
 import condition.ConstraintCondition;
 import condition.DelayedConstraintCondition;
-import lyrics.Lyric;
 import utils.Utils;
 
 public class Constraint<T> {

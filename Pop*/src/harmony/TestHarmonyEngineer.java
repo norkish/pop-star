@@ -88,15 +88,15 @@ public class TestHarmonyEngineer extends HarmonyEngineer {
 
 	private static Chord[] loadTestStates() {
 		return new Chord[]{
-				new Chord("C"),
-				new Chord("G/B"),
-				new Chord("F/A"),
-				new Chord("C/G"),
-				new Chord("F"),
-				new Chord("C/E"),
-				new Chord("D"),
-				new Chord("G"),
-				new Chord("F/G")
+				Chord.parse("C", true),
+				Chord.parse("G/B", true),
+				Chord.parse("F/A", true),
+				Chord.parse("C/G", true),
+				Chord.parse("F", true),
+				Chord.parse("C/E", true),
+				Chord.parse("D", true),
+				Chord.parse("G", true),
+				Chord.parse("F/G", true),
 		};
 	}
 	

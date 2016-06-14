@@ -7,7 +7,7 @@ public class StrongResolution<T> extends ConstraintCondition<T> {
 	@Override
 	public boolean isSatisfiedBy(T t) {
 		if (t instanceof Chord) {
-			return ((Chord) t).getChordName().equals("C");
+			return ((Chord) t).toString().equals("C");
 		}
 		return false;
 	}

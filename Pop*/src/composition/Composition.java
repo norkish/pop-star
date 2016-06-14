@@ -11,12 +11,9 @@ import lyrics.LyricSegment;
 import lyrics.Lyrics;
 import melody.Melody;
 import pitch.PitchSegment;
-import pitch.Pitches;
 import rhythm.RhythmSegment;
-import rhythm.Rhythms;
 import structure.Structure;
 import substructure.SegmentSubstructure;
-import utils.Pair;
 import utils.Triple;
 import utils.Utils;
 

@@ -1,19 +1,23 @@
 package data;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
+import java.util.Set;
 
 public class Distribution<T> {
 
-	private Map<T, Integer> distribution;
+	private Map<T, List<Integer>> distribution;
 	private int accumulatedCount = 0;
 	
 	private static Random rand = new Random();
 
-	public Distribution(Map<T, Integer> distribution) {
+	public Distribution(Map<T, List<Integer>> distribution) {
 		this.distribution = distribution;
-		for (Integer i : distribution.values()) {
-			accumulatedCount += i;
+		for (List<Integer> i : distribution.values()) {
+			accumulatedCount += i.size();
 		}
 		
 	}
@@ -21,9 +25,9 @@ public class Distribution<T> {
 	public T sampleRandomly() {
 		int target = rand.nextInt(accumulatedCount);
 		int accumulation = 0;
-		for (Map.Entry<T, Integer> entry : distribution.entrySet())
+		for (Map.Entry<T, List<Integer>> entry : distribution.entrySet())
 		{
-			accumulation += entry.getValue();
+			accumulation += entry.getValue().size();
 			
 			if (accumulation > target) {
 				return entry.getKey();
@@ -36,7 +40,7 @@ public class Distribution<T> {
 	public String toString() {
 		StringBuilder bldr = new StringBuilder();
 		
-		for (Map.Entry<T, Integer> entry : distribution.entrySet())
+		for (Entry<T, List<Integer>> entry : distribution.entrySet())
 		{
 			bldr.append(entry);
 			bldr.append('\n');

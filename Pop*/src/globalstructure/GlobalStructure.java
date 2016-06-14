@@ -8,6 +8,13 @@ public class GlobalStructure {
 		this.structure = structure;
 	}
 
+	public GlobalStructure(String structureStr) {
+		this.structure = new SegmentType[structureStr.length()];
+		for (int i = 0; i < structureStr.length(); i++) {
+			structure[i] = SegmentType.valueOf(structureStr.charAt(i));
+		}
+	}
+
 	public SegmentType[] getGlobalStructure() {
 		return structure;
 	}

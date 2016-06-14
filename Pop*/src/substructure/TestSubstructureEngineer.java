@@ -21,13 +21,9 @@ public class TestSubstructureEngineer extends SubstructureEngineer {
 	@Override
 	protected SegmentSubstructure defineSubstructure(SegmentType segmentType) {
 		int linesPerSegment = 4;
-		int measuresPerLine = 4;
-		int minWordsPerLine = 4;
-		int maxWordsPerLine = 8;
-		int substructureRepetitions = 2;
-		boolean relativeMinorKey = false;
+		int chordsPerLine = 4;
 
-		SegmentSubstructure substructure = new SegmentSubstructure(linesPerSegment, measuresPerLine, minWordsPerLine, maxWordsPerLine, substructureRepetitions, relativeMinorKey);
+		SegmentSubstructure substructure = new SegmentSubstructure(linesPerSegment, chordsPerLine);
 
 		substructure.addLyricConstraint(0, new Constraint<Lyric>(0, new ExactUnaryMatch<Lyric>(new Lyric[]{new Lyric("It's")}), true));
 		

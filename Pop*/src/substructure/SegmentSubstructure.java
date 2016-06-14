@@ -18,20 +18,11 @@ public class SegmentSubstructure {
 	public List<List<Constraint<Pitch>>> pitchConstraints = null;
 	public int linesPerSegment;
 	public int measuresPerLine;
-	public int minWordsPerLine;
-	public int maxWordsPerLine;
-	public int substructureRepetitions;
-	public boolean relativeMinorKey;
 
-	public SegmentSubstructure(int linesPerSegment, int measuresPerLine, int minWordsPerLine, int maxWordsPerLine,
-			int substructureRepetitions, boolean relativeMinorKey) {
+	public SegmentSubstructure(int linesPerSegment, int measuresPerLine) {
 		
 		this.linesPerSegment = linesPerSegment;
 		this.measuresPerLine = measuresPerLine;
-		this.minWordsPerLine = minWordsPerLine;
-		this.maxWordsPerLine = maxWordsPerLine;
-		this.substructureRepetitions = substructureRepetitions;
-		this.relativeMinorKey = relativeMinorKey;
 		
 		lyricConstraints = new ArrayList<List<Constraint<Lyric>>>();
 		chordConstraints = new ArrayList<List<Constraint<Chord>>>();

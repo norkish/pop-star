@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import harmony.Chord;
-
 public class Utils {
 
 	/*
@@ -45,10 +43,10 @@ public class Utils {
         return obj;
     }
 
-	public static Object join(List line, String delimiter) {
+	public static <T> String join(List<T> line, String delimiter) {
 		StringBuilder str = new StringBuilder();
 		boolean first = true;
-		for (Object object : line) {
+		for (T object : line) {
 			if(!first)
 				str.append(delimiter);
 			else
@@ -86,32 +84,32 @@ public class Utils {
 		return posStr + " position";
 	}
 
-	public static <T extends Comparable<T>> Map<T, Integer> sort(Map<T, Integer> unsortMap, final boolean order)
+	public static <T extends Comparable<T>> Map<T, List<Integer>> sortByListSize(Map<T, List<Integer>> map, final boolean order)
     {
 
-        List<Entry<T, Integer>> list = new LinkedList<Entry<T, Integer>>(unsortMap.entrySet());
+        List<Entry<T, List<Integer>>> list = new LinkedList<Entry<T, List<Integer>>>(map.entrySet());
 
         // Sorting the list based on values
-        Collections.sort(list, new Comparator<Entry<T, Integer>>()
+        Collections.sort(list, new Comparator<Entry<T, List<Integer>>>()
         {
-            public int compare(Entry<T, Integer> o1,
-                    Entry<T, Integer> o2)
+            public int compare(Entry<T, List<Integer>> o1,
+                    Entry<T, List<Integer>> o2)
             {
                 if (order)
                 {
-                    return o1.getValue().compareTo(o2.getValue());
+                    return o1.getValue().size() - o2.getValue().size();
                 }
                 else
                 {
-                    return o2.getValue().compareTo(o1.getValue());
+                    return o2.getValue().size() - o1.getValue().size();
 
                 }
             }
         });
 
         // Maintaining insertion order with the help of LinkedList
-        Map<T, Integer> sortedMap = new LinkedHashMap<T, Integer>();
-        for (Entry<T, Integer> entry : list)
+        Map<T, List<Integer>> sortedMap = new LinkedHashMap<T, List<Integer>>();
+        for (Entry<T, List<Integer>> entry : list)
         {
             sortedMap.put(entry.getKey(), entry.getValue());
         }

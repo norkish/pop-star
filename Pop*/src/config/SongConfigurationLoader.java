@@ -59,4 +59,18 @@ public class SongConfigurationLoader {
 		
 		return config;
 	}
+
+	public static SongConfiguration loadDistributionalConfiguration() {
+		SongConfiguration config = new SongConfiguration();
+		
+		config.inspirationSource = InspirationSource.RANDOM; // TODO
+		config.globalStructureSource = StructureSource.DISTRIBUTION;
+		config.substructureSource = SubstructureSource.DISTRIBUTION;
+		config.lyricSource = LyricalSource.LYRICAL_NGRAM;
+		config.harmonySource = HarmonySource.SEGMENTSPECIFIC_HMM;
+		config.rhythmSource = RhythmSource.TEST; // TODO
+		config.pitchSource = PitchSource.TEST; // TODO
+		
+		return config;
+	}
 }

@@ -61,6 +61,9 @@ public class Manager {
 		case TEST:
 			config = SongConfigurationLoader.loadTestConfiguration();
 			break;
+		case DISTRIBUTIONAL:
+			config = SongConfigurationLoader.loadDistributionalConfiguration();
+			break;
 		default:
 			throw new RuntimeException("Invalid configuration setting: " + config.globalStructureSource);
 		}
