@@ -41,4 +41,29 @@ public class ExactUnaryMatch<T> extends ConstraintCondition<T> {
 		
 		return str.toString();
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((acceptableStates == null) ? 0 : acceptableStates.hashCode()); // TODO: sets should be equal if they contain the same elements
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof ExactUnaryMatch))
+			return false;
+		ExactUnaryMatch other = (ExactUnaryMatch) obj;
+		if (acceptableStates == null) {
+			if (other.acceptableStates != null)
+				return false;
+		} else if (!acceptableStates.equals(other.acceptableStates))
+			return false;
+		return true;
+	}
 }

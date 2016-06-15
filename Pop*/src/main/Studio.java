@@ -8,8 +8,6 @@ import inspiration.InspirationEngineer;
 import lyrics.LyricalEngineer;
 import lyrics.Lyrics;
 import manager.Manager;
-import melody.Melody;
-import melody.MelodyEngineer;
 import structure.Structure;
 import structure.StructureEngineer;
 

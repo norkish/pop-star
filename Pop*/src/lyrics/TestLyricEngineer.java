@@ -28,7 +28,7 @@ public class TestLyricEngineer extends LyricalEngineer {
 		int[] testLengths = new int[]{6,5,8,7};
 		List<List<Lyric>> lyricLines = new ArrayList<List<Lyric>>();
 		for (int i = 0; i < segmentSubstructures.linesPerSegment; i++) {
-			List<Constraint<Lyric>> constraints = segmentSubstructures.lyricConstraints.get(i);
+			List<Constraint<Lyric>> constraints = segmentSubstructures.lyricConstraints.getConstraintsForLine(i);
 			Constraint.reifyConstraints(constraints,lyricLines);
 			NHMM<Lyric> constrainedLyricModel = new NHMM<Lyric>(mModel, testLengths[i], constraints);
 			lyricLines.add(constrainedLyricModel.generate(testLengths[i]));

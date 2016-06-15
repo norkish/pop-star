@@ -8,8 +8,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 
+import condition.Rhyme;
+import constraint.Constraint;
+import constraint.ConstraintBlock;
 import globalstructure.SegmentType;
 import harmony.Chord;
+import lyrics.Lyric;
 import main.TabDriver;
 import tab.CompletedTab;
 import utils.Utils;
@@ -18,21 +22,24 @@ public class DataLoader {
 
 	private static Distribution<Integer> keyDistribution;
 	private static Distribution<String> gStructDistribution;
-	// We have a distribution of rhyme schemes conditioned on SegmentType and number of lines per segment
-	private static Map<SegmentType, Map<Integer, Distribution<String>>> rhymeSubstructureDistribution;
+
+	// We have a distribution of rhyme schemes conditioned on SegmentType and number of lines per segment (remember, some segments don't have rhyme schemes) 
+	// We need a distribution of subrhyme schemes conditioned on rhyme schemes (could also be conditioned on SegType)
+	private static Map<SegmentType, Map<Integer, Distribution<ConstraintBlock<Lyric>>>> rhymeConstraintsDistribution;
+	
 	// We have a distribution of the number of lines per segment conditioned on the SegmentType
 	private static Map<SegmentType, Distribution<Integer>> linesPerSegmentDistribution;
 	
-	// We need a distribution of the number of chords per line conditioned on rhyme schemes (and possibly conditioned on SegType)
-	private static Map<SegmentType, Map<Integer, Distribution<Integer>>> chordsPerLineDistribution; // conditioned on segment and on lines per segment
-	// We need a distribution of repetitive subsequences of chords per line conditioned on rhyme scheme and SegType
-	
-	// We need a distribution of subrhyme schemes conditioned on rhyme schemes (could also be conditioned on SegType)
-	
+	// We need a distribution of the number of chords per line conditioned on segment type and lines per segment(and possibly conditioned on SegType)
+	// We need a distribution of repetitive subsequences of chords per line conditioned on SegType and segment length
+	private static Map<SegmentType, Map<Integer, Distribution<ConstraintBlock<Chord>>>> chordConstraintsDistribution;
+
 	// We need a distribution of the number of words per line conditioned on subrhyme scheme and number of lines in the segment
 	// We need a distribution of repetitive subsequences of lyrics per line conditioned on rhyme scheme and SegType
-	// We need a distribution of the variation in words per line between paired lines (as per rhyme scheme)
+	private static Map<SegmentType, Map<Integer, Distribution<ConstraintBlock<Lyric>>>> lyricConstraintsDistribution;
+
 	// We need a distribution of chord transitions, including intersegmental chord transitions, starting chords, ending chords, etc.
+	private static Map<SegmentType, Map<Chord, Distribution<Chord>>> chordTransitionDistribution;
 	
 	static {
 		loadDistribution();
@@ -42,31 +49,38 @@ public class DataLoader {
 		
 		//Variable initialization
 		Map<String, List<Integer>> gStructureDistr = new HashMap<String, List<Integer>>();
-		Map<SegmentType, Map<Integer, Map<String,List<Integer>>>> rhymeSubstructDistr = new EnumMap<SegmentType, Map<Integer,Map<String,List<Integer>>>>(SegmentType.class);
+		Map<SegmentType, Map<Integer, Map<ConstraintBlock<Lyric>,List<Integer>>>> rhymeConstraintsDistr = new EnumMap<SegmentType, Map<Integer,Map<ConstraintBlock<Lyric>,List<Integer>>>>(SegmentType.class);
+		Map<SegmentType, Map<Integer, Map<ConstraintBlock<Lyric>,List<Integer>>>> lyricConstraintsDistr = new EnumMap<SegmentType, Map<Integer,Map<ConstraintBlock<Lyric>,List<Integer>>>>(SegmentType.class);
+		Map<SegmentType, Map<Integer, Map<ConstraintBlock<Chord>,List<Integer>>>> chordConstraintsDistr = new EnumMap<SegmentType, Map<Integer,Map<ConstraintBlock<Chord>,List<Integer>>>>(SegmentType.class);
 		Map<SegmentType, Map<Integer,List<Integer>>> linesPerSegmentDistr = new EnumMap<SegmentType, Map<Integer, List<Integer>>>(SegmentType.class);
-		Map<SegmentType, Map<Integer,Map<Integer,List<Integer>>>> measuresPerLineDistr = new EnumMap<SegmentType, Map<Integer, Map<Integer,List<Integer>>>>(SegmentType.class);
 		Map<Integer, List<Integer>> keyDistr = new HashMap<Integer, List<Integer>>(); // use most common pitch names
 		
 		for (SegmentType type : SegmentType.values()) {
 			linesPerSegmentDistr.put(type, new HashMap<Integer, List<Integer>>(30));
 
 			if (type.hasLyrics()) { 
-				rhymeSubstructDistr.put(type, new HashMap<Integer, Map<String, List<Integer>>>(30));
+				rhymeConstraintsDistr.put(type, new HashMap<Integer, Map<ConstraintBlock<Lyric>, List<Integer>>>(30));
+				lyricConstraintsDistr.put(type, new HashMap<Integer, Map<ConstraintBlock<Lyric>, List<Integer>>>(30));
 			}
+			chordConstraintsDistr.put(type, new HashMap<Integer, Map<ConstraintBlock<Chord>, List<Integer>>>(30));
 		}
 		
 		List<CompletedTab> tabs = TabDriver.loadValidatedTabs();
 
-		StringBuilder gStructBldr, rhymeStructBldr = null;
+		StringBuilder gStructBldr = null;
+		ConstraintBlock<Lyric> rhymeConstraintBlock = null, lyricRepetitionConstraintBlock = null;
+		ConstraintBlock<Chord> chordRepetitionConstraintBlock = null;
+		List<Constraint<Lyric>> rhymeConstraintsForLine, lyricRepetitionConstraintsForLine;
+		List<Constraint<Chord>> chordRepetitionConstraintsForLine;
 		SegmentType currSegmentLabel, prevSegmentLabel = null;
 		int idxOfSegmentBeginning;
 		int i;
-		int segmentLength = 0;
-		Map<String, List<Integer>> rhymeSubstructDistrForTypeLen;
-		Map<Integer, List<Integer>> measuresPerLineDistrForTypeLen;
+		int segmentLineIdx = 0;
+		Map<ConstraintBlock<Lyric>, List<Integer>> rhymeSubstructDistrForTypeLen;
 		char currSegmentLabelChar;
-		double totalMeasuresInSegment;
+		int rhymeSchemeValue;
 		List<SortedMap<Integer, Chord>> chords;
+		List<String> words;
 		CompletedTab completedTab;
 		// End variable initialization
 
@@ -75,52 +89,65 @@ public class DataLoader {
 			if (completedTab.length() == 0) continue;
 			
 			chords = completedTab.chords;
+			words = completedTab.words;
 			incrementCount(keyDistr,completedTab.pitch, tabId);
 			
 			gStructBldr = new StringBuilder();
 			prevSegmentLabel = null;
 			
 			idxOfSegmentBeginning = -1;
-			totalMeasuresInSegment = 0;
 			for (i = 0; i < completedTab.length(); i++) {
 				
 				// extract structure from tab
 				currSegmentLabelChar = completedTab.segmentLabelAt(i);
 				currSegmentLabel = SegmentType.valueOf(currSegmentLabelChar);
+				segmentLineIdx = i - idxOfSegmentBeginning;
 				if (currSegmentLabel != prevSegmentLabel) {
-					if (idxOfSegmentBeginning != -1) {
-						segmentLength = i - idxOfSegmentBeginning;
-						incrementCount(linesPerSegmentDistr.get(prevSegmentLabel), segmentLength, tabId);
+					if (idxOfSegmentBeginning != -1) { // if not initializing the first block
+						incrementCount(linesPerSegmentDistr.get(prevSegmentLabel), segmentLineIdx, tabId);
 						if (prevSegmentLabel.hasLyrics()) {
-							rhymeSubstructDistrForTypeLen = getMapForKey(rhymeSubstructDistr.get(prevSegmentLabel),segmentLength);
-							incrementCount(rhymeSubstructDistrForTypeLen, rhymeStructBldr.toString(), tabId);
+							rhymeSubstructDistrForTypeLen = getMapForKey(rhymeConstraintsDistr.get(prevSegmentLabel),segmentLineIdx);
+							incrementCount(rhymeSubstructDistrForTypeLen, rhymeConstraintBlock, tabId);
 						}
-						measuresPerLineDistrForTypeLen = getMapForKey(measuresPerLineDistr.get(prevSegmentLabel), segmentLength);
-						incrementCount(measuresPerLineDistrForTypeLen, (int) Math.ceil(totalMeasuresInSegment/segmentLength), tabId);
 					}
-					rhymeStructBldr = new StringBuilder();
+					rhymeConstraintBlock = new ConstraintBlock<Lyric>();
+					lyricRepetitionConstraintBlock = new ConstraintBlock<Lyric>();
+					chordRepetitionConstraintBlock = new ConstraintBlock<Chord>();
 					
 					idxOfSegmentBeginning = i;
-					totalMeasuresInSegment = 0;
+					segmentLineIdx = 0;
 					gStructBldr.append(currSegmentLabelChar);
 					prevSegmentLabel = currSegmentLabel;
 				}
-				rhymeStructBldr.append(completedTab.rhymeSchemeAt(i));
-				totalMeasuresInSegment += chords.size();
+				rhymeConstraintsForLine = new ArrayList<Constraint<Lyric>>();
+				lyricRepetitionConstraintsForLine = new ArrayList<Constraint<Lyric>>();
+				chordRepetitionConstraintsForLine = new ArrayList<Constraint<Chord>>();
 				
+				rhymeSchemeValue = completedTab.rhymeSchemeAt(i);
+				// TODO: allow rhyming to extend beyond segment beginning.
+//				if (rhymeSchemeValue != 0) {
+				if (rhymeSchemeValue != 0 && segmentLineIdx - rhymeSchemeValue >= 0) {
+					rhymeConstraintsForLine.add(new Constraint<Lyric>(Constraint.FINAL_POSITION, new Rhyme<Lyric>(segmentLineIdx - rhymeSchemeValue, Constraint.FINAL_POSITION), true));
+				}
+
 				// analyze chord line
 				
+				// analyze lyric line
+				
+				rhymeConstraintBlock.addLineConstraints(rhymeConstraintsForLine);
+				lyricRepetitionConstraintBlock.addLineConstraints(lyricRepetitionConstraintsForLine);
+				lyricRepetitionConstraintBlock.addLengthConstraint(words.size());
+				chordRepetitionConstraintBlock.addLineConstraints(chordRepetitionConstraintsForLine);
+				chordRepetitionConstraintBlock.addLengthConstraint(chords.size());
 			}
 			
 			// include the last segment stats
-			segmentLength = i - idxOfSegmentBeginning;
-			incrementCount(linesPerSegmentDistr.get(prevSegmentLabel), segmentLength, tabId);
+			segmentLineIdx = i - idxOfSegmentBeginning;
+			incrementCount(linesPerSegmentDistr.get(prevSegmentLabel), segmentLineIdx, tabId);
 			if (prevSegmentLabel != SegmentType.OUTRO && prevSegmentLabel != SegmentType.INTRO) {
-				rhymeSubstructDistrForTypeLen = getMapForKey(rhymeSubstructDistr.get(prevSegmentLabel),segmentLength);
-				incrementCount(rhymeSubstructDistrForTypeLen, rhymeStructBldr.toString(), tabId);
+				rhymeSubstructDistrForTypeLen = getMapForKey(rhymeConstraintsDistr.get(prevSegmentLabel),segmentLineIdx);
+				incrementCount(rhymeSubstructDistrForTypeLen, rhymeConstraintBlock, tabId);
 			}
-			measuresPerLineDistrForTypeLen = getMapForKey(measuresPerLineDistr.get(prevSegmentLabel), segmentLength);
-			incrementCount(measuresPerLineDistrForTypeLen, (int) Math.ceil(totalMeasuresInSegment/segmentLength), tabId);
 
 			// insert structure into distribution
 			incrementCount(gStructureDistr, gStructBldr.toString(), tabId);
@@ -130,33 +157,33 @@ public class DataLoader {
 		
 		gStructDistribution = new Distribution<String>(Utils.sortByListSize(gStructureDistr, false));
 		
-		rhymeSubstructureDistribution = new EnumMap<SegmentType, Map<Integer, Distribution<String>>>(SegmentType.class);
-		HashMap<Integer, Distribution<String>> rhymeSubstrDistrBySegType;
-		for (Entry<SegmentType, Map<Integer, Map<String, List<Integer>>>> entry : rhymeSubstructDistr.entrySet()) {
-			rhymeSubstrDistrBySegType = new HashMap<Integer, Distribution<String>>(20);
-			rhymeSubstructureDistribution.put(entry.getKey(), rhymeSubstrDistrBySegType);
-			// given a segment type, we now look at rhyme schemes of each length for that type
-			for (Entry<Integer, Map<String, List<Integer>>> rhymeSchemesByLen : entry.getValue().entrySet()) {
-				rhymeSubstrDistrBySegType.put(rhymeSchemesByLen.getKey(), new Distribution<String>(Utils.sortByListSize(rhymeSchemesByLen.getValue(), false)));
-			}
-		}
-
 		linesPerSegmentDistribution = new EnumMap<SegmentType, Distribution<Integer>>(SegmentType.class);
 		for (Entry<SegmentType, Map<Integer, List<Integer>>> entry : linesPerSegmentDistr.entrySet()) {
 			linesPerSegmentDistribution.put(entry.getKey(), new Distribution<Integer>(Utils.sortByListSize(entry.getValue(), false)));
 		}
-		
-		chordsPerLineDistribution = new EnumMap<SegmentType, Map<Integer, Distribution<Integer>>>(SegmentType.class);
-		HashMap<Integer, Distribution<Integer>> measuresPerLineDistrBySegType;
-		for (Entry<SegmentType, Map<Integer, Map<Integer, List<Integer>>>> entry : measuresPerLineDistr.entrySet()) {
-			measuresPerLineDistrBySegType = new HashMap<Integer, Distribution<Integer>>(20);
-			chordsPerLineDistribution.put(entry.getKey(), measuresPerLineDistrBySegType);
+
+		rhymeConstraintsDistribution = createConditionalDistribution(rhymeConstraintsDistr);
+		lyricConstraintsDistribution = createConditionalDistribution(lyricConstraintsDistr);
+		chordConstraintsDistribution = createConditionalDistribution(chordConstraintsDistr);
+	}
+
+	/**
+	 * @param rhymeSubstructDistr
+	 * @return 
+	 */
+	private static <T> Map<SegmentType, Map<Integer, Distribution<ConstraintBlock<T>>>> createConditionalDistribution(
+			Map<SegmentType, Map<Integer, Map<ConstraintBlock<T>, List<Integer>>>> rhymeSubstructDistr) {
+		Map<SegmentType, Map<Integer, Distribution<ConstraintBlock<T>>>> constraintsDistribution = new EnumMap<SegmentType, Map<Integer, Distribution<ConstraintBlock<T>>>>(SegmentType.class);
+		HashMap<Integer, Distribution<ConstraintBlock<T>>> rhymeSubstrDistrBySegType;
+		for (Entry<SegmentType, Map<Integer, Map<ConstraintBlock<T>, List<Integer>>>> entry : rhymeSubstructDistr.entrySet()) {
+			rhymeSubstrDistrBySegType = new HashMap<Integer, Distribution<ConstraintBlock<T>>>(20);
+			constraintsDistribution.put(entry.getKey(), rhymeSubstrDistrBySegType);
 			// given a segment type, we now look at rhyme schemes of each length for that type
-			for (Entry<Integer, Map<Integer, List<Integer>>> measuresPerLineBySegmentLen : entry.getValue().entrySet()) {
-				measuresPerLineDistrBySegType.put(measuresPerLineBySegmentLen.getKey(), new Distribution<Integer>(Utils.sortByListSize(measuresPerLineBySegmentLen.getValue(), false)));
+			for (Entry<Integer, Map<ConstraintBlock<T>, List<Integer>>> rhymeSchemesByLen : entry.getValue().entrySet()) {
+				rhymeSubstrDistrBySegType.put(rhymeSchemesByLen.getKey(), new Distribution<ConstraintBlock<T>>(rhymeSchemesByLen.getValue()));
 			}
 		}
-
+		return constraintsDistribution;
 	}
 
 	private static <T> Map<T, List<Integer>> getMapForKey(Map<Integer, Map<T, List<Integer>>> map, int key) {
@@ -201,19 +228,23 @@ public class DataLoader {
 		}
 	}
 
-	public static Map<SegmentType, Map<Integer, Distribution<String>>> getRhymingSubstructureDistribution() {
-		return rhymeSubstructureDistribution;
+	public static Map<SegmentType, Map<Integer, Distribution<ConstraintBlock<Lyric>>>> getRhymeConstraintsDistribution() {
+		return rhymeConstraintsDistribution;
 	}
 
 	public static Map<SegmentType, Distribution<Integer>> getLinesPerSegmentDistribution() {
 		return linesPerSegmentDistribution;
 	}
 
-	public static Map<SegmentType, Map<Integer, Distribution<Integer>>> getChordsPerLineDistribution() {
-		return chordsPerLineDistribution;
-	}
-
 	public static Distribution<Integer> getKeyDistribution() {
 		return keyDistribution;
+	}
+
+	public static Map<SegmentType, Map<Integer, Distribution<ConstraintBlock<Lyric>>>> getLyricConstraintsDistribution() {
+		return lyricConstraintsDistribution;
+	}
+
+	public static Map<SegmentType, Map<Integer, Distribution<ConstraintBlock<Chord>>>> getChordConstraintsDistribution() {
+		return chordConstraintsDistribution;
 	}
 }

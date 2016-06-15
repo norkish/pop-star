@@ -43,4 +43,35 @@ public abstract class DelayedConstraintCondition<T> extends ConstraintCondition<
 	public String asString() {
 		return " with the token at line " + prevLineNumber + ", " + Utils.getPositionString(prevPos) + " (" + (prevT == null? "" : prevT) + ")";
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + prevLineNumber;
+		result = prime * result + prevPos;
+		result = prime * result + ((prevT == null) ? 0 : prevT.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof DelayedConstraintCondition))
+			return false;
+		DelayedConstraintCondition<T> other = (DelayedConstraintCondition<T>) obj;
+		if (prevLineNumber != other.prevLineNumber)
+			return false;
+		if (prevPos != other.prevPos)
+			return false;
+		if (prevT == null) {
+			if (other.prevT != null)
+				return false;
+		} else if (!prevT.equals(other.prevT))
+			return false;
+		return true;
+	}
 }

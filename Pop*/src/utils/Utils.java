@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import constraint.ConstraintBlock;
+import lyrics.Lyric;
+
 public class Utils {
 
 	/*
@@ -86,7 +89,6 @@ public class Utils {
 
 	public static <T extends Comparable<T>> Map<T, List<Integer>> sortByListSize(Map<T, List<Integer>> map, final boolean order)
     {
-
         List<Entry<T, List<Integer>>> list = new LinkedList<Entry<T, List<Integer>>>(map.entrySet());
 
         // Sorting the list based on values

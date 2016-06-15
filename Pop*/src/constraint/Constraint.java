@@ -56,4 +56,36 @@ public class Constraint<T> {
 		
 		return str.toString();
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((condition == null) ? 0 : condition.hashCode());
+		result = prime * result + (desiredConditionState ? 1231 : 1237);
+		result = prime * result + position;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof Constraint))
+			return false;
+		@SuppressWarnings("unchecked")
+		Constraint<T> other = (Constraint<T>) obj;
+		if (condition == null) {
+			if (other.condition != null)
+				return false;
+		} else if (!condition.equals(other.condition))
+			return false;
+		if (desiredConditionState != other.desiredConditionState)
+			return false;
+		if (position != other.position)
+			return false;
+		return true;
+	}
 }

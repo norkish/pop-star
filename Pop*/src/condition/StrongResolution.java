@@ -16,4 +16,14 @@ public class StrongResolution<T> extends ConstraintCondition<T> {
 	protected String asString() {
 		return "";
 	}
+
+	@Override
+	public boolean equals(Object other) {
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		return 31;
+	}
 }

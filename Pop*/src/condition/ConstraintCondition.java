@@ -16,4 +16,6 @@ public abstract class ConstraintCondition<T> {
 
 	abstract protected String asString();
 
+	abstract public boolean equals(Object other);
+	abstract public int hashCode();
 }

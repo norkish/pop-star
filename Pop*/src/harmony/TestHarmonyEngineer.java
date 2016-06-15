@@ -6,8 +6,6 @@ import java.util.List;
 import constraint.Constraint;
 import globalstructure.SegmentType;
 import inspiration.Inspiration;
-import lyrics.Lyric;
-import lyrics.LyricSegment;
 import markov.NHMM;
 import markov.SingleOrderMarkovModel;
 import substructure.SegmentSubstructure;
@@ -33,9 +31,9 @@ public class TestHarmonyEngineer extends HarmonyEngineer {
 		int testChordsPerLine = 4;
 		List<List<Chord>> chordLines = new ArrayList<List<Chord>>();
 		for (int i = 0; i < segmentSubstructures.linesPerSegment; i++) {
-			List<Constraint<Chord>> constraints = segmentSubstructures.chordConstraints.get(i);
+			List<Constraint<Chord>> constraints = segmentSubstructures.chordConstraints.getConstraintsForLine(i);
 			Constraint.reifyConstraints(constraints,chordLines);
-			NHMM<Chord> constrainedLyricModel = new NHMM<Chord>(mModel, testChordsPerLine, segmentSubstructures.chordConstraints.get(i));
+			NHMM<Chord> constrainedLyricModel = new NHMM<Chord>(mModel, testChordsPerLine, constraints);
 			chordLines.add(constrainedLyricModel.generate(testChordsPerLine));
 		}
 		

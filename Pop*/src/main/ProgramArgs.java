@@ -9,7 +9,7 @@ public class ProgramArgs {
 	}
 	
 	public enum SongConfigSourceSetting {
-		FROM_FILE, RANDOM, FROM_COMMANDLINE, UNSET, SIMPLE, TEST
+		FROM_FILE, RANDOM, FROM_COMMANDLINE, UNSET, SIMPLE, TEST, DISTRIBUTIONAL
 	}
 	
 	public static SongConfigSourceSetting configurationSetting = SongConfigSourceSetting.UNSET;
@@ -28,6 +28,7 @@ public class ProgramArgs {
 
 	private static void loadDefaultProgramArgs() {
 		configurationSetting = SongConfigSourceSetting.TEST;
+//		configurationSetting = SongConfigSourceSetting.DISTRIBUTIONAL;
 		userInterfaceSetting = UISetting.COMMANDLINE;
 	}
 
