@@ -1,6 +1,8 @@
 package markov;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import condition.ExactUnaryMatch;
 import constraint.Constraint;
@@ -21,6 +23,24 @@ public class Main {
 		
 		System.out.println("Single-Order Markov Model:\n" + model + "\n\n");
 		
+		Map<Integer,Double> spriors = new HashMap<Integer,Double>();
+		for (int i = 0; i < priors.length; i++) {
+			spriors.put(i, priors[i]);
+		}
+		Map<Integer, Map<Integer,Double>> stransitions = new HashMap<Integer, Map<Integer, Double>>();
+		Map<Integer, Double> newMap;
+		for (int i = 0; i < transitions.length; i++) {
+			newMap = new HashMap<Integer, Double>();
+			for (int j = 0; j < transitions[i].length; j++) {
+				newMap.put(j, transitions[i][j]);
+			}
+			stransitions.put(i, newMap);
+		}
+		
+		SparseSingleOrderMarkovModel<String> smodel = new SparseSingleOrderMarkovModel<String>(states, spriors, stransitions);
+		
+		System.out.println("Sparse Single-Order Markov Model:\n" + smodel + "\n\n");
+		
 		int length = 4;
 		List<Constraint<String>> constraints = new ArrayList<Constraint<String>>();
 		
@@ -33,6 +53,10 @@ public class Main {
 		AbstractMarkovModel<String> nhmmModel = new NHMM<String>(model, length, constraints);
 		
 		System.out.println("Constrained Single-Order Markov Model\n" + nhmmModel);
+		
+		AbstractMarkovModel<String> snhmmModel = new SparseNHMM<String>(smodel, length, constraints);
+		
+		System.out.println("Constrained Sparse Single-Order Markov Model\n" + snhmmModel);
 		
 		for (Constraint<String> constraint : constraints) {
 			System.out.println("Constraint: " + constraint);
@@ -60,10 +84,22 @@ public class Main {
 			System.out.println("Gen " + i + ": " + model.generate(4));
 		}
 
+		System.out.println("\nGenerate 10 examples with Sparse Single-Order Markov Model:");
+		
+		for (int i = 0; i < 10; i++) {
+			System.out.println("Gen " + i + ": " + smodel.generate(4));
+		}
+
 		System.out.println("\nGenerate 10 examples with Constrained Single-Order Markov Model:");
 		
 		for (int i = 0; i < 10; i++) {
 			System.out.println("Gen " + i + ": " + nhmmModel.generate(4));
+		}
+		
+		System.out.println("\nGenerate 10 examples with Constrained Sparse Single-Order Markov Model:");
+		
+		for (int i = 0; i < 10; i++) {
+			System.out.println("Gen " + i + ": " + snhmmModel.generate(4));
 		}
 		
 		System.out.println();
@@ -76,7 +112,25 @@ public class Main {
 		
 		SingleOrderMarkovModel<Character> model = new SingleOrderMarkovModel<Character>(states, priors, transitions);
 		
-		System.out.println("Single-Order Markov Model:\n" + model + "\n\n");
+//		System.out.println("Single-Order Markov Model:\n" + model + "\n\n");
+		
+		Map<Integer,Double> spriors = new HashMap<Integer,Double>();
+		for (int i = 0; i < priors.length; i++) {
+			spriors.put(i, priors[i]);
+		}
+		Map<Integer, Map<Integer,Double>> stransitions = new HashMap<Integer, Map<Integer, Double>>();
+		Map<Integer, Double> newMap;
+		for (int i = 0; i < transitions.length; i++) {
+			newMap = new HashMap<Integer, Double>();
+			for (int j = 0; j < transitions[i].length; j++) {
+				if (transitions[i][j] != 0.0) newMap.put(j, transitions[i][j]);
+			}
+			stransitions.put(i, newMap);
+		}
+		
+		SparseSingleOrderMarkovModel<Character> smodel = new SparseSingleOrderMarkovModel<Character>(states, spriors, stransitions);
+		
+//		System.out.println("Sparse Single-Order Markov Model:\n" + smodel + "\n\n");
 		
 		int length = 4;
 		List<Constraint<Character>> constraints = new ArrayList<Constraint<Character>>();
@@ -97,6 +151,10 @@ public class Main {
 		AbstractMarkovModel<Character> nhmmModel = new NHMM<Character>(model, length, constraints);
 		
 		System.out.println("Constrained Single-Order Markov Model\n" + nhmmModel);
+		
+		AbstractMarkovModel<Character> snhmmModel = new SparseNHMM<Character>(smodel, length, constraints);
+		
+		System.out.println("Constrained Sparse Single-Order Markov Model\n" + snhmmModel);
 		
 		for (Constraint<Character> constraint : constraints) {
 			System.out.println("Constraint: " + constraint);
@@ -125,10 +183,22 @@ public class Main {
 			System.out.println("Gen " + i + ": " + model.generate(4));
 		}
 
+		System.out.println("\nGenerate 10 examples with Sparse Single-Order Markov Model:");
+		
+		for (int i = 0; i < 10; i++) {
+			System.out.println("Gen " + i + ": " + model.generate(4));
+		}
+
 		System.out.println("\nGenerate 10 examples with Constrained Single-Order Markov Model:");
 		
 		for (int i = 0; i < 10; i++) {
 			System.out.println("Gen " + i + ": " + nhmmModel.generate(4));
+		}
+
+		System.out.println("\nGenerate 10 examples with Constrained Sparse Single-Order Markov Model:");
+		
+		for (int i = 0; i < 10; i++) {
+			System.out.println("Gen " + i + ": " + snhmmModel.generate(4));
 		}
 		
 		System.out.println();

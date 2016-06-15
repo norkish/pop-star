@@ -86,6 +86,8 @@ public class NHMM<T> extends AbstractMarkovModel<T>{
 			}
 		}
 		
+//		System.out.println(this);
+
 		if(!satisfiable())
 		{
 			throw new RuntimeException("Not satisfiable, even before constraining");
@@ -264,6 +266,12 @@ public class NHMM<T> extends AbstractMarkovModel<T>{
 		return posStateToRemove;
 	}
 
+	/**
+	 * 
+	 * @param position
+	 * @param stateIndex
+	 * @return
+	 */
 	private Set<PositionedState> adjustTransitionsTo(int position, int stateIndex) {
 		Set<PositionedState> posStateToRemove = new HashSet<PositionedState>();
 		for (int i = 0; this.inSupport[position-1][stateIndex] > 0 && i < this.logTransitions[position-1].length; i++) {
@@ -446,7 +454,6 @@ public class NHMM<T> extends AbstractMarkovModel<T>{
 	}
 
 	public int length() {
-		// TODO Auto-generated method stub
 		return logTransitions.length;
 	}
 

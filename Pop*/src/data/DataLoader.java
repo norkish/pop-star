@@ -15,6 +15,7 @@ import globalstructure.SegmentType;
 import harmony.Chord;
 import lyrics.Lyric;
 import main.TabDriver;
+import markov.SparseSingleOrderMarkovModel;
 import tab.CompletedTab;
 import utils.Utils;
 
@@ -246,5 +247,9 @@ public class DataLoader {
 
 	public static Map<SegmentType, Map<Integer, Distribution<ConstraintBlock<Chord>>>> getChordConstraintsDistribution() {
 		return chordConstraintsDistribution;
+	}
+
+	public static SparseSingleOrderMarkovModel<Chord> getChordMarkovModel() {
+		return null;//chordTransitionDistribution;
 	}
 }
