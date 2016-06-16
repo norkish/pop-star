@@ -1,11 +1,14 @@
 package constraint;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import lyrics.Lyric;
-
-public class ConstraintBlock<T> {
+public class ConstraintBlock<T> implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	List<List<Constraint<T>>> constraints = new ArrayList<List<Constraint<T>>>();
 	List<Integer> lengthConstraints = new ArrayList<Integer>();
 	
@@ -90,6 +93,10 @@ public class ConstraintBlock<T> {
 
 	public void addLengthConstraints(List<Integer> newLengthConstraints) {
 		lengthConstraints = newLengthConstraints;
+	}
+
+	public int getLengthConstraint(int i) {
+		return lengthConstraints.get(i);
 	}
 	
 	

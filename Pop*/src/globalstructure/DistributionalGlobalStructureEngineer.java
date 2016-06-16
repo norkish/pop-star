@@ -1,11 +1,11 @@
 package globalstructure;
 
 import data.DataLoader;
-import data.Distribution;
+import data.BackedDistribution;
 
 public class DistributionalGlobalStructureEngineer extends GlobalStructureEngineer {
 
-	private Distribution<String> globalStructDistribution = DataLoader.getGlobalStructureDistribution();
+	private BackedDistribution<String> globalStructDistribution = DataLoader.getGlobalStructureDistribution();
 	
 	@Override
 	public GlobalStructure generateStructure() {

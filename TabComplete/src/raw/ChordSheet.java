@@ -146,13 +146,8 @@ public class ChordSheet implements Serializable {
 			}
 		}
 
-		if (DirtyFilter.isProfane(rawTab)){
-			chordSheetsIgnoredBecauseOfLanguage++;
-			System.out.println("Ignoring " + this.url + " for explicit language");
+		if(!parseTab(rawTab))
 			return;
-		}
-		
-		parseTab(rawTab);
 
 		this.title = Utils.removeParen(this.title).trim();
 
@@ -160,7 +155,7 @@ public class ChordSheet implements Serializable {
 		this.key = Pitch.getPitchValue(csvRecord.get(KEY_COL));
 		this.contributor = csvRecord.get(CONTRIBUTOR_COL).trim();
 
-		this.key = normalizeChords(this.key);
+//		this.key = normalizeChords(this.key);
 	}
 
 	private int normalizeChords(int key) {
@@ -179,18 +174,18 @@ public class ChordSheet implements Serializable {
 		}
 	}
 
-	private void parseTab(String rawTab) {
+	private boolean parseTab(String rawTab) {
 		if (rawTab.length() == 0)
-			return;
+			return false;
 		// Find two newlines before first chord (second to keep block together)
 		int start = findStartIdx(rawTab);
 		if (start == -1)
-			return;
+			return false;
 
 		// Find second new line after last chord (second to keep block together)
 		int end = findLastIdx(rawTab);
 		if (end == -1)
-			return;
+			return false;
 
 		// Grab the stuff in between
 		rawTab = rawTab.substring(start, end);
@@ -199,6 +194,11 @@ public class ChordSheet implements Serializable {
 		rawTab = rawTab.replaceAll("[\\(\\[]<", "<"); // some embedded UG tabs put square brackets around chords
 		rawTab = rawTab.replaceAll(">[\\)\\]]", ">");
 		rawTab = Parser.unescapeEntities(rawTab, true).replaceAll("&", "and").replaceAll("(?i)([\\S])(\\1)+", "$1$2").trim();
+		if (DirtyFilter.isProfane(rawTab)){
+			chordSheetsIgnoredBecauseOfLanguage++;
+			System.out.println("Ignoring " + this.url + " for explicit language");
+			return false;
+		}
 		String[] blocks = rawTab.split("<br>\\s*<br>");
 
 		if (!parseTabBlocks(blocks, false)) {
@@ -216,6 +216,8 @@ public class ChordSheet implements Serializable {
 		blocksWithRoleIndicatedTot += blocksWithRoleIndicated;
 		if (chorusMarked)
 			tabsWithChorusMarkedTot++;
+		
+		return true;
 	}
 
 	private boolean parseTabBlocks(String[] blocks, boolean embedded) {

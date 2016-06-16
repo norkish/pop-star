@@ -4,17 +4,17 @@ import java.util.Map;
 
 import constraint.ConstraintBlock;
 import data.DataLoader;
-import data.Distribution;
+import data.BackedDistribution;
 import globalstructure.SegmentType;
 import harmony.Chord;
 import lyrics.Lyric;
 
 public class DistributionalSubstructureEngineer extends SubstructureEngineer {
 	
-	private Map<SegmentType, Map<Integer, Distribution<ConstraintBlock<Lyric>>>> rhymeConstraintsDistribution = DataLoader.getRhymeConstraintsDistribution();
-	private Map<SegmentType, Map<Integer, Distribution<ConstraintBlock<Lyric>>>> lyricConstraintsDistribution = DataLoader.getLyricConstraintsDistribution();
-	private Map<SegmentType, Map<Integer, Distribution<ConstraintBlock<Chord>>>> chordConstraintsDistribution = DataLoader.getChordConstraintsDistribution();
-	private Map<SegmentType, Distribution<Integer>> linesPerSegmentDistribution = DataLoader.getLinesPerSegmentDistribution();
+	private Map<SegmentType, Map<Integer, BackedDistribution<ConstraintBlock<Lyric>>>> rhymeConstraintsDistribution = DataLoader.getRhymeConstraintsDistribution();
+	private Map<SegmentType, Map<Integer, BackedDistribution<ConstraintBlock<Lyric>>>> lyricConstraintsDistribution = DataLoader.getLyricConstraintsDistribution();
+	private Map<SegmentType, Map<Integer, BackedDistribution<ConstraintBlock<Chord>>>> chordConstraintsDistribution = DataLoader.getChordConstraintsDistribution();
+	private Map<SegmentType, BackedDistribution<Integer>> linesPerSegmentDistribution = DataLoader.getLinesPerSegmentDistribution();
 
 	@Override
 	protected void applyVariation(SegmentSubstructure substructure, SegmentType segmentType, boolean isLast) {

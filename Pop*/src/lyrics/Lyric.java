@@ -1,5 +1,8 @@
 package lyrics;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Lyric {
 
 	String lyric = null;
@@ -37,7 +40,10 @@ public class Lyric {
 			}
 		}
 		
-		return lyric.substring(lastVowelSeqStart);
+		if (lastVowelSeqStart == -1)
+			return lyric;
+		else 
+			return lyric.substring(lastVowelSeqStart);
 	}
 
 	@Override
@@ -63,5 +69,18 @@ public class Lyric {
 		} else if (!lyric.equals(other.lyric))
 			return false;
 		return true;
+	}
+
+	public static List<Lyric> parseLyrics(String wordsForLine) {
+		List<Lyric> list = new ArrayList<Lyric>();
+		if (wordsForLine.length() == 0) {
+			return list;
+		}
+		for (String word : wordsForLine.split("[^a-zA-Z0-9']+")) {
+			if (word.length() > 0) {
+				list.add(new Lyric(word));
+			}
+		}
+		return list;
 	}
 }

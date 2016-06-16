@@ -11,8 +11,17 @@ import pitch.Pitch;
 
 public class Chord implements Serializable{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public static class ChordQuality implements Serializable{
-//		SortedMap<Short,Short> notes = new TreeMap<Short,Short>();
+/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		//		SortedMap<Short,Short> notes = new TreeMap<Short,Short>();
 		private String quality;
 		private boolean isMinor;
 		
@@ -95,6 +104,28 @@ public class Chord implements Serializable{
 		public boolean isMinor() {
 			return isMinor;
 		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + (isMinor ? 1231 : 1237);
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (!(obj instanceof ChordQuality))
+				return false;
+			ChordQuality other = (ChordQuality) obj;
+			if (isMinor != other.isMinor)
+				return false;
+			return true;
+		}
 	}
 	
 	private static Pattern numericPitch = Pattern.compile("^[b\\-#]?([2-79]|1[13]?)"); 
@@ -145,4 +176,34 @@ public class Chord implements Serializable{
 	public boolean isMinor() {
 		return this.quality.isMinor();
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((quality == null) ? 0 : quality.hashCode());
+		result = prime * result + root;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof Chord))
+			return false;
+		Chord other = (Chord) obj;
+		if (quality == null) {
+			if (other.quality != null)
+				return false;
+		} else if (!quality.equals(other.quality))
+			return false;
+		if (root != other.root)
+			return false;
+		return true;
+	}
+	
+	
 }

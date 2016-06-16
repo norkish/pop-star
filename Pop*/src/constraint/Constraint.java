@@ -1,12 +1,17 @@
 package constraint;
+import java.io.Serializable;
 import java.util.List;
 
 import condition.ConstraintCondition;
 import condition.DelayedConstraintCondition;
 import utils.Utils;
 
-public class Constraint<T> {
+public class Constraint<T> implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	public static final int FINAL_POSITION = -1;
 	
 	public boolean getDesiredConditionState() {

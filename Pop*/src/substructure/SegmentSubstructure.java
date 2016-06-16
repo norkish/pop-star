@@ -1,5 +1,6 @@
 package substructure;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,8 +11,12 @@ import lyrics.Lyric;
 import pitch.Pitch;
 import rhythm.RhythmSegment;
 
-public class SegmentSubstructure {
+public class SegmentSubstructure implements Serializable {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	public ConstraintBlock<Lyric> lyricConstraints = null;
 	public ConstraintBlock<Chord> chordConstraints = null;
 	public ConstraintBlock<RhythmSegment> rhythmConstraints = null;

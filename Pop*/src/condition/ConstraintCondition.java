@@ -1,7 +1,13 @@
 package condition;
 
-public abstract class ConstraintCondition<T> {
+import java.io.Serializable;
 
+public abstract class ConstraintCondition<T> implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	public abstract boolean isSatisfiedBy(T t);
 	
 	public String toString()

@@ -44,10 +44,7 @@ public class LyricSheet implements Serializable{
 
 		String lyrics = csvRecord.get(LYRICS_COL).trim();
 		
-		if (DirtyFilter.isProfane(lyrics)){
-			lyricSheetsIgnoredBecauseOfLanguage++;
-			return;
-		}
+		
 		
 		if (provider == LYRICSNET) {
 			lyrics = lyrics.replaceAll("\\r\\n", "<br>").replaceAll("\\n", "<br>");
@@ -70,8 +67,15 @@ public class LyricSheet implements Serializable{
 				List<String> lyricBlock = new ArrayList<String>();
 				for (String lyr : block.split("<br>")) {
 					String trim = lyr.replaceAll("(?i)([\\S])(\\1)+", "$1$2").trim();
-					if (trim.length() > 0)
+					if (trim.length() > 0) {
+						if (DirtyFilter.isProfane(trim)){
+							lyricSheetsIgnoredBecauseOfLanguage++;
+							System.out.println("Ignoring " + this.url + " for explicit language");
+							lyricBlocks.clear();
+							return;
+						}
 						lyricBlock.add(trim);
+					}
 				}
 				if (lyricBlock.size() > 0)
 					lyricBlocks.add(lyricBlock);
@@ -98,8 +102,15 @@ public class LyricSheet implements Serializable{
 				List<String> lyricBlock = new ArrayList<String>();
 				for (String lyr : block.split("<br>")) {
 					String trim = lyr.replaceAll("(?i)([\\S])(\\1)+", "$1$2").trim();
-					if (trim.length() > 0)
+					if (trim.length() > 0) {
+						if (DirtyFilter.isProfane(trim)){
+							lyricSheetsIgnoredBecauseOfLanguage++;
+							System.out.println("Ignoring " + this.url + " for explicit language");
+							lyricBlocks.clear();
+							return;
+						}
 						lyricBlock.add(trim);
+					}
 				}
 				if (lyricBlock.size() > 0)
 					lyricBlocks.add(lyricBlock);
@@ -119,10 +130,17 @@ public class LyricSheet implements Serializable{
 					List<String> lyricBlock = new ArrayList<String>();
 					for (String lyr : el.html().split("<br>")) {
 						String trim = lyr.replaceAll("(?i)([\\S])(\\1)+", "$1$2").trim();
-						if (trim.length() > 0)
+						if (trim.length() > 0) {
 							if (trim.startsWith("We are not in a position to display these lyrics due to licensing restrictions. Sorry for the inconvenience."))
 								return;
+							if (DirtyFilter.isProfane(trim)){
+								lyricSheetsIgnoredBecauseOfLanguage++;
+								System.out.println("Ignoring " + this.url + " for explicit language");
+								lyricBlocks.clear();
+								return;
+							}
 							lyricBlock.add(trim);
+						}
 					}
 					if (lyricBlock.size() > 0)
 						lyricBlocks.add(lyricBlock);

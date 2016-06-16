@@ -16,7 +16,7 @@ import utils.Pair;
 public class RhymeStructureAnalyzer {
 
 	private static final int LOOKAHEAD = 4;
-	private static final double MATCHING_LINE_THRESHOLD = .2;
+	public static final double MATCHING_LINE_THRESHOLD = .2;
 	
 	private static final double PERFECT_RHYME_SCORE = 1.0;
 	private static final double FAMILY_RHYME_SCORE = .75;
@@ -69,7 +69,7 @@ public class RhymeStructureAnalyzer {
 				maxRhymeScoreForLine = -1.0;
 				for(StressedPhone[] line1Phone:line1Phones) {
 					for(StressedPhone[] line2Phone: line2Phones) {
-						rhymeScore = scoreRhymingLinesByPatsRules(line1Phone, line2Phone);
+						rhymeScore = scoreRhymeByPatsRules(line1Phone, line2Phone);
 						if (rhymeScore > maxRhymeScoreForLine) {
 							maxRhymeScoreForLine = rhymeScore;
 						}
@@ -92,7 +92,7 @@ public class RhymeStructureAnalyzer {
 		return scheme;
 	}
 	
-	private static double scoreRhymingLinesByPatsRules(StressedPhone[] line1Phones, StressedPhone[] line2Phones) {
+	public static double scoreRhymeByPatsRules(StressedPhone[] line1Phones, StressedPhone[] line2Phones) {
 //		StressedPhone[] line1LastSyl = Phonetecizer.getLastSyllable(line1Phones,0);
 //		StressedPhone[] line1PenultimateSyl = Phonetecizer.getLastSyllable(line1Phones,1);
 //		StressedPhone[] line2LastSyl = Phonetecizer.getLastSyllable(line2Phones,0);

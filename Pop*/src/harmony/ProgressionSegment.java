@@ -1,9 +1,14 @@
 package harmony;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class ProgressionSegment {
+public class ProgressionSegment implements Serializable{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private List<List<Chord>> chordLines;
 
 	public ProgressionSegment(List<List<Chord>> lyricLines) {

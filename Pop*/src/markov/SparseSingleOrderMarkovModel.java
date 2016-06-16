@@ -11,7 +11,7 @@ public class SparseSingleOrderMarkovModel<T> extends AbstractMarkovModel<T>{
 	T[] states;
 	Map<Integer,Double> logPriors;
 	Map<Integer,Map<Integer,Double>> logTransitions;
-	Map<T, Integer> stateIndex = new HashMap<T, Integer>();
+	Map<T, Integer> stateIndex;
 	Random rand = new Random();
 
 	/*
@@ -29,6 +29,33 @@ public class SparseSingleOrderMarkovModel<T> extends AbstractMarkovModel<T>{
 			assert(!stateIndex.containsKey(states[i]));
 			this.states[i] = states[i];
 			stateIndex.put(states[i], i);
+			probability = priors.get(i);
+			if (probability != null) {
+				this.logPriors.put(i, Math.log(probability));
+			}
+			
+			newInnerMap = new HashMap<Integer, Double>();
+			this.logTransitions.put(i, newInnerMap);
+			oldInnerMap = transitions.get(i);
+			for (Entry<Integer, Double> entry : oldInnerMap.entrySet()) {
+				newInnerMap.put(entry.getKey(),Math.log(entry.getValue()));
+			}
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public SparseSingleOrderMarkovModel(Map<T, Integer> statesByIndex, Map<Integer, Double> priors, Map<Integer, Map<Integer, Double>> transitions) {
+		this.states = (T[]) new Object[statesByIndex.size()];
+		this.stateIndex = statesByIndex;
+		this.logPriors = new HashMap<Integer,Double>(priors.size());
+		this.logTransitions = new HashMap<Integer, Map<Integer, Double>>(transitions.size());
+		
+		Double probability;
+		Map<Integer, Double> newInnerMap, oldInnerMap;
+		int i;
+		for (Entry<T,Integer> stateIdx: stateIndex.entrySet()) {
+			i = stateIdx.getValue();
+			this.states[i] = stateIdx.getKey();
 			probability = priors.get(i);
 			if (probability != null) {
 				this.logPriors.put(i, Math.log(probability));

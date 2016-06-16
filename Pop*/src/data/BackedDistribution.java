@@ -2,22 +2,19 @@ package data;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Random;
+import java.util.Map.Entry;
 
-public class Distribution<T> {
-
-	private Map<T, List<Integer>> distribution;
+public class BackedDistribution<T> {
+	private final static Random rand = new Random();
 	private int accumulatedCount = 0;
+	private Map<T, List<Integer>> distribution;
 	
-	private static Random rand = new Random();
-
-	public Distribution(Map<T, List<Integer>> distribution) {
+	public BackedDistribution(Map<T, List<Integer>> distribution) {
 		this.distribution = distribution;
 		for (List<Integer> i : distribution.values()) {
 			accumulatedCount += i.size();
 		}
-		
 	}
 
 	public T sampleRandomly() {
