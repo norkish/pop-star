@@ -15,7 +15,7 @@ public class TestHarmonyEngineer extends HarmonyEngineer {
 	private SingleOrderMarkovModel<Chord> mModel;
 	
 	@Override
-	protected void applyVariation(ProgressionSegment segmentProgression, SegmentType segmentType, boolean isLast) {
+	protected void applyVariation(ProgressionSegment segmentProgression, Inspiration inspiration, SegmentSubstructure segmentSubstructures, SegmentType segmentType, boolean isLast){
 		// TODO Auto-generated method stub
 
 	}

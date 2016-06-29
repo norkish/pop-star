@@ -13,6 +13,7 @@ public class Rhyme<T> extends DelayedConstraintCondition<Lyric> {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	private static final double MATCHING_LINE_THRESHOLD = .6;
 
 	public Rhyme(int line, int pos) {
 		super(line,pos);
@@ -23,12 +24,15 @@ public class Rhyme<T> extends DelayedConstraintCondition<Lyric> {
 	}
 
 	private boolean rhyme(Lyric t, Lyric s) {
+		if (t.equals(s)) {
+			return false;
+		}
 		List<StressedPhone[]> tPhones = Phonetecizer.getPhonesForXLastSyllables(t.toString(), 1);
 		List<StressedPhone[]> sPhones = Phonetecizer.getPhonesForXLastSyllables(s.toString(), 1);
 		
 		for(StressedPhone[] line1Phone:tPhones) {
 			for(StressedPhone[] line2Phone: sPhones) {
-				if (RhymeStructureAnalyzer.scoreRhymeByPatsRules(line1Phone, line2Phone) > RhymeStructureAnalyzer.MATCHING_LINE_THRESHOLD) {
+				if (RhymeStructureAnalyzer.scoreRhymeByPatsRules(line1Phone, line2Phone) > MATCHING_LINE_THRESHOLD) {
 					return true;
 				}
 			}

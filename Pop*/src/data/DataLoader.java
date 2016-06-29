@@ -1,6 +1,5 @@
 package data;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -98,6 +97,7 @@ public class DataLoader {
 		Map<Lyric, Integer> wordDistrForPrevWord;
 		SortedMap<Integer, Chord> chordsForLine;
 		String wordsForLine;
+		List<Lyric> parsedLyrics;
 		// End variable initialization
 
 		for (int tabId = 0; tabId < tabs.size(); tabId++) {
@@ -169,7 +169,8 @@ public class DataLoader {
 				
 				if (currSegmentLabel.hasLyrics()) {
 					// analyze lyric line for transitions
-					for (Lyric nextWord: Lyric.parseLyrics(wordsForLine)) {
+					parsedLyrics = Lyric.parseLyrics(wordsForLine);
+					for (Lyric nextWord: parsedLyrics) {
 						wordDistrForPrevWord = getMapForKey(wordTransitionsForCurrSegment, prevLyric);
 						incrementCount(wordDistrForPrevWord, nextWord);
 						prevLyric = nextWord;
@@ -179,11 +180,11 @@ public class DataLoader {
 					//TODO
 					rhymeConstraintBlock.addLineConstraints(rhymeConstraintsForLine);
 					lyricRepetitionConstraintBlock.addLineConstraints(lyricRepetitionConstraintsForLine);
-					lyricRepetitionConstraintBlock.addLengthConstraint(words.size());
+					lyricRepetitionConstraintBlock.addLengthConstraint(parsedLyrics.size());
 				}
 				
 				chordRepetitionConstraintBlock.addLineConstraints(chordRepetitionConstraintsForLine);
-				chordRepetitionConstraintBlock.addLengthConstraint(chords.size());
+				chordRepetitionConstraintBlock.addLengthConstraint(chordsForLine.size());
 			}
 			
 			// include the last segment stats

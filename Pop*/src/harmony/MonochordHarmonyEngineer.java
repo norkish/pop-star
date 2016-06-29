@@ -7,7 +7,7 @@ import substructure.SegmentSubstructure;
 public class MonochordHarmonyEngineer extends HarmonyEngineer {
 
 	@Override
-	protected void applyVariation(ProgressionSegment segmentProgression, SegmentType segmentType, boolean isLast) {
+	protected void applyVariation(ProgressionSegment segmentProgression, Inspiration inspiration, SegmentSubstructure segmentSubstructures, SegmentType segmentType, boolean isLast){
 		// TODO Auto-generated method stub
 		
 	}

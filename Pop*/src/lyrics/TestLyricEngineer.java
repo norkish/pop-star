@@ -3,8 +3,6 @@ package lyrics;
 import java.util.ArrayList;
 import java.util.List;
 
-import condition.ConstraintCondition;
-import condition.DelayedConstraintCondition;
 import constraint.Constraint;
 import globalstructure.SegmentType;
 import inspiration.Inspiration;
@@ -16,6 +14,15 @@ public class TestLyricEngineer extends LyricalEngineer {
 
 	private SingleOrderMarkovModel<Lyric> mModel;
 
+	@Override
+	protected void applyVariationToChorus(LyricSegment lyricSegment, Inspiration inspiration,
+			SegmentSubstructure segmentSubstructures, SegmentType segmentKey, boolean isLast) {
+
+		if (segmentKey.hasLyrics() && segmentKey != SegmentType.CHORUS) {
+			
+		}
+	}
+	
 	@Override
 	protected LyricSegment generateSegmentLyrics(Inspiration inspiration, SegmentSubstructure segmentSubstructures,
 			SegmentType segmentKey) {

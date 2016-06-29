@@ -84,7 +84,6 @@ public class SegmentSubstructure implements Serializable {
 				str.append(constraint);
 				str.append('\n');
 			}
-			str.append('\n');
 		}
 		
 		return str.toString();

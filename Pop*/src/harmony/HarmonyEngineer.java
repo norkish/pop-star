@@ -35,7 +35,7 @@ public abstract class HarmonyEngineer {
 			segmentHarmonies[0] = generateSegmentHarmony(inspiration, segmentSubstructures[0], segmentKey);
 			for (int i = 1; i < segmentHarmonies.length; i++) {
 				segmentHarmonies[i] = (ProgressionSegment) Utils.deepCopy(segmentHarmonies[i-1]);
-				applyVariation(segmentHarmonies[i], segmentKey, i == (segmentHarmonies.length-1));
+				applyVariation(segmentHarmonies[i], inspiration, segmentSubstructures[i], segmentKey, i == (segmentHarmonies.length-1));
 			}
 		}
 		
@@ -44,7 +44,7 @@ public abstract class HarmonyEngineer {
 		return harmony;
 	}
 	
-	protected abstract void applyVariation(ProgressionSegment segmentProgression, SegmentType segmentType, boolean isLast);
+	protected abstract void applyVariation(ProgressionSegment segmentProgression, Inspiration inspiration, SegmentSubstructure segmentSubstructures, SegmentType segmentType, boolean isLast);
 	
 	/**
 	 * Generates a chord progression (harmony) for a particular segment according to one 

@@ -1,10 +1,15 @@
 package lyrics;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Lyric {
+public class Lyric implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	String lyric = null;
 	
 	public Lyric(String lyric) {
@@ -50,7 +55,7 @@ public class Lyric {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((lyric == null) ? 0 : lyric.hashCode());
+		result = prime * result + ((lyric == null) ? 0 : lyric.toLowerCase().hashCode());
 		return result;
 	}
 
@@ -66,7 +71,7 @@ public class Lyric {
 		if (lyric == null) {
 			if (other.lyric != null)
 				return false;
-		} else if (!lyric.equals(other.lyric))
+		} else if (!lyric.equalsIgnoreCase(other.lyric))
 			return false;
 		return true;
 	}

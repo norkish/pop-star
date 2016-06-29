@@ -7,6 +7,7 @@ import globalstructure.SegmentType;
 import inspiration.Inspiration;
 import structure.Structure;
 import substructure.SegmentSubstructure;
+import utils.Utils;
 
 public abstract class LyricalEngineer {
 
@@ -23,8 +24,14 @@ public abstract class LyricalEngineer {
 		for (SegmentType segmentKey : lyricsBySegment.keySet()) {
 			LyricSegment[] lyricSegments = lyricsBySegment.get(segmentKey);
 			SegmentSubstructure[] segmentSubstructures = substructures.get(segmentKey);
-			for (int i = 0; i < lyricSegments.length; i++) {
-				lyricSegments[i] = generateSegmentLyrics(inspiration, segmentSubstructures[i], segmentKey);
+			lyricSegments[0] = generateSegmentLyrics(inspiration, segmentSubstructures[0], segmentKey);
+			for (int i = 1; i < lyricSegments.length; i++) {
+				if (segmentKey == SegmentType.CHORUS) {
+					lyricSegments[i] = (LyricSegment) Utils.deepCopy(lyricSegments[i-1]);
+					applyVariationToChorus(lyricSegments[i], inspiration, segmentSubstructures[i], segmentKey, i == (lyricSegments.length-1));
+				} else { 
+					lyricSegments[i] = generateSegmentLyrics(inspiration, segmentSubstructures[i], segmentKey);
+				}
 			}
 		}
 		
@@ -33,6 +40,8 @@ public abstract class LyricalEngineer {
 		return lyrics;
 	}
 	
+	protected abstract void applyVariationToChorus(LyricSegment lyricSegment, Inspiration inspiration, SegmentSubstructure segmentSubstructures, SegmentType segmentKey, boolean isLast);
+
 	protected abstract LyricSegment generateSegmentLyrics(Inspiration inspiration, SegmentSubstructure segmentSubstructures, SegmentType segmentKey);
 
 	private Map<SegmentType, LyricSegment[]> initLyricSegments(Map<SegmentType, SegmentSubstructure[]> substructure) {

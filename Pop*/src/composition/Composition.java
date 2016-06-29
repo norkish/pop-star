@@ -99,12 +99,12 @@ public class Composition {
 				str.append(segmentType);
 				str.append(' ');
 				str.append((segTypeIdx + 1));
-				str.append(":\n\n");
+				str.append(":\n");
 				
 				if (printSubstructure) {
-					str.append("Structure:\n\n");
+					str.append("Structure:\n");
 					str.append(substructure);
-					str.append("\n\n");
+					str.append("\n");
 				}
 				
 				if (printLyrics || printMelody || printHarmony) {
@@ -123,8 +123,8 @@ public class Composition {
 							str.append(Utils.join(lyricsBySegment.get(segmentType)[segTypeIdx].getLine(i)," "));
 							str.append('\n');
 						}
-						str.append('\n');
 					}
+					str.append('\n');
 				}
 			}
 		}

@@ -41,7 +41,7 @@ public abstract class DelayedConstraintCondition<T> extends ConstraintCondition<
 	}
 	
 	public String asString() {
-		return " with the token at line " + prevLineNumber + ", " + Utils.getPositionString(prevPos) + " (" + (prevT == null? "" : prevT) + ")";
+		return " with the token at line " + (prevLineNumber+1) + ", " + Utils.getPositionString(prevPos) + " (" + (prevT == null? "" : prevT) + ")";
 	}
 
 	@Override
