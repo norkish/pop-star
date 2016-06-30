@@ -100,6 +100,7 @@ public class DataLoader {
 		List<Lyric> parsedLyrics;
 		// End variable initialization
 
+		// For each tab
 		for (int tabId = 0; tabId < tabs.size(); tabId++) {
 			completedTab = tabs.get(tabId);
 			if (completedTab.length() == 0) continue;
@@ -112,6 +113,7 @@ public class DataLoader {
 			prevSegmentLabel = null;
 			
 			idxOfSegmentBeginning = -1;
+			// For each line in the tab
 			for (i = 0; i < completedTab.length(); i++) {
 				
 				chordsForLine = chords.get(i);
