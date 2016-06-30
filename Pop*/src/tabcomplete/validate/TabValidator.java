@@ -95,7 +95,7 @@ public class TabValidator {
 						}
 					}
 					
-					tabComplete = new CompletedTab(chordSheet.getKey(), words,chords,scheme,structure);
+					tabComplete = new CompletedTab(chordSheet.getKey(), words,chords,scheme,structure,chordSheet.getURL());
 					completedTabs.add(tabComplete);
 				}
 			}

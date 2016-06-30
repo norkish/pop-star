@@ -979,4 +979,8 @@ public class ChordSheet implements Serializable {
 	public int getKey() {
 		return key;
 	}
+
+	public String getURL() {
+		return url;
+	}
 }
