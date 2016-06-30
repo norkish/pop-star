@@ -24,6 +24,7 @@ public class RhymeStructureAnalyzer {
 	private static final double SUBTRACTIVE_RHYME_SCORE = .4;
 	private static final double ASSONANCE_RHYME_SCORE = .4;
 	private static final double CONSONANCE_RHYME_SCORE = .2;
+	private static final boolean DEBUG = false;
 	
 	private static double[][] hMatrix = HirjeeMatrix.load();
 	private static List<Pair<String, PhoneCategory>> phoneDict = Phonetecizer.loadReversePhonesDict();
@@ -57,9 +58,11 @@ public class RhymeStructureAnalyzer {
 				continue;
 			}
 //			System.out.println("COMPUTING RHYME SCORES FOR LINE:");
-			System.out.print(i + "\t");
-			System.out.print(scheme[i] + "\t");
-			System.out.print(words.get(i) + "\t");
+			if (DEBUG) {
+				System.out.print(i + "\t");
+				System.out.print(scheme[i] + "\t");
+				System.out.print(words.get(i) + "\t");
+			}
 			maxRhymeScoreForLines = -1.0;
 			for (int j = i+1; j < Math.min(i+LOOKAHEAD+1, lineCount); j++) {
 				line2Phones = wordsPhones.get(j);
@@ -84,9 +87,9 @@ public class RhymeStructureAnalyzer {
 			
 			if(maxRhymeScoreForLines >= MATCHING_LINE_THRESHOLD) {
 				scheme[maxJ] = maxJ-i;
-				System.out.print(maxRhymeScoreForLines + "\t" + maxJ);
+				if (DEBUG) System.out.print(maxRhymeScoreForLines + "\t" + maxJ);
 			}
-			System.out.println();
+			if (DEBUG) System.out.println();
 		}
 		
 		return scheme;
@@ -301,16 +304,16 @@ public class RhymeStructureAnalyzer {
 		SequencePair.setCosts(1,-1,-20,0);
 		
 		StressedPhone[] word1SPs, word2SPs;
-		System.out.println("Simple\tAlign\tWord1\tWord2\tWord1Syls\tWord2Syls");
+		if (DEBUG) System.out.println("Simple\tAlign\tWord1\tWord2\tWord1Syls\tWord2Syls");
 		double score;
 		for (int i = 0; i < words.length; i++) {
 			word1SPs = stressedPhones.get(i).get(0);
 			for (int j = i+1; j < words.length; j++) {
 				word2SPs = stressedPhones.get(j).get(0);
 				score = simpleRhymeScore(word1SPs, word2SPs);
-				System.out.print(""+score);
+				if (DEBUG) System.out.print(""+score);
 				score = alignedRhymeScore(word1SPs, word2SPs);
-				System.out.println("\t" + words[i] + "\t" + words[j] + "\t" + Arrays.toString(Phonetecizer.readable(word1SPs)) + "\t" + Arrays.toString(Phonetecizer.readable(word2SPs)));
+				if (DEBUG) System.out.println("\t" + words[i] + "\t" + words[j] + "\t" + Arrays.toString(Phonetecizer.readable(word1SPs)) + "\t" + Arrays.toString(Phonetecizer.readable(word2SPs)));
 				Utils.promptEnterKey("");
 			}
 		}

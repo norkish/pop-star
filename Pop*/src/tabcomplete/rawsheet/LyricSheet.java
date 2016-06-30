@@ -10,6 +10,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import tabcomplete.filter.DirtyFilter;
+import tabcomplete.main.TabDriver;
 import tabcomplete.utils.Utils;
 
 public class LyricSheet implements Serializable{
@@ -18,16 +19,17 @@ public class LyricSheet implements Serializable{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	public static final int LYRICS_COL = 0;
+	public static final int LYRICS_COL = TabDriver.mini_data_set? 0 : 3;
 	public static final int TITLE_COL = 1;
-	public static final int URL_COL = 2;
-	public static final int ARTIST_COL = 3;
-	public static final int PROVIDER_COL = 4;
+	public static final int URL_COL = TabDriver.mini_data_set? 2 : 0;
+	public static final int ARTIST_COL = TabDriver.mini_data_set? 3 : 4;
+	public static final int PROVIDER_COL = TabDriver.mini_data_set? 4 : 2;
 
 	public static final int LYRICSNET = 0;
 	public static final int METROLYRICS = 1;
 	public static final int SONGLYRICS = 2;
 	private static final String[] LYRICSNET_N_SONGLYRICS_TAGS = new String[] { "script", "img", "p" };
+	private static final boolean DEBUG = false;
 
 	private List<List<String>> lyricBlocks = new ArrayList<List<String>>();
 	private String title;
@@ -70,7 +72,7 @@ public class LyricSheet implements Serializable{
 					if (trim.length() > 0) {
 						if (DirtyFilter.isProfane(trim)){
 							lyricSheetsIgnoredBecauseOfLanguage++;
-							System.out.println("Ignoring " + this.url + " for explicit language");
+							if (DEBUG) System.out.println("Ignoring " + this.url + " for explicit language");
 							lyricBlocks.clear();
 							return;
 						}
@@ -105,7 +107,7 @@ public class LyricSheet implements Serializable{
 					if (trim.length() > 0) {
 						if (DirtyFilter.isProfane(trim)){
 							lyricSheetsIgnoredBecauseOfLanguage++;
-							System.out.println("Ignoring " + this.url + " for explicit language");
+							if (DEBUG) System.out.println("Ignoring " + this.url + " for explicit language");
 							lyricBlocks.clear();
 							return;
 						}
@@ -135,7 +137,7 @@ public class LyricSheet implements Serializable{
 								return;
 							if (DirtyFilter.isProfane(trim)){
 								lyricSheetsIgnoredBecauseOfLanguage++;
-								System.out.println("Ignoring " + this.url + " for explicit language");
+								if (DEBUG) System.out.println("Ignoring " + this.url + " for explicit language");
 								lyricBlocks.clear();
 								return;
 							}

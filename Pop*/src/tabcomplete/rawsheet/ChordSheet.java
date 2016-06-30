@@ -27,6 +27,7 @@ import tabcomplete.alignment.StringPairAlignment;
 import tabcomplete.alignment.XGenericPairwiseAlignment;
 import tabcomplete.alignment.SequencePair.AlignmentBuilder;
 import tabcomplete.filter.DirtyFilter;
+import tabcomplete.main.TabDriver;
 import tabcomplete.normalize.ChordNormalizer;
 import tabcomplete.utils.Utils;
 import utils.Pair;
@@ -48,16 +49,16 @@ public class ChordSheet implements Serializable {
 	static int blocksWithRoleIndicatedTot = 0;
 	static int tabsWithChorusMarkedTot = 0;
 
-	public static final int RATING_COL = 1;
-	public static final int ARTIST_COL = 2;
-	public static final int URL_COL = 3;
-	public static final int TITLE_COL = 4;
-	public static final int DIFFICULTY_COL = 7;
-	public static final int RAWTAB_COL = 8;
-	public static final int KEY_COL = 9;
-	public static final int PROVIDER_COL = 10;
-	public static final int CONTRIBUTOR_COL = 11;
-	public static final int TYPE_COL = 13;
+//	public static final int RATING_COL = TabDriver.mini_data_set? 1 ;
+	public static final int ARTIST_COL = TabDriver.mini_data_set? 2 : 1;
+	public static final int URL_COL = TabDriver.mini_data_set? 3 : 2;
+	public static final int TITLE_COL = TabDriver.mini_data_set? 4 : 3;
+	public static final int DIFFICULTY_COL = TabDriver.mini_data_set? 7 : 4;
+	public static final int RAWTAB_COL = TabDriver.mini_data_set? 8 : 0;
+	public static final int KEY_COL = TabDriver.mini_data_set? 9 : 5;
+	public static final int PROVIDER_COL = TabDriver.mini_data_set? 10 : 6;
+	public static final int CONTRIBUTOR_COL = TabDriver.mini_data_set? 11 : 7;
+	public static final int TYPE_COL = TabDriver.mini_data_set? 13 : 8;
 	private static final String[] EC_TAGS = new String[] { "script", "img", "p", "i", "b", "span", "div:not(.chorus)" };
 	private static final String[] UG_TAGS = new String[] { "script", "img", "p", "div", "i", "b", "u" };
 	private String title;
@@ -65,7 +66,6 @@ public class ChordSheet implements Serializable {
 	String url;
 	private String contributor;
 	private String type;
-	private String rating;
 	private String difficulty;
 	private int key;
 	private List<List<String>> lyricBlocks = new ArrayList<List<String>>();
@@ -88,7 +88,6 @@ public class ChordSheet implements Serializable {
 
 	public ChordSheet(CSVRecord csvRecord, String artistName, boolean ug) {
 		this.artist = artistName;
-		this.rating = csvRecord.get(RATING_COL);
 		this.url = csvRecord.get(URL_COL);
 
 		this.title = csvRecord.get(TITLE_COL);
@@ -196,7 +195,7 @@ public class ChordSheet implements Serializable {
 		rawTab = Parser.unescapeEntities(rawTab, true).replaceAll("&", "and").replaceAll("(?i)([\\S])(\\1)+", "$1$2").trim();
 		if (DirtyFilter.isProfane(rawTab)){
 			chordSheetsIgnoredBecauseOfLanguage++;
-			System.out.println("Ignoring " + this.url + " for explicit language");
+			if (DEBUG) System.out.println("Ignoring " + this.url + " for explicit language");
 			return false;
 		}
 		String[] blocks = rawTab.split("<br>\\s*<br>");
@@ -726,7 +725,7 @@ public class ChordSheet implements Serializable {
 
 		builder.append("RawChordSheet \n\t/**\n\t*title=").append(title).append("\n\t*artist=").append(artist)
 		.append("\n\t*url=").append(url).append("\n\t*contributor=").append(contributor).append("\n\t*type=")
-		.append(type).append("\n\t*rating=").append(rating).append("\n\t*difficulty=").append(difficulty)
+		.append(type).append("\n\t*difficulty=").append(difficulty)
 		.append("\n\t*key=").append(key).append("\n\t*bar repeats=").append(barRepeats)
 		.append("\n\t*x repeats=").append(xRepeats).append("\n\t*recoverred chords=").append(recoveredChords)
 		.append("\n\t*inferred chords=").append(inferredChords).append("\n\t*embedded=").append(embeddedTab)

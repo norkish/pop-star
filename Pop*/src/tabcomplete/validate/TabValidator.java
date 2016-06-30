@@ -17,10 +17,11 @@ import tabcomplete.rawsheet.RawDataLoader;
 import tabcomplete.rhyme.RhymeStructureAnalyzer;
 import tabcomplete.structure.SegmentStructureAnalyzer;
 import tabcomplete.tab.CompletedTab;
-import tabcomplete.utils.Utils;
 import utils.Pair;
 
 public class TabValidator {
+
+	private static final boolean DEBUG = false;
 
 	/**
 	 * @param lyricSheetsByArtist
@@ -78,18 +79,20 @@ public class TabValidator {
 					chords = correctedTab.getFirst();
 					words = correctedTab.getSecond();
 					
-					System.out.println("Validated Tab:");
-					for (int i = 0; i < chords.size(); i++) {
-						System.out.println(chords.get(i));
-						System.out.println(words.get(i));
-					}
 					
 					int[] scheme = RhymeStructureAnalyzer.extractRhymeScheme(words);
 					
 					char[] structure = SegmentStructureAnalyzer.extractSegmentStructure(words, chords);
 					
-					for (int i = 0; i < structure.length; i++) {
-						System.out.println("" + i + "\t" + structure[i] + "\t" + scheme[i] + "\t" + words.get(i));
+					if (DEBUG) {
+						System.out.println("Validated Tab:");
+						for (int i = 0; i < chords.size(); i++) {
+							System.out.println(chords.get(i));
+							System.out.println(words.get(i));
+						}
+						for (int i = 0; i < structure.length; i++) {
+							System.out.println("" + i + "\t" + structure[i] + "\t" + scheme[i] + "\t" + words.get(i));
+						}
 					}
 					
 					tabComplete = new CompletedTab(chordSheet.getKey(), words,chords,scheme,structure);

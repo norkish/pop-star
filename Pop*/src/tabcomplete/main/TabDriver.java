@@ -14,17 +14,17 @@ import tabcomplete.validate.TabValidator;
 
 public class TabDriver {
 	
-	private static boolean deserialize = true;
-	private static boolean serialize = false;
+	private static boolean deserialize = false;
+	private static boolean serialize = true;
+	public static boolean mini_data_set = false;
 	
 	public final static String dataDir = "../../data";
 	private final static String serializedDataDir = dataDir + "/ser";
-	private static String serializedLyrics = serializedDataDir + "/lyrics.ser";
-	private static String serializedTabs = serializedDataDir + "/tabs.ser";
-	private static String serializedCompleteTabs = serializedDataDir + "/complete_tabs.ser";
+	private static String serializedLyrics = serializedDataDir + "/" + (mini_data_set?"":"new_") +"lyrics.ser";
+	private static String serializedTabs = serializedDataDir + "/" + (mini_data_set?"":"new_") +"tabs.ser";
+	private static String serializedCompleteTabs = serializedDataDir + "/" + (mini_data_set?"":"new_") +"complete_tabs.ser";
 	
 	public static void main(String[] args) throws IOException {
-		
 		loadValidatedTabs();
 	}
 

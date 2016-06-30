@@ -11,12 +11,14 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
+import tabcomplete.main.TabDriver;
+
 public class DirtyFilter {
 
 	
 	private static final boolean DEBUG = false;
 	//Source: https://gist.github.com/ryanlewis/a37739d710ccdb4b406d
-	private static String filePath = "/Users/norkish/Archive/2015_BYU/ComputationalCreativity/data/dirtystopwords.txt";
+	private static String filePath = TabDriver.dataDir + "/dirtystopwords.txt";
 	private static Set<String> stopWords = loadStopWords();
 	private static String patternString = "\\b(" + StringUtils.join(stopWords, "|").replaceAll("\\.", "\\\\.") + ")\\b";
 	private static Pattern pattern = Pattern.compile(patternString);

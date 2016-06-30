@@ -20,9 +20,7 @@ public class RawDataLoader {
 
 	final static String[] lyricSites = new String[] { "lyricsnet", "metrolyrics", "songlyrics" };
 	final static String[] chordSites = new String[] { "echords", "ultimate-guitar" };
-	final static String data_dir_path = TabDriver.dataDir;
-	final static String raw_cvsv_dir = "raw_csvs";
-	final static String complete_tabs_dir = "complete_tabs";
+	final static String raw_cvsv_dir = TabDriver.dataDir + "/" + (TabDriver.mini_data_set?"":"new_") +"raw_csvs";
 
 	final static String filter = "";
 
@@ -39,6 +37,7 @@ public class RawDataLoader {
 
 			for (int i = 1; i < csvRecords.size(); i++) {
 				loadLyricSheet(csvRecords.get(i),s);
+				if (i % 20000 == 0) System.out.println("Loaded " + i + " records...");
 			}
 			if (DEBUG) Utils.promptEnterKey("Check " + lyricSite + " output...");
 		}
@@ -54,6 +53,7 @@ public class RawDataLoader {
 			boolean ug = (site == "ultimate-guitar");
 			for (int i = 1; i < csvRecords.size(); i++) {
 				loadChordSheet(csvRecords.get(i), ug);
+				if (i % 20000 == 0) System.out.println("Loaded " + i + " records...");
 			}
 			if (DEBUG) Utils.promptEnterKey("Check " + site + " output...");
 		}
@@ -100,9 +100,11 @@ public class RawDataLoader {
 	}
 
 	public static List<CSVRecord> loadCSVRecordsForSite(String site) throws FileNotFoundException, IOException {
-		FileReader csvFileReader = new FileReader(data_dir_path + "/" + raw_cvsv_dir + "/" + site + ".csv");
+		System.out.print("Loading CSVs for " + site + "... ");
+		FileReader csvFileReader = new FileReader(raw_cvsv_dir + "/" + site + ".csv");
 		CSVParser csvParser = new CSVParser(csvFileReader, CSVFormat.RFC4180);
 		List<CSVRecord> csvRecords = csvParser.getRecords();
+		System.out.println(csvRecords.size() + " loaded");
 		csvParser.close();
 
 		return csvRecords;
