@@ -5,12 +5,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Map;
 
+import tabcomplete.main.TabDriver;
 import utils.Pair;
 
 public class HirjeeMatrix {
 
 	private static double[][] matrix = load();
-	private static final String hirjeeFilePath = "../../data/hirjeeMatrix.txt";
+	private static final String hirjeeFilePath = TabDriver.dataDir + "/hirjeeMatrix.txt";
 
 	public static double[][] load() {
 		if (matrix == null) {
