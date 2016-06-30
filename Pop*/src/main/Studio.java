@@ -1,4 +1,4 @@
-package popmain;
+package main;
 
 import composition.Composition;
 import harmony.Harmony;
