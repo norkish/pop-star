@@ -12,6 +12,7 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
+import tabcomplete.main.TabDriver;
 import tabcomplete.utils.Utils;
 
 public class RawDataLoader {
@@ -19,7 +20,7 @@ public class RawDataLoader {
 
 	final static String[] lyricSites = new String[] { "lyricsnet", "metrolyrics", "songlyrics" };
 	final static String[] chordSites = new String[] { "echords", "ultimate-guitar" };
-	final static String data_dir_path = "/Users/norkish/Archive/2015_BYU/ComputationalCreativity/data";
+	final static String data_dir_path = TabDriver.dataDir;
 	final static String raw_cvsv_dir = "raw_csvs";
 	final static String complete_tabs_dir = "complete_tabs";
 

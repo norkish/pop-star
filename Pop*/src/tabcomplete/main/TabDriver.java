@@ -17,7 +17,7 @@ public class TabDriver {
 	private static boolean deserialize = true;
 	private static boolean serialize = false;
 	
-	public final static String dataDir = "/Users/norkish/Archive/2015_BYU/ComputationalCreativity/data";
+	public final static String dataDir = "../../data";
 	private final static String serializedDataDir = dataDir + "/ser";
 	private static String serializedLyrics = serializedDataDir + "/lyrics.ser";
 	private static String serializedTabs = serializedDataDir + "/tabs.ser";
