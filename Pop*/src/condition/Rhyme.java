@@ -3,9 +3,9 @@ package condition;
 import java.util.List;
 
 import lyrics.Lyric;
-import rhyme.Phonetecizer;
-import rhyme.RhymeStructureAnalyzer;
-import rhyme.StressedPhone;
+import tabcomplete.rhyme.Phonetecizer;
+import tabcomplete.rhyme.RhymeStructureAnalyzer;
+import tabcomplete.rhyme.StressedPhone;
 
 public class Rhyme<T> extends DelayedConstraintCondition<Lyric> {
 

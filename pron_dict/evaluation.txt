@@ -1,0 +1,11 @@
+    Words: 13331  Hyps: 13331 Refs: 13331
+    (T)otal tokens in reference: 85259
+    (M)atches: 77625  (S)ubstitutions: 6895  (I)nsertions: 836  (D)eletions: 739
+    % Correct (M/T)           -- %91.05
+    % Token ER ((S+I+D)/T)    -- %9.93
+    % Accuracy 1.0-ER         -- %90.07
+
+    (S)equences: 13331  (C)orrect sequences: 8204  (E)rror sequences: 5127
+    % Sequence ER (E/S)       -- %38.46
+    % Sequence Acc (1.0-E/S)  -- %61.54
+

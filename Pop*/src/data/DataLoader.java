@@ -14,9 +14,9 @@ import constraint.ConstraintBlock;
 import globalstructure.SegmentType;
 import harmony.Chord;
 import lyrics.Lyric;
-import main.TabDriver;
 import markov.SparseSingleOrderMarkovModel;
-import tab.CompletedTab;
+import tabcomplete.main.TabDriver;
+import tabcomplete.tab.CompletedTab;
 import utils.Utils;
 
 public class DataLoader {

@@ -3,7 +3,7 @@ package inspiration;
 import java.util.Random;
 import java.util.Scanner;
 
-import main.ProgramArgs;
+import popmain.ProgramArgs;
 
 public class Inspiration {
 	//Ekman (1993): happiness, surprise, anger, sadness, fear, disgust
