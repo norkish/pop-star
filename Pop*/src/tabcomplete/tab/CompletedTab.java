@@ -17,7 +17,7 @@ public class CompletedTab implements Serializable {
 	public List<SortedMap<Integer, Chord>> chords;
 	public int[] scheme;
 	public char[] structure;
-	private String tabURL;
+	public String tabURL;
 	
 	public CompletedTab(int pitch, List<String> words, List<SortedMap<Integer, Chord>> chords, int[] scheme, char[] structure, String tabURL) {
 		this.words = words;
@@ -39,4 +39,23 @@ public class CompletedTab implements Serializable {
 		return scheme[i];
 	}
 
+	public String toString() {
+		StringBuilder str = new StringBuilder();
+		
+		str.append("URL:");
+		str.append(tabURL);
+		str.append("\n");
+		str.append("Key signature:");
+		str.append(pitch);
+		str.append("\n");
+		
+		for (int i = 0; i < scheme.length; i++) {
+			str.append("\n");
+			str.append("\t\t\t" + chords.get(i));
+			str.append("\n");
+			str.append("" + i + "\t" + structure[i] + "\t" + scheme[i] + "\t" + words.get(i));
+		}
+		
+		return str.toString();
+	}
 }

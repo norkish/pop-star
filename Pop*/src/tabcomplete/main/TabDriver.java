@@ -2,8 +2,12 @@ package tabcomplete.main;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 import tabcomplete.rawsheet.ChordSheet;
 import tabcomplete.rawsheet.LyricSheet;
@@ -17,12 +21,14 @@ public class TabDriver {
 	private static boolean deserialize = false;
 	private static boolean serialize = true;
 	public static boolean mini_data_set = false;
+	private static boolean test_accuracy = true;
 	
 	public final static String dataDir = "../../data";
 	private final static String serializedDataDir = dataDir + "/ser";
 	private static String serializedLyrics = serializedDataDir + "/" + (mini_data_set?"":"new_") +"lyrics.ser";
 	private static String serializedTabs = serializedDataDir + "/" + (mini_data_set?"":"new_") +"tabs.ser";
 	private static String serializedCompleteTabs = serializedDataDir + "/" + (mini_data_set?"":"new_") +"complete_tabs.ser";
+	private static String correctTabs = dataDir + "/complete_tabs";
 	
 	public static void main(String[] args) throws IOException {
 		loadValidatedTabs();
@@ -71,10 +77,30 @@ public class TabDriver {
 			if(!deserialize && serialize) {
 				Serializer.serialize(validatedTabs, serializedCompleteTabs);
 			}
+			
+			if (test_accuracy) {
+				Set<CompletedTab> correctTabs = new HashSet<CompletedTab>();
+				
+				Random rand = new Random();
+				while(correctTabs.size() < 1000 && correctTabs.size() < validatedTabs.size()) {
+					correctTabs.add(validatedTabs.get(rand.nextInt(validatedTabs.size())));
+				}
+				
+				for (CompletedTab completedTab : correctTabs) {
+					PrintWriter writer  = new PrintWriter(correctTabs + "/" + completedTab.tabURL);
+					
+					writer.println(completedTab);
+					
+					writer.close();
+				}
+				
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(-1);
 		}
+		
+		
 		return validatedTabs;
 	}
 }
