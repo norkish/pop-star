@@ -74,8 +74,16 @@ public class RawDataLoader {
 		if (filter(artistName)) {
 			return;
 		}
-
-		ChordSheet newChordSheet = new ChordSheet(csvRecord, artistName, ug);
+		
+		ChordSheet newChordSheet = null;
+		try {
+			newChordSheet = new ChordSheet(csvRecord, artistName, ug);
+		} catch (Exception e) {
+			System.out.println(csvRecord.toString());
+			System.out.println(csvRecord.get(ChordSheet.URL_COL));
+			e.printStackTrace();
+			System.exit(-1);
+		}
 		if (newChordSheet.hasNoLyrics())
 			return;
 		

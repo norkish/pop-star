@@ -45,12 +45,12 @@ public class TabDriver {
 		Map<String, Map<String, List<ChordSheet>>> chordSheets = null;
 		List<CompletedTab> validatedTabs = null;
 		try {
-			lyricSheets = (deserialize? (Map<String, Map<String, List<LyricSheet>>>) Serializer.load(serializedLyrics): RawDataLoader.loadLyricSheets());
-			if (lyricSheets == null) return null;
-			if(!deserialize && serialize) {
-				Serializer.serialize(lyricSheets, serializedLyrics);
-			}
-			System.out.println(LyricSheet.parseSummary());
+//			lyricSheets = (deserialize? (Map<String, Map<String, List<LyricSheet>>>) Serializer.load(serializedLyrics): RawDataLoader.loadLyricSheets());
+//			if (lyricSheets == null) return null;
+//			if(!deserialize && serialize) {
+//				Serializer.serialize(lyricSheets, serializedLyrics);
+//			}
+//			System.out.println(LyricSheet.parseSummary());
 			
 	//		for(String key:lyricSheets.keySet())
 	//		{
