@@ -48,6 +48,8 @@ public class ChordSheet implements Serializable {
 	static int singleBlockTabsTot = 0;
 	static int blocksWithRoleIndicatedTot = 0;
 	static int tabsWithChorusMarkedTot = 0;
+	private static int chordSheetsIgnoredBecauseOfLanguage = 0;
+	public static int malformattedTabs = 0;
 
 //	public static final int RATING_COL = TabDriver.mini_data_set? 1 ;
 	public static final int ARTIST_COL = TabDriver.mini_data_set? 2 : 1;
@@ -82,9 +84,9 @@ public class ChordSheet implements Serializable {
 	private boolean chorusMarked = false;
 
 	// Pattern looks for all chars ≠ "<" up to <u>...</u> and then all chars ≠ "<"
-	private Pattern markedChordPattern = Pattern.compile("([^<]*)?(<u>([^>]*?)</u>)?([^<]*)");
+	private static final Pattern markedChordPattern = Pattern.compile("([^<]*)?(<u>([^>]*?)</u>)?([^<]*)");
 
-	private static int chordSheetsIgnoredBecauseOfLanguage = 0;
+
 
 	public ChordSheet(CSVRecord csvRecord, String artistName, boolean ug) {
 		this.artist = artistName;
@@ -805,6 +807,7 @@ public class ChordSheet implements Serializable {
 		str.append("singleBlockTabs = " + singleBlockTabsTot + "\n");
 		str.append("blocksWithRoleIndicated = " + blocksWithRoleIndicatedTot + "\n");
 		str.append("tabsWithChorusMarked = " + tabsWithChorusMarkedTot + "\n");
+		str.append("malformattedTabs = " + malformattedTabs + "\n");
 		str.append("chordSheetsIgnoredBecauseOfLanguage = " + chordSheetsIgnoredBecauseOfLanguage + "\n");
 
 		return str.toString();

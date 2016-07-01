@@ -18,8 +18,13 @@ import tabcomplete.validate.TabValidator;
 
 public class TabDriver {
 	
-	private static boolean deserialize = false;
-	private static boolean serialize = true;
+	private static boolean deserializeLyrics = true;
+	private static boolean serializeLyrics = false;
+	private static boolean deserializeChords = false;
+	private static boolean serializeChords = true;
+	private static boolean deserializeValidatedTabs = false;
+	private static boolean serializeValidatedTabs = true;
+
 	public static boolean mini_data_set = false;
 	private static boolean test_accuracy = true;
 	
@@ -45,12 +50,12 @@ public class TabDriver {
 		Map<String, Map<String, List<ChordSheet>>> chordSheets = null;
 		List<CompletedTab> validatedTabs = null;
 		try {
-//			lyricSheets = (deserialize? (Map<String, Map<String, List<LyricSheet>>>) Serializer.load(serializedLyrics): RawDataLoader.loadLyricSheets());
-//			if (lyricSheets == null) return null;
-//			if(!deserialize && serialize) {
-//				Serializer.serialize(lyricSheets, serializedLyrics);
-//			}
-//			System.out.println(LyricSheet.parseSummary());
+			lyricSheets = (deserializeLyrics? (Map<String, Map<String, List<LyricSheet>>>) Serializer.load(serializedLyrics): RawDataLoader.loadLyricSheets());
+			if (lyricSheets == null) return null;
+			if(!deserializeLyrics && serializeLyrics) {
+				Serializer.serialize(lyricSheets, serializedLyrics);
+			}
+			System.out.println(LyricSheet.parseSummary());
 			
 	//		for(String key:lyricSheets.keySet())
 	//		{
@@ -59,9 +64,9 @@ public class TabDriver {
 	//				System.out.println("\t" + key2 + ":" + lyricSheets.get(key).get(key2).size());
 	//		}
 			
-			chordSheets = (deserialize? (Map<String, Map<String, List<ChordSheet>>>) Serializer.load(serializedTabs): RawDataLoader.loadChordSheets());
+			chordSheets = (deserializeChords? (Map<String, Map<String, List<ChordSheet>>>) Serializer.load(serializedTabs): RawDataLoader.loadChordSheets());
 			if (chordSheets == null) return null;
-			if(!deserialize && serialize) {
+			if(!deserializeChords && serializeChords) {
 				Serializer.serialize(chordSheets, serializedTabs);
 			}
 			System.out.println(ChordSheet.parseSummary());
@@ -73,8 +78,8 @@ public class TabDriver {
 	//		}
 	//		Utils.promptEnterKey("");
 			
-			validatedTabs = (deserialize? (List<CompletedTab>) Serializer.load(serializedCompleteTabs) : TabValidator.validateTabs(lyricSheets, chordSheets));
-			if(!deserialize && serialize) {
+			validatedTabs = (deserializeValidatedTabs? (List<CompletedTab>) Serializer.load(serializedCompleteTabs) : TabValidator.validateTabs(lyricSheets, chordSheets));
+			if(!deserializeValidatedTabs && serializeValidatedTabs) {
 				Serializer.serialize(validatedTabs, serializedCompleteTabs);
 			}
 			

@@ -53,7 +53,7 @@ public class RawDataLoader {
 			boolean ug = (site == "ultimate-guitar");
 			for (int i = 1; i < csvRecords.size(); i++) {
 				loadChordSheet(csvRecords.get(i), ug);
-				if (i % 20000 == 0) System.out.println("Loaded " + i + " records...");
+				if (i % 10000 == 0) System.out.println("Loaded " + i + " records...");
 			}
 			if (DEBUG) Utils.promptEnterKey("Check " + site + " output...");
 		}
@@ -79,12 +79,10 @@ public class RawDataLoader {
 		try {
 			newChordSheet = new ChordSheet(csvRecord, artistName, ug);
 		} catch (Exception e) {
-			System.out.println(csvRecord.toString());
-			System.out.println(csvRecord.get(ChordSheet.URL_COL));
-			e.printStackTrace();
-			System.exit(-1);
+			System.err.println(csvRecord.get(ChordSheet.URL_COL) + ":" + e.getMessage());
+			ChordSheet.malformattedTabs++;
 		}
-		if (newChordSheet.hasNoLyrics())
+		if (newChordSheet == null || newChordSheet.hasNoLyrics())
 			return;
 		
 		String songKey = newChordSheet.getTitle().toLowerCase().replaceAll("[^a-z0-9 ]", "");
