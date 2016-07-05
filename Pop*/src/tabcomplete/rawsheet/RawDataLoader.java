@@ -79,7 +79,7 @@ public class RawDataLoader {
 		try {
 			newChordSheet = new ChordSheet(csvRecord, artistName, ug);
 		} catch (Exception e) {
-			System.err.println(csvRecord.get(ChordSheet.URL_COL) + ":" + e.getMessage());
+			if (DEBUG) System.err.println(csvRecord.get(ChordSheet.URL_COL) + ":\t" + e.getStackTrace());
 			ChordSheet.malformattedTabs++;
 		}
 		if (newChordSheet == null || newChordSheet.hasNoLyrics())

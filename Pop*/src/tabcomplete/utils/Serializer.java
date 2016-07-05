@@ -13,6 +13,7 @@ import tabcomplete.rawsheet.LyricSheet;
 public class Serializer {
 
 	public static Object load(String fileToDeserialize) {
+		System.out.print("Deserializing " + fileToDeserialize + "... ");
 		Object e = null;
 		try {
 			FileInputStream fileIn = new FileInputStream(fileToDeserialize);
@@ -28,6 +29,7 @@ public class Serializer {
 			c.printStackTrace();
 			return e;
 		}
+		System.out.println("Success!");
 		return e;
 	}
 
