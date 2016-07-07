@@ -150,7 +150,7 @@ public class ProgressiveMSA {
 	}
 
 	private int getNextBestUnalignedSeq(int[] accumulativeAlnScores) {
-		int score, biggestScore = -1;
+		int score, biggestScore = Integer.MIN_VALUE;
 		int biggestScoreIdx = -1;
 		for (int i = 0; i < accumulativeAlnScores.length; i++) {
 			score = accumulativeAlnScores[i];
