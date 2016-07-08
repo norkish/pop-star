@@ -156,6 +156,8 @@ public class ChordSheet implements Serializable {
 		this.key = Pitch.getPitchValue(csvRecord.get(KEY_COL));
 		this.contributor = csvRecord.get(CONTRIBUTOR_COL).trim();
 
+//		System.out.println(this.toStringWithHeader());
+		
 //		this.key = normalizeChords(this.key);
 	}
 

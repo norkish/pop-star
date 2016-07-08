@@ -24,6 +24,7 @@ public class Chord implements Serializable{
 		//		SortedMap<Short,Short> notes = new TreeMap<Short,Short>();
 		private String quality;
 		private boolean isMinor;
+		private boolean isDiminished;
 		
 		public ChordQuality()
 		{
@@ -33,6 +34,7 @@ public class Chord implements Serializable{
 		private ChordQuality(String input) {
 			quality = input;
 			isMinor = quality.matches("m([^aj].*)?");
+			isDiminished = quality.matches("dim(.*)?") || quality.length() > 0 && dimSymbols.contains(quality.charAt(0));
 		}
 
 		public static ChordQuality parseChordQuality(String input, boolean confidentSource) {
@@ -65,7 +67,8 @@ public class Chord implements Serializable{
 		private static Matcher matcher;
 		
 		private static String consume(String token) {
-			if (augDimSymbols.contains(token.substring(0, 1))) {
+			String firstChar = token.substring(0, 1);
+			if (dimSymbols.contains(firstChar) || otherSymbols.contains(firstChar)) {
 				token = token.substring(1);
 			}
 			if (token.matches("(?i)(maj|min|dim|aug|dom|sus|add).*")){
@@ -110,6 +113,7 @@ public class Chord implements Serializable{
 			final int prime = 31;
 			int result = 1;
 			result = prime * result + (isMinor ? 1231 : 1237);
+			result = prime * result + (isDiminished ? 1231 : 1237);
 			return result;
 		}
 
@@ -124,14 +128,22 @@ public class Chord implements Serializable{
 			ChordQuality other = (ChordQuality) obj;
 			if (isMinor != other.isMinor)
 				return false;
+			if (isDiminished != other.isDiminished)
+				return false;
 			return true;
+		}
+
+		public boolean isDiminished() {
+			return isDiminished;
 		}
 	}
 	
 	private static Pattern numericPitch = Pattern.compile("^[b\\-#]?([2-79]|1[13]?)"); 
 	private static Pattern alphaPitch = Pattern.compile("^[A-G][b#]?"); 
-	private static String[] symbs = new String[]{"Δ","+","°","ø","Ø","o"};
-	private static Set<String> augDimSymbols = new HashSet<String>(Arrays.asList(symbs));
+	private static String[] symbs = new String[]{"Δ","+"};
+	private static String[] dimSymbs = new String[]{"°","ø","Ø","o"};
+	private static Set<String> otherSymbols = new HashSet<String>(Arrays.asList(symbs));
+	private static Set<String> dimSymbols = new HashSet<String>(Arrays.asList(dimSymbs));
 
 	private int root;
 	private ChordQuality quality;
@@ -203,6 +215,10 @@ public class Chord implements Serializable{
 		if (root != other.root)
 			return false;
 		return true;
+	}
+
+	public boolean isDiminished() {
+		return this.quality.isDiminished();
 	}
 	
 	
