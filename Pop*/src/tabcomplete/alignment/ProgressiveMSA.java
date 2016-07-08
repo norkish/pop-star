@@ -49,7 +49,7 @@ public class ProgressiveMSA {
 
 			int maxScoreIdx = -1;
 			int maxScoreIdx2 = -1;
-			double maxScore = -1;
+			double maxScore = Integer.MIN_VALUE;
 			String sequence1, sequence2;
 			// Align all pairs of songs and enqueue with priority equal to alignment score
 			for (int i = 0; i < numSeqs - 1; i++) {

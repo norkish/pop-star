@@ -78,7 +78,7 @@ public class RawDataLoader {
 			}
 		}
 		artistName = Utils.removeParen(artistName).trim();
-		String artistKey = artistName.toLowerCase().replaceAll("[^A-Za-z0-9 ]", "");
+		String artistKey = artistName.toLowerCase().replaceAll("[^A-Za-z0-9 ]", "").replaceFirst("^the ", "");
 
 		if (filter(artistKey) || lyricKeys != null && !lyricKeys.containsKey(artistKey)) {
 			return;
@@ -135,7 +135,7 @@ public class RawDataLoader {
 			artistName = artistName.substring(0, idxFeat);
 		}
 		
-		String artistKey = artistName.toLowerCase().replaceAll("[^a-z0-9 ]", "");
+		String artistKey = artistName.toLowerCase().replaceAll("[^a-z0-9 ]", "").replaceFirst("^the ", "");
 		if (filter(artistKey)) {
 			return;
 		}

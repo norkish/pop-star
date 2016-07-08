@@ -17,17 +17,17 @@ import tabcomplete.validate.TabValidator;
 
 public class TabDriver {
 	
-	private static boolean deserializeLyrics = true;
-	private static boolean serializeLyrics = false;
-	private static boolean deserializeChords = true;
-	private static boolean serializeChords = false;
+	private static boolean deserializeLyrics = false;
+	private static boolean serializeLyrics = true;
+	private static boolean deserializeChords = false;
+	private static boolean serializeChords = true;
 	private static boolean deserializeValidatedTabs = false;
 	private static boolean serializeValidatedTabs = true;
 
 	public static boolean mini_data_set = false;
 	private static boolean test_accuracy = true;
 	
-	public static String filter = "";
+	public static String filter = ""; // remember, no "^the "
 	public final static String dataDir = "../../data";
 	private final static String serializedDataDir = dataDir + "/ser";
 	private static String serializedLyricsPath = serializedDataDir + "/" + (mini_data_set?"":"new_") +"lyrics" + (filter.length()==0?"":"." + filter.replaceAll("\\s+", "_")) + ".ser";
