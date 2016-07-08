@@ -56,7 +56,7 @@ public class TabValidator {
 			if (filter.length() > 0 && !artist.equals(filter) || lyricSheetsForArtist == null) continue;
 			chordSheetsForArtist = chordSheetsByArtist.get(artist);
 			for (String songName : chordSheetsForArtist.keySet()) {
-				if (!songName.equals("let it be")) continue;
+//				if (!songName.equals("let it be")) continue;
 				lyricSheetsForArtistAndSong = lyricSheetsForArtist.get(songName);
 				if (lyricSheetsForArtistAndSong == null) continue;
 				
