@@ -67,6 +67,7 @@ public class ProgressiveMSA {
 				}
 			}
 
+			// Keep track of accumulative scores for unaligned seqs; set to neg inf if aligned
 			int[] accumulativeAlnScores = new int[numSeqs];
 			aln = alns[maxScoreIdx][maxScoreIdx2];
 
@@ -76,7 +77,7 @@ public class ProgressiveMSA {
 			alignedSeqs.put(maxScoreIdx2, aln.getSecond());
 			updateAccumulativePairwiseScores(maxScoreIdx2, accumulativeAlnScores, alns);
 
-			for (int numSeqsAln = 2; numSeqsAln < alns.length; numSeqsAln++) {
+			for (int numSeqsAln = 2; numSeqsAln < numSeqs; numSeqsAln++) {
 				// System.out.println("\n\nALN AFTER ALIGNING " + numSeqsAln + ":");
 				// System.out.println(this);
 				// To decide which seq to aln next, we sum at the aln scores of each
@@ -150,7 +151,8 @@ public class ProgressiveMSA {
 	}
 
 	private int getNextBestUnalignedSeq(int[] accumulativeAlnScores) {
-		int score, biggestScore = Integer.MIN_VALUE;
+		int score;
+		int biggestScore = Integer.MIN_VALUE;
 		int biggestScoreIdx = -1;
 		for (int i = 0; i < accumulativeAlnScores.length; i++) {
 			score = accumulativeAlnScores[i];
@@ -169,10 +171,10 @@ public class ProgressiveMSA {
 	private void updateAccumulativePairwiseScores(int maxScoreIdx, int[] accumulativeAlnScores,
 			StringPairAlignment[][] alns) {
 
-		accumulativeAlnScores[maxScoreIdx] = -1;
+		accumulativeAlnScores[maxScoreIdx] = Integer.MIN_VALUE;
 
 		for (int i = 0; i < accumulativeAlnScores.length; i++) {
-			if (accumulativeAlnScores[i] == -1)
+			if (accumulativeAlnScores[i] == Integer.MIN_VALUE)
 				continue;
 
 			accumulativeAlnScores[i] += alns[maxScoreIdx][i].getFinalScore();

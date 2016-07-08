@@ -73,10 +73,10 @@ public class TabDriver {
 					Serializer.serialize(chordSheets, serializedTabsPath);
 				}
 				count = 0;
-				for(Map<String, List<LyricSheet>> songsByArtist:lyricSheets.values()) {
+				for(Map<String, List<ChordSheet>> songsByArtist:chordSheets.values()) {
 					count+= songsByArtist.size();
 				}
-				System.out.println("Loaded " + count + " chord sheet(s) for " + lyricSheets.size() + " artist(s)");
+				System.out.println("Loaded " + count + " chord sheet(s) for " + chordSheets.size() + " artist(s)");
 				System.out.println(ChordSheet.parseSummary());
 			}
 			
