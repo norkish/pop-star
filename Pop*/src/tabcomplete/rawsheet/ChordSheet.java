@@ -476,8 +476,8 @@ public class ChordSheet implements Serializable {
 				xRepeats++;
 				List<Integer> origKeys = new ArrayList<Integer>(chordLine.keySet());
 				for (int i = 1; i < rptCt; i++) {
-					for (Integer key : origKeys) {
-						chordLine.put(key + (i * currentChordLineIdx), chordLine.get(key));
+					for (Integer origKey : origKeys) {
+						chordLine.put(origKey + (i * currentChordLineIdx), chordLine.get(origKey));
 					}
 				}
 				if (DEBUG)
@@ -782,11 +782,11 @@ public class ChordSheet implements Serializable {
 
 		StringBuilder str = new StringBuilder();
 		int i = 0;
-		for (Integer key : sortedMap.keySet()) {
-			for (; i < key; i++) {
+		for (Integer mapKey : sortedMap.keySet()) {
+			for (; i < mapKey; i++) {
 				str.append(" ");
 			}
-			String chordStr = sortedMap.get(key).toString();
+			String chordStr = sortedMap.get(mapKey).toString();
 			str.append(chordStr);
 			i += chordStr.length();
 		}
@@ -945,14 +945,14 @@ public class ChordSheet implements Serializable {
 			chordLine = tabChords.get(i);
 			isInvalidChordLine = (chordLine == null || chordLine.size() == 0);
 			
-			if (isInvalidChordLine) {
-				if (lastValidLyricLine == -1) {
-					firstValidChordLine = -1;
+			if (isInvalidChordLine) { // if there aren't any chords
+				if (lastValidLyricLine == -1) { // if we haven't found any valid lyric lines yet
+					firstValidChordLine = -1; // then we haven't found any valid lyric lines yet
 				} else {
 					break;
 				}
-			} else {
-				if (firstValidChordLine == -1) { 
+			} else { // if there ARE chords
+				if (firstValidChordLine == -1) { // this may be the first valid chord line 
 					firstValidChordLine = i;
 					finalTabChords = new ArrayList<SortedMap<Integer, Chord>>();
 					finalTabLyrics = new ArrayList<String>();

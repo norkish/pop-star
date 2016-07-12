@@ -52,7 +52,7 @@ public class DataLoader {
 	private static void loadDistribution() {
 		
 		//Variable initialization
-		Map<Integer, List<Integer>> keyDistr = new HashMap<Integer, List<Integer>>(); // use most common pitch names
+//		Map<Integer, List<Integer>> keyDistr = new HashMap<Integer, List<Integer>>(); // use most common pitch names
 		Map<String, List<Integer>> gStructureDistr = new HashMap<String, List<Integer>>();
 		Map<SegmentType, Map<Integer,List<Integer>>> linesPerSegmentDistr = new EnumMap<SegmentType, Map<Integer, List<Integer>>>(SegmentType.class);
 		Map<SegmentType, Map<Integer, Map<ConstraintBlock<Lyric>,List<Integer>>>> rhymeConstraintsDistr = new EnumMap<SegmentType, Map<Integer,Map<ConstraintBlock<Lyric>,List<Integer>>>>(SegmentType.class);
@@ -107,7 +107,7 @@ public class DataLoader {
 			
 			chords = completedTab.chords;
 			words = completedTab.words;
-			incrementCount(keyDistr,completedTab.pitch, tabId);
+//			incrementCount(keyDistr,completedTab.key, tabId);
 			
 			gStructBldr = new StringBuilder();
 			prevSegmentLabel = null;
@@ -202,7 +202,7 @@ public class DataLoader {
 			incrementCount(gStructureDistr, gStructBldr.toString(), tabId);
 		}
 		
-		keyDistribution = new BackedDistribution<Integer>(keyDistr);
+//		keyDistribution = new BackedDistribution<Integer>(keyDistr);
 		
 		gStructDistribution = new BackedDistribution<String>(Utils.sortByListSize(gStructureDistr, false));
 		
@@ -405,9 +405,9 @@ public class DataLoader {
 		return linesPerSegmentDistribution;
 	}
 
-	public static BackedDistribution<Integer> getKeyDistribution() {
-		return keyDistribution;
-	}
+//	public static BackedDistribution<Integer> getKeyDistribution() {
+//		return keyDistribution;
+//	}
 
 	public static Map<SegmentType, Map<Integer, BackedDistribution<ConstraintBlock<Lyric>>>> getLyricConstraintsDistribution() {
 		return lyricConstraintsDistribution;
