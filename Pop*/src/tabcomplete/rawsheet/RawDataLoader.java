@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -23,7 +24,7 @@ public class RawDataLoader {
 	final static String[] chordSites = new String[] { "echords", "ultimate-guitar" };
 	final static String raw_cvsv_dir = TabDriver.dataDir + "/" + (TabDriver.mini_data_set?"":"new_") +"raw_csvs";
 
-	private final static String filter = TabDriver.filter;
+	private final static Set<String> filters = TabDriver.filters;
 
 	private static Map<String, Map<String, List<LyricSheet>>> lyricSheetsByArtist = new HashMap<String, Map<String, List<LyricSheet>>>();
 	private static Map<String, Map<String, List<ChordSheet>>> chordSheetsByArtist = new HashMap<String, Map<String, List<ChordSheet>>>();
@@ -164,10 +165,10 @@ public class RawDataLoader {
 	}
 
 	private static boolean filter(String artistKey) {
-		if (filter.equals(""))
+		if (filters.size() == 0)
 			return false;
 		else
-			return (!filter.equals(artistKey));
+			return (!filters.contains(artistKey));
 	}
 
 	public static void setLyricKeys(Map<String, Map<String, List<LyricSheet>>> lyricSheets) {

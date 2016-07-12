@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 
 import harmony.Chord;
@@ -23,7 +24,7 @@ import utils.Pair;
 public class TabValidator {
 
 	private static final boolean DEBUG = false;
-	private static final String filter = TabDriver.filter;
+	private static final Set<String> filters = TabDriver.filters;
 
 	/**
 	 * @param lyricSheetsByArtist
@@ -53,7 +54,7 @@ public class TabValidator {
 		CompletedTab tabComplete;
 		for (String artist : chordSheetsByArtist.keySet()) {
 			lyricSheetsForArtist = lyricSheetsByArtist.get(artist);
-			if (filter.length() > 0 && !artist.equals(filter) || lyricSheetsForArtist == null) continue;
+			if (filters.size() > 0 && !filters.contains(artist) || lyricSheetsForArtist == null) continue;
 			chordSheetsForArtist = chordSheetsByArtist.get(artist);
 			for (String songName : chordSheetsForArtist.keySet()) {
 //				if (!songName.equals("let it be")) continue;
