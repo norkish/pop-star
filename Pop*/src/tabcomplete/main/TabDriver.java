@@ -4,9 +4,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import tabcomplete.rawsheet.ChordSheet;
 import tabcomplete.rawsheet.LyricSheet;
@@ -21,18 +24,23 @@ public class TabDriver {
 	private static boolean serializeLyrics = true;
 	private static boolean deserializeChords = false;
 	private static boolean serializeChords = true;
-	private static boolean deserializeValidatedTabs = false;
-	private static boolean serializeValidatedTabs = true;
+	private static boolean deserializeValidatedTabs = true;
+	private static boolean serializeValidatedTabs = false;
 
 	public static boolean mini_data_set = false;
 	private static boolean test_accuracy = true;
 	
-	public static String filter = ""; // remember, no "^the "
+	// Filtered run
+	public static String[] filtersArray = new String[]{"billy joel", "elton john","mika","chicago","boston","ben folds","doobie brothers","eagles","beatles","bruno mars","josh groban","earth wind and fire"}; // remember, no "^the "
+	public static String filtersName = "80s"; // what should be appended to the file when saving results with the above filters
+	
+	public static final Set<String> filters = new HashSet<String>(Arrays.asList(filtersArray));
+
 	public final static String dataDir = "../../data";
 	private final static String serializedDataDir = dataDir + "/ser";
-	private static String serializedLyricsPath = serializedDataDir + "/" + (mini_data_set?"":"new_") +"lyrics" + (filter.length()==0?"":"." + filter.replaceAll("\\s+", "_")) + ".ser";
-	private static String serializedTabsPath = serializedDataDir + "/" + (mini_data_set?"":"new_") +"tabs" + (filter.length()==0?"":"." + filter.replaceAll("\\s+", "_")) + ".ser";
-	private static String serializedCompleteTabsPath = serializedDataDir + "/" + (mini_data_set?"":"new_") +"complete_tabs" + (filter.length()==0?"":"." + filter.replaceAll("\\s+", "_")) + ".ser";
+	private static String serializedLyricsPath = serializedDataDir + "/" + (mini_data_set?"":"new_") +"lyrics" + (filters.size()==0?"":"." + filtersName) + ".ser";
+	private static String serializedTabsPath = serializedDataDir + "/" + (mini_data_set?"":"new_") +"tabs" + (filters.size()==0?"":"." + filtersName) + ".ser";
+	private static String serializedCompleteTabsPath = serializedDataDir + "/" + (mini_data_set?"":"new_") +"complete_tabs" + (filters.size()==0?"":"." + filtersName) + ".ser";
 	private static String correctTabsPath = dataDir + "/complete_tabs";
 	private static boolean loadTabsWithLyricsOnly = true;
 	
@@ -91,8 +99,8 @@ public class TabDriver {
 				System.out.println("Saving " + sampleSize + " completed tabs to file");
 				List<CompletedTab> correctTabs = new ArrayList<CompletedTab>(sampleSize);
 				
-				List<Integer> list = new ArrayList<Integer>();
-				for (int i = 0; i < sampleSize; i++) {
+				List<Integer> list = new ArrayList<Integer>(validatedTabs.size());
+				for (int i = 0; i < validatedTabs.size(); i++) {
 		            list.add(new Integer(i));
 		        }
 		        Collections.shuffle(list);
