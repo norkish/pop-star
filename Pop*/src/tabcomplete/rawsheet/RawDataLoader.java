@@ -48,7 +48,7 @@ public class RawDataLoader {
 			
 			for (int i = 1; csvRecordIterator.hasNext(); i++) {
 				loadLyricSheet(csvRecordIterator.next(),s);
-				if (i % 20000 == 0) break;//System.out.println("Scanned " + i + " records...");
+				if (i % 20000 == 0) System.out.println("Scanned " + i + " records...");
 			}
 			
 			
