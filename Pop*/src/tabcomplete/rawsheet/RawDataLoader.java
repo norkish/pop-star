@@ -1,8 +1,10 @@
 package tabcomplete.rawsheet;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -21,7 +23,8 @@ public class RawDataLoader {
 	private static final boolean DEBUG = false;
 
 	final static String[] lyricSites = new String[] { "lyricsnet", "metrolyrics", "songlyrics" };
-	final static String[] chordSites = new String[] { "echords", "ultimate-guitar" };
+//	final static String[] chordSites = new String[] { "echords", "ultimate-guitar" };
+	final static String[] chordSites = new String[] { "ultimate-guitar" };
 	final static String raw_cvsv_dir = TabDriver.dataDir + "/" + (TabDriver.mini_data_set?"":"new_") +"raw_csvs";
 
 	private final static Set<String> filters = TabDriver.filters;
@@ -30,6 +33,8 @@ public class RawDataLoader {
 	private static Map<String, Map<String, List<ChordSheet>>> chordSheetsByArtist = new HashMap<String, Map<String, List<ChordSheet>>>();
 
 	private static Map<String, Map<String, List<LyricSheet>>> lyricKeys = null;
+	
+	private static PrintWriter lyricsWriter = null;
 
 	public static Map<String, Map<String, List<LyricSheet>>> loadLyricSheets()
 			throws FileNotFoundException, IOException {
@@ -46,9 +51,26 @@ public class RawDataLoader {
 				if (i % 20000 == 0) System.out.println("Scanned " + i + " records...");
 			}
 			
+			
 			csvRecordParser.close();
 			if (DEBUG) Utils.promptEnterKey("Check " + lyricSite + " output...");
 		}
+
+		lyricsWriter = new PrintWriter(new File(TabDriver.dataDir + "/plainLyrics.txt"));
+		for (Map<String, List<LyricSheet>> songsByArtist : lyricSheetsByArtist.values()) {
+			for (List<LyricSheet> songsByName : songsByArtist.values()) {
+				if (songsByName.size() > 0){
+					String song = songsByName.get(0).getLyrics();
+					String[] words = song.split("\\S+");
+					for (String word : words) {
+						lyricsWriter.print(word.replaceFirst("^[^a-zA-Z]+", "").replaceFirst("[^a-zA-Z]+$", ""));
+						lyricsWriter.print(" ");
+					}
+					lyricsWriter.println();
+				}
+			}
+		}
+		lyricsWriter.close();
 
 		return lyricSheetsByArtist;
 	}
@@ -79,7 +101,7 @@ public class RawDataLoader {
 			}
 		}
 		artistName = Utils.removeParen(artistName).trim();
-		String artistKey = artistName.toLowerCase().replaceAll("[^A-Za-z0-9 ]", "").replaceFirst("^the ", "");
+		String artistKey = artistName.toLowerCase().replaceAll("&", "and").replaceAll("[^A-Za-z0-9 ]", "").replaceFirst("^the ", "");
 
 		if (filter(artistKey) || lyricKeys != null && !lyricKeys.containsKey(artistKey)) {
 			return;
@@ -97,7 +119,7 @@ public class RawDataLoader {
 			return;
 		}
 		
-		String songKey = newChordSheet.getTitle().toLowerCase().replaceAll("[^a-z0-9 ]", "");
+		String songKey = newChordSheet.getTitle().toLowerCase().replaceAll("&", "and").replaceAll("[^a-z0-9 ]", "");
 		
 		if (lyricKeys != null && !lyricKeys.get(artistKey).containsKey(songKey)) {
 			return;
@@ -137,7 +159,7 @@ public class RawDataLoader {
 			artistName = artistName.substring(0, idxFeat);
 		}
 		
-		String artistKey = artistName.toLowerCase().replaceAll("[^a-z0-9 ]", "").replaceFirst("^the ", "");
+		String artistKey = artistName.toLowerCase().replaceAll("&", "and").replaceAll("[^a-z0-9 ]", "").replaceFirst("^the ", "");
 		if (filter(artistKey)) {
 			return;
 		}
@@ -146,7 +168,7 @@ public class RawDataLoader {
 		if (newLyricSheet.hasNoLyrics())
 			return;
 		
-		String songKey = newLyricSheet.getTitle().toLowerCase().replaceAll("[^a-z0-9 ]", "");
+		String songKey = newLyricSheet.getTitle().toLowerCase().replaceAll("&", "and").replaceAll("[^a-z0-9 ]", "");
 
 		Map<String, List<LyricSheet>> artistLyricSheets = lyricSheetsByArtist.get(artistKey);
 		if (artistLyricSheets == null) {

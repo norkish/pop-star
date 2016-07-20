@@ -24,15 +24,17 @@ public class TabDriver {
 	private static boolean serializeLyrics = true;
 	private static boolean deserializeChords = false;
 	private static boolean serializeChords = true;
-	private static boolean deserializeValidatedTabs = true;
-	private static boolean serializeValidatedTabs = false;
+	private static boolean deserializeValidatedTabs = false;
+	private static boolean serializeValidatedTabs = true;
 
 	public static boolean mini_data_set = false;
-	private static boolean test_accuracy = true;
+	private static boolean test_accuracy = false;
 	
 	// Filtered run
-	public static String[] filtersArray = new String[]{"billy joel", "elton john","mika","chicago","boston","ben folds","doobie brothers","eagles","beatles","bruno mars","josh groban","earth wind and fire"}; // remember, no "^the "
-	public static String filtersName = "80s"; // what should be appended to the file when saving results with the above filters
+//	public static String[] filtersArray = new String[]{"billy joel", "elton john","mika","chicago","boston","ben folds","doobie brothers","eagles","beatles","bruno mars","josh groban","earth wind and fire"}; // remember, no "^the "
+//	public static String filtersName = "80s"; // what should be appended to the file when saving results with the above filters
+	public static String[] filtersArray = new String[]{}; // remember, no "^the "
+	public static String filtersName = ""; // what should be appended to the file when saving results with the above filters
 	
 	public static final Set<String> filters = new HashSet<String>(Arrays.asList(filtersArray));
 

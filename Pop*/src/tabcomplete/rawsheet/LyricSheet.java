@@ -105,12 +105,12 @@ public class LyricSheet implements Serializable{
 				for (String lyr : block.split("<br>")) {
 					String trim = lyr.replaceAll("(?i)([\\S])(\\1)+", "$1$2").trim();
 					if (trim.length() > 0) {
-						if (DirtyFilter.isProfane(trim)){
-							lyricSheetsIgnoredBecauseOfLanguage++;
-							if (DEBUG) System.out.println("Ignoring " + this.url + " for explicit language");
-							lyricBlocks.clear();
-							return;
-						}
+//						if (DirtyFilter.isProfane(trim)){
+//							lyricSheetsIgnoredBecauseOfLanguage++;
+//							if (DEBUG) System.out.println("Ignoring " + this.url + " for explicit language");
+//							lyricBlocks.clear();
+//							return;
+//						}
 						lyricBlock.add(trim);
 					}
 				}
