@@ -34,7 +34,7 @@ public class RawDataLoader {
 
 	private static Map<String, Map<String, List<LyricSheet>>> lyricKeys = null;
 	
-	private static PrintWriter lyricsWriter = null;
+//	private static PrintWriter lyricsWriter = null;
 
 	public static Map<String, Map<String, List<LyricSheet>>> loadLyricSheets()
 			throws FileNotFoundException, IOException {
@@ -56,21 +56,21 @@ public class RawDataLoader {
 			if (DEBUG) Utils.promptEnterKey("Check " + lyricSite + " output...");
 		}
 
-		lyricsWriter = new PrintWriter(new File(TabDriver.dataDir + "/plainLyrics.txt"));
-		for (Map<String, List<LyricSheet>> songsByArtist : lyricSheetsByArtist.values()) {
-			for (List<LyricSheet> songsByName : songsByArtist.values()) {
-				if (songsByName.size() > 0){
-					String song = songsByName.get(0).getLyrics();
-					String[] words = song.split("\\s+");
-					for (String word : words) {
-						lyricsWriter.print(word.replaceFirst("^[^a-zA-Z]+", "").replaceFirst("[^a-zA-Z]+$", ""));
-						lyricsWriter.print(" ");
-					}
-					lyricsWriter.println();
-				}
-			}
-		}
-		lyricsWriter.close();
+//		lyricsWriter = new PrintWriter(new File(TabDriver.dataDir + "/plainLyrics.txt"));
+//		for (Map<String, List<LyricSheet>> songsByArtist : lyricSheetsByArtist.values()) {
+//			for (List<LyricSheet> songsByName : songsByArtist.values()) {
+//				if (songsByName.size() > 0){
+//					String song = songsByName.get(0).getLyrics();
+//					String[] words = song.split("\\s+");
+//					for (String word : words) {
+//						lyricsWriter.print(word.replaceFirst("^[^a-zA-Z]+", "").replaceFirst("[^a-zA-Z]+$", ""));
+//						lyricsWriter.print(" ");
+//					}
+//					lyricsWriter.println();
+//				}
+//			}
+//		}
+//		lyricsWriter.close();
 
 		return lyricSheetsByArtist;
 	}
@@ -115,7 +115,7 @@ public class RawDataLoader {
 			e.printStackTrace();
 			ChordSheet.malformattedTabs++;
 		}
-		if (newChordSheet == null || newChordSheet.hasNoLyrics()) {
+		if (newChordSheet == null || newChordSheet.hasLyrics()) {
 			return;
 		}
 		
@@ -165,7 +165,7 @@ public class RawDataLoader {
 		}
 
 		LyricSheet newLyricSheet = new LyricSheet(csvRecord, artistName,provider);
-		if (newLyricSheet.hasNoLyrics())
+		if (!newLyricSheet.hasLyrics())
 			return;
 		
 		String songKey = newLyricSheet.getTitle().toLowerCase().replaceAll("&", "and").replaceAll("[^a-z0-9 ]", "");

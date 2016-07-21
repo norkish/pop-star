@@ -920,8 +920,8 @@ public class ChordSheet implements Serializable {
 		return builder.toString();
 	}
 
-	public boolean hasNoLyrics() {
-		return lyricBlocks.size() == 0;
+	public boolean hasLyrics() {
+		return lyricBlocks.size() > 0 && getLyrics().trim().length() > LyricSheet.MINIMUM_SONG_LENGTH;
 	}
 
 	public Pair<List<SortedMap<Integer, Chord>>, List<String>> validate(String consensus) {
