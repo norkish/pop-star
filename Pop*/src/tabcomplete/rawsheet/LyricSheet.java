@@ -30,6 +30,7 @@ public class LyricSheet implements Serializable{
 	public static final int SONGLYRICS = 2;
 	private static final String[] LYRICSNET_N_SONGLYRICS_TAGS = new String[] { "script", "img", "p" };
 	private static final boolean DEBUG = false;
+	static final int MINIMUM_SONG_LENGTH = 150;
 
 	private List<List<String>> lyricBlocks = new ArrayList<List<String>>();
 	private String title;
@@ -105,12 +106,12 @@ public class LyricSheet implements Serializable{
 				for (String lyr : block.split("<br>")) {
 					String trim = lyr.replaceAll("(?i)([\\S])(\\1)+", "$1$2").trim();
 					if (trim.length() > 0) {
-						if (DirtyFilter.isProfane(trim)){
-							lyricSheetsIgnoredBecauseOfLanguage++;
-							if (DEBUG) System.out.println("Ignoring " + this.url + " for explicit language");
-							lyricBlocks.clear();
-							return;
-						}
+//						if (DirtyFilter.isProfane(trim)){
+//							lyricSheetsIgnoredBecauseOfLanguage++;
+//							if (DEBUG) System.out.println("Ignoring " + this.url + " for explicit language");
+//							lyricBlocks.clear();
+//							return;
+//						}
 						lyricBlock.add(trim);
 					}
 				}
@@ -201,7 +202,7 @@ public class LyricSheet implements Serializable{
 		return url;
 	}
 
-	public boolean hasNoLyrics() {
-		return lyricBlocks.size() == 0;
+	public boolean hasLyrics() {
+		return lyricBlocks.size() > 0 && getLyrics().trim().length() > MINIMUM_SONG_LENGTH;
 	}
 }

@@ -5,12 +5,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 
 import harmony.Chord;
 import tabcomplete.alignment.Aligner;
 import tabcomplete.alignment.ProgressiveMSA;
 import tabcomplete.alignment.SequencePair;
+import tabcomplete.main.TabDriver;
 import tabcomplete.rawsheet.ChordSheet;
 import tabcomplete.rawsheet.LyricSheet;
 import tabcomplete.rawsheet.RawDataLoader;
@@ -22,6 +24,7 @@ import utils.Pair;
 public class TabValidator {
 
 	private static final boolean DEBUG = false;
+	private static final Set<String> filters = TabDriver.filters;
 
 	/**
 	 * @param lyricSheetsByArtist
@@ -51,13 +54,14 @@ public class TabValidator {
 		CompletedTab tabComplete;
 		for (String artist : chordSheetsByArtist.keySet()) {
 			lyricSheetsForArtist = lyricSheetsByArtist.get(artist);
-			if (lyricSheetsForArtist == null) continue;
+			if (filters.size() > 0 && !filters.contains(artist) || lyricSheetsForArtist == null) continue;
 			chordSheetsForArtist = chordSheetsByArtist.get(artist);
 			for (String songName : chordSheetsForArtist.keySet()) {
-//				if (!songName.equals("piano man")) continue;
+//				if (!songName.equals("let it be")) continue;
 				lyricSheetsForArtistAndSong = lyricSheetsForArtist.get(songName);
 				if (lyricSheetsForArtistAndSong == null) continue;
 				
+				// Need to have at least two lyric sheets to determine the gold standard for a song.
 				lyricCount = lyricSheetsForArtistAndSong.size();
 				if (lyricCount < 2) continue;
 				lyrics = new String[lyricCount];
@@ -79,7 +83,6 @@ public class TabValidator {
 					chords = correctedTab.getFirst();
 					words = correctedTab.getSecond();
 					
-					
 					int[] scheme = RhymeStructureAnalyzer.extractRhymeScheme(words);
 					
 					char[] structure = SegmentStructureAnalyzer.extractSegmentStructure(words, chords);
@@ -97,6 +100,7 @@ public class TabValidator {
 					
 					tabComplete = new CompletedTab(chordSheet.getKey(), words,chords,scheme,structure,chordSheet.getURL());
 					completedTabs.add(tabComplete);
+					if (completedTabs.size() % 1000 == 0) System.out.println("Successfully validated " + completedTabs.size() + " songs...");
 				}
 			}
 		}

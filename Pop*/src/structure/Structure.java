@@ -40,6 +40,12 @@ public class Structure {
 			return new Pair<SegmentType, Integer>(type, typeCt);
 		}
 
+		@Override
+		public void remove() {
+			// TODO Auto-generated method stub
+			
+		}
+
 	}
 	
 	public class SegmentIterator<T> implements Iterator<Triple<SegmentType, Integer, SegmentSubstructure>> {
@@ -69,6 +75,12 @@ public class Structure {
 			currIdx.put(type, typeCt+1);
 			nextSegmentIdx++;
 			return new Triple<SegmentType, Integer, SegmentSubstructure>(type, typeCt,substruct);
+		}
+
+		@Override
+		public void remove() {
+			// TODO Auto-generated method stub
+			
 		}
 
 	}

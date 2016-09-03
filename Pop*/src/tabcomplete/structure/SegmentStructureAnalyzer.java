@@ -110,7 +110,8 @@ public class SegmentStructureAnalyzer {
 	private static void extractVerse(List<SortedMap<Integer, Chord>> chords, char[] structure, int firstLyricLine,
 			int lastLyricLine) {
 		// TODO Auto-generated method stub
-		int [][] binary_matrix = new int[(lastLyricLine+1-firstLyricLine-MIN_DIST_BETWEEN_CHORUSES)][]; 
+		int [][] binary_matrix = new int[(lastLyricLine+1-firstLyricLine-MIN_DIST_BETWEEN_CHORUSES)][];
+		if (binary_matrix.length == 0) return;
 		int [] currentRow;
 
 		int line_i_idx, line_j_idx;
@@ -196,6 +197,7 @@ public class SegmentStructureAnalyzer {
 	private static void extractChorusViaBinaryAlnAndCandidateScoring(List<String> words, char[] structure, int firstLyricLine,
 			int lastLyricLine) {
 		int [][] binary_matrix = new int[(lastLyricLine+1-firstLyricLine-MIN_DIST_BETWEEN_CHORUSES)][]; 
+		if (binary_matrix.length == 0) return;
 		int [] currentRow;
 
 		int line_i_idx, line_j_idx;
@@ -230,6 +232,8 @@ public class SegmentStructureAnalyzer {
 			}
 		}
 
+		if (DEBUG) tabcomplete.utils.Utils.print2DMatrixInt(binary_matrix);
+		
 		// Find all candidate choruses
 		SortedMap<Integer, SortedMap<Integer, SortedSet<Integer>>> candidateChoruses = findAllRepeatedSegments(binary_matrix);
 		if (candidateChoruses.isEmpty()) {

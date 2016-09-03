@@ -48,6 +48,8 @@ public class ChordSheet implements Serializable {
 	static int singleBlockTabsTot = 0;
 	static int blocksWithRoleIndicatedTot = 0;
 	static int tabsWithChorusMarkedTot = 0;
+	private static int chordSheetsIgnoredBecauseOfLanguage = 0;
+	public static int malformattedTabs = 0;
 
 //	public static final int RATING_COL = TabDriver.mini_data_set? 1 ;
 	public static final int ARTIST_COL = TabDriver.mini_data_set? 2 : 1;
@@ -82,14 +84,16 @@ public class ChordSheet implements Serializable {
 	private boolean chorusMarked = false;
 
 	// Pattern looks for all chars ≠ "<" up to <u>...</u> and then all chars ≠ "<"
-	private Pattern markedChordPattern = Pattern.compile("([^<]*)?(<u>([^>]*?)</u>)?([^<]*)");
+	private static final Pattern markedChordPattern = Pattern.compile("([^<]*)?(<u>([^>]*?)</u>)?([^<]*)");
 
-	private static int chordSheetsIgnoredBecauseOfLanguage = 0;
+
 
 	public ChordSheet(CSVRecord csvRecord, String artistName, boolean ug) {
 		this.artist = artistName;
 		this.url = csvRecord.get(URL_COL);
-
+		if (!url.equals("https://tabs.ultimate-guitar.com/e/eagles/its_your_world_now_ukulele_crd.htm"))
+			return;
+		
 		this.title = csvRecord.get(TITLE_COL);
 		this.type = csvRecord.get(TYPE_COL).trim();
 
@@ -154,6 +158,8 @@ public class ChordSheet implements Serializable {
 		this.key = Pitch.getPitchValue(csvRecord.get(KEY_COL));
 		this.contributor = csvRecord.get(CONTRIBUTOR_COL).trim();
 
+		System.out.println(this.toStringWithHeader());
+		
 //		this.key = normalizeChords(this.key);
 	}
 
@@ -173,6 +179,11 @@ public class ChordSheet implements Serializable {
 		}
 	}
 
+	/**
+	 * Parse tab and lyrics from rawTab string into appropriate static data structures 
+	 * @param rawTab
+	 * @return false if tab is determined to be invalid or to contain bad language
+	 */
 	private boolean parseTab(String rawTab) {
 		if (rawTab.length() == 0)
 			return false;
@@ -200,8 +211,10 @@ public class ChordSheet implements Serializable {
 		}
 		String[] blocks = rawTab.split("<br>\\s*<br>");
 
-		if (!parseTabBlocks(blocks, false)) {
-			parseTabBlocks(blocks, true);
+		System.out.println(rawTab.replaceAll("<br>", "\n"));
+		// first try parsing the tab as though not embedded
+		if (!parseTabBlocks(blocks, false)) { // if it proves to be embedded
+			parseTabBlocks(blocks, true); // parse it as embedded
 		}
 
 		barRepeatsTot += barRepeats;
@@ -219,6 +232,12 @@ public class ChordSheet implements Serializable {
 		return true;
 	}
 
+	/**
+	 * For each of the blocks in blocks, separate the chords and the lyrics into static data structures
+	 * @param blocks array of strings each of which represents a block of lyrics and chords in the tab
+	 * @param embedded if true, the chords are assumed to be embedded in the same line as the lyrics
+	 * @return false if embedded == false, but algorithm detects it should be set to true
+	 */
 	private boolean parseTabBlocks(String[] blocks, boolean embedded) {
 		List<Pair<Integer, Integer>> embeddedLines = new ArrayList<Pair<Integer, Integer>>();
 
@@ -237,7 +256,9 @@ public class ChordSheet implements Serializable {
 			totalLyricLines += block.size();
 		}
 
+		// If embedded lines constitute less than half of the total lines
 		if (embeddedLines.size() <= totalLyricLines * .5) {
+			// record the lost characters
 			for (int i = embeddedLines.size() - 1; i >= 0; i--) {
 				Pair<Integer, Integer> blockId_lineId = embeddedLines.get(i);
 				int blockId = blockId_lineId.getFirst();
@@ -245,6 +266,7 @@ public class ChordSheet implements Serializable {
 				int additionalLostChars = lyricBlocks.get(blockId).get(lineId).length();
 				lostCharacters.set(blockId, lostCharacters.get(blockId) + additionalLostChars);
 
+				// TODO: What the heck?! Make it so that lines without lyrics keep their embedded content
 				if (chordBlocks.get(blockId).size() > (lineId + 1)
 						&& chordBlocks.get(blockId).get(lineId + 1) == null) {
 					lyricBlocks.get(blockId).remove(lineId);
@@ -293,6 +315,12 @@ public class ChordSheet implements Serializable {
 		blocksWithRoleIndicated = 0;
 	}
 
+	/**
+	 * Parse lines to separate lyrics and chords and put them in the appropriate static data structures
+	 * @param lines array of strings representing the current unparsed tab block
+	 * @param embeddedLines data structure in which to keep lines of text that appear on the same lines as chords
+	 * @param embedded if true, we assume lyrics are embedded in same lines as chords
+	 */
 	private void parseTabBlock(String[] lines, List<Pair<Integer, Integer>> embeddedLines, boolean embedded) {
 		List<String> lyricBlock = new ArrayList<String>();
 		List<SortedMap<Integer, Chord>> chordBlock = new ArrayList<SortedMap<Integer, Chord>>();
@@ -326,7 +354,7 @@ public class ChordSheet implements Serializable {
 				// Set the metadata of the new block and
 				// clear the lyric
 				role = roleTest;
-				lyric = new StringBuilder();
+//				lyric = new StringBuilder(); I think we can delete this line
 			} else {
 				if (chordLine.size() > 1 && lyricStr.replaceAll("([^A-Za-z])", "").trim().length() > 0) {
 					if (DEBUG) {
@@ -372,7 +400,7 @@ public class ChordSheet implements Serializable {
 	}
 
 	/**
-	 * Function which parses the line for chords (demarcated by <u> and also those missing)
+	 * Function which parses the line for chords (demarcated by u tag and also those missing)
 	 * 
 	 * @param line
 	 *            raw input of line
@@ -472,8 +500,8 @@ public class ChordSheet implements Serializable {
 				xRepeats++;
 				List<Integer> origKeys = new ArrayList<Integer>(chordLine.keySet());
 				for (int i = 1; i < rptCt; i++) {
-					for (Integer key : origKeys) {
-						chordLine.put(key + (i * currentChordLineIdx), chordLine.get(key));
+					for (Integer origKey : origKeys) {
+						chordLine.put(origKey + (i * currentChordLineIdx), chordLine.get(origKey));
 					}
 				}
 				if (DEBUG)
@@ -684,6 +712,12 @@ public class ChordSheet implements Serializable {
 		lostCharacters.add(0);
 	}
 
+	/**
+	 * Finds and returns the position in rawTab representing the end of the line after the line containing 
+	 * the last chord (as marked by u tag) so as to capture final lyric line
+	 * @param rawTab
+	 * @return -1 if no chords found, rawTab.length if no br tag after last chord, or index of br tag after br tag after last chord in rawTab (as marked by u tag)
+	 */
 	private int findLastIdx(String rawTab) {
 		int lastChordIdx = rawTab.lastIndexOf("</u>");
 		if (lastChordIdx == -1)
@@ -700,6 +734,12 @@ public class ChordSheet implements Serializable {
 			return newLineAfterNewLineAfterLastChordIdx;
 	}
 
+	/**
+	 * Finds and returns the position in rawTab representing the beginning of the line
+	 * before the line containing the first chord (as marked by u tag) so as to capture block role markers
+	 * @param rawTab
+	 * @return -1 if there are no chords, 0 if there is no line before the first containing a chord, position of beginning of line (i.e., beginning of br tag) before line containing first instance of u tag
+	 */
 	public int findStartIdx(String rawTab) {
 		int firstChordIdx = rawTab.indexOf("<u>");
 
@@ -778,11 +818,11 @@ public class ChordSheet implements Serializable {
 
 		StringBuilder str = new StringBuilder();
 		int i = 0;
-		for (Integer key : sortedMap.keySet()) {
-			for (; i < key; i++) {
+		for (Integer mapKey : sortedMap.keySet()) {
+			for (; i < mapKey; i++) {
 				str.append(" ");
 			}
-			String chordStr = sortedMap.get(key).toString();
+			String chordStr = sortedMap.get(mapKey).toString();
 			str.append(chordStr);
 			i += chordStr.length();
 		}
@@ -805,6 +845,7 @@ public class ChordSheet implements Serializable {
 		str.append("singleBlockTabs = " + singleBlockTabsTot + "\n");
 		str.append("blocksWithRoleIndicated = " + blocksWithRoleIndicatedTot + "\n");
 		str.append("tabsWithChorusMarked = " + tabsWithChorusMarkedTot + "\n");
+		str.append("malformattedTabs = " + malformattedTabs + "\n");
 		str.append("chordSheetsIgnoredBecauseOfLanguage = " + chordSheetsIgnoredBecauseOfLanguage + "\n");
 
 		return str.toString();
@@ -879,8 +920,8 @@ public class ChordSheet implements Serializable {
 		return builder.toString();
 	}
 
-	public boolean hasNoLyrics() {
-		return lyricBlocks.size() == 0;
+	public boolean hasLyrics() {
+		return lyricBlocks.size() > 0 && getLyrics().trim().length() > LyricSheet.MINIMUM_SONG_LENGTH;
 	}
 
 	public Pair<List<SortedMap<Integer, Chord>>, List<String>> validate(String consensus) {
@@ -940,14 +981,14 @@ public class ChordSheet implements Serializable {
 			chordLine = tabChords.get(i);
 			isInvalidChordLine = (chordLine == null || chordLine.size() == 0);
 			
-			if (isInvalidChordLine) {
-				if (lastValidLyricLine == -1) {
-					firstValidChordLine = -1;
+			if (isInvalidChordLine) { // if there aren't any chords
+				if (lastValidLyricLine == -1) { // if we haven't found any valid lyric lines yet
+					firstValidChordLine = -1; // then we haven't found any valid lyric lines yet
 				} else {
 					break;
 				}
-			} else {
-				if (firstValidChordLine == -1) { 
+			} else { // if there ARE chords
+				if (firstValidChordLine == -1) { // this may be the first valid chord line 
 					firstValidChordLine = i;
 					finalTabChords = new ArrayList<SortedMap<Integer, Chord>>();
 					finalTabLyrics = new ArrayList<String>();
