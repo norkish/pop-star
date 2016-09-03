@@ -18,4 +18,9 @@ public class LyricSegment implements Serializable{
 	public List<Lyric> getLine(int lineNum) {
 		return lyricLines.get(lineNum);
 	}
+	
+	public List<List<Lyric>> getLines() {
+		return this.lyricLines;
+	}
+
 }

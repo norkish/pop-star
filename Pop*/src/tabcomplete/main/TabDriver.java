@@ -18,7 +18,7 @@ public class TabDriver {
 	private static boolean serialize = true;
 	public static boolean mini_data_set = false;
 	
-	public final static String dataDir = "../../data";
+	public final static String dataDir = "../data";
 	private final static String serializedDataDir = dataDir + "/ser";
 	private static String serializedLyrics = serializedDataDir + "/" + (mini_data_set?"":"new_") +"lyrics.ser";
 	private static String serializedTabs = serializedDataDir + "/" + (mini_data_set?"":"new_") +"tabs.ser";
