@@ -1,8 +1,5 @@
 package utils;
 
-import globalstructure.SegmentType;
-import substructure.SegmentSubstructure;
-
 public class Triple<S1, S2, S3> {
 
 	private S1 first;
@@ -25,6 +22,10 @@ public class Triple<S1, S2, S3> {
 
 	public S3 getThird() {
 		return third;
+	}
+
+	public void setSecond(S2 second) {
+		this.second = second;
 	}
 
 }

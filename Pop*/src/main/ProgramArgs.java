@@ -2,7 +2,13 @@ package main;
 
 import java.util.Arrays;
 
+import main.ProgramArgs.OrchestratorSetting;
+
 public class ProgramArgs {
+
+	public enum OrchestratorSetting {
+		COMPING
+	}
 
 	public enum UISetting {
 		UNSET, COMMANDLINE, GUI
@@ -14,6 +20,7 @@ public class ProgramArgs {
 	
 	public static SongConfigSourceSetting configurationSetting = SongConfigSourceSetting.UNSET;
 	public static UISetting userInterfaceSetting = UISetting.UNSET;
+	public static OrchestratorSetting orchestratorSetting;
 	
 	public static void loadProgramArgs(String[] args) {
 		if (args.length == 0)
@@ -29,6 +36,7 @@ public class ProgramArgs {
 	private static void loadDefaultProgramArgs() {
 //		configurationSetting = SongConfigSourceSetting.TEST;
 		configurationSetting = SongConfigSourceSetting.DISTRIBUTIONAL;
+		orchestratorSetting = OrchestratorSetting.COMPING;
 		userInterfaceSetting = UISetting.COMMANDLINE;
 	}
 

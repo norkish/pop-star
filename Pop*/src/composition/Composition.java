@@ -131,4 +131,8 @@ public class Composition {
 		
 		return str.toString();
 	}
+
+	public Structure getStructure() {
+		return this.structure;
+	}
 }

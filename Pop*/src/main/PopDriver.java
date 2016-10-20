@@ -1,6 +1,7 @@
 package main;
 
 import composition.Composition;
+import orchestrate.Orchestrator;
 
 /*
  * Generates a new song inspired from a system-selected inspiring idea
@@ -15,5 +16,9 @@ public class PopDriver {
 		Composition newSong = studio.generate();
 		
 		System.out.println(newSong);
+		
+		Orchestrator orchestrator = Orchestrator.getOrchestrator();
+		orchestrator.orchestrate(newSong);
+		
 	}
 }

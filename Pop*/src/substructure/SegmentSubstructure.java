@@ -22,6 +22,7 @@ public class SegmentSubstructure implements Serializable {
 	public ConstraintBlock<RhythmSegment> rhythmConstraints = null;
 	public ConstraintBlock<Pitch> pitchConstraints = null;
 	public int linesPerSegment;
+	public TimeSignature timeSignature = new TimeSignature(4,4);
 
 	public SegmentSubstructure(int linesPerSegment) {
 		
@@ -103,6 +104,18 @@ public class SegmentSubstructure implements Serializable {
 
 	public void addChordLengthConstraints(List<Integer> lengthConstraints) {
 		chordConstraints.addLengthConstraints(lengthConstraints);
+	}
+
+	/**
+	 * Right now the current measure count is determined as the number of chords
+	 * @return
+	 */
+	public int getMeasureCount() {
+		int measureCount = 0;
+		for (Integer i : chordConstraints.getLengthConstraints()) {
+			measureCount += i;
+		}
+		return measureCount;
 	}
 	
 }

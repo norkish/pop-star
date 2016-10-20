@@ -45,6 +45,7 @@ public class MSASequencePair extends SequencePair {
 				newAlnSeqBldrs[k].reverse();
 			}
 			lyrSeqBldr.reverse();
+			//Is this missing a super.reverse() call?
 		}
 
 		@Override
