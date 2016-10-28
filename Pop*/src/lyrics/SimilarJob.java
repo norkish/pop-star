@@ -2,22 +2,6 @@ package lyrics;
 
 public class SimilarJob extends W2vReplacementJob {
 
-
-    @Override
-    public boolean isAnalogyJob() {
-        return false;
-    }
-
-    @Override
-    public boolean isThemeJob() {
-        return false;
-    }
-
-    @Override
-    public boolean isSimilarJob() {
-        return true;
-    }
-
     @Override
     public int size() {
         return 1;

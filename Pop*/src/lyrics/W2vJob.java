@@ -9,11 +9,6 @@ public abstract class W2vJob {
     protected HashSet<SmartWord> permissibleW2vSuggestions;
     protected SmartWord chosenWord;
 
-    //TODO > Get rid of these:
-    public abstract boolean isAnalogyJob();
-    public abstract boolean isThemeJob();
-    public abstract boolean isSimilarJob();
-
     public abstract int size();//number of SmartLyrics used for this type of W2v operation
     public abstract String[] toStrArray();
     public abstract String explain();

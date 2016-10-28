@@ -49,7 +49,15 @@ public class LyricTuple {
 			return newWord.toString();
 		return null;
 	}
-	
+
+	public SmartWord getWord(LyricVersion lv) {
+        if (lv == LyricVersion.ORIGINAL)
+            return this.originalWord;
+        if (lv == LyricVersion.NEW)
+            return this.newWord;
+        return null;
+    }
+
 	@Override
 	public String toString() {
 		if (originalWord == null && isNewline()) 

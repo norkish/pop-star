@@ -2,12 +2,12 @@ package lyrics;
 
 import java.util.*;
 
-public class LyricFilterCommander {
+public class WordFilterCommander {
 
     private ArrayList<WordFilter> activeFilterList;
     private final int n_filterTypes = 6;
 
-    public LyricFilterCommander(Class... filtersToActivate) {
+    public WordFilterCommander(Class... filtersToActivate) {
         this.setupActiveFilterList(filtersToActivate);
     }
 

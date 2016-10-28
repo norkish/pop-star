@@ -3,18 +3,18 @@ package lyrics;
 import edu.stanford.nlp.ling.TaggedWord;
 
 import java.util.HashMap;
+import java.util.HashSet;
 
 public final class DistastefulnessFilter extends WordFilter {
 
-    @Override
-    public HashMap<Double,TaggedWord> filter(HashMap<Double,TaggedWord> unfilteredLyrics) {
-        this.setPreFilterWords(unfilteredLyrics);
-        HashMap<Double,TaggedWord> result = new HashMap<Double,TaggedWord>();
+    //@Override
+    public HashSet<SmartWord> filter(HashSet<SmartWord> unfilteredWords) {
+        this.setPreFilterWords(unfilteredWords);
+        HashSet<SmartWord> result = new HashSet<SmartWord>();
 
         //implement, build result
 
-        this.setFilteredOutWords(result);
-        return filteredOutWords;
+        return this.setGetFilteredOutWords(result);
     }
 
 }

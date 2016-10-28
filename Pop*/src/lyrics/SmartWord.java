@@ -2,13 +2,20 @@ package lyrics;
 
 import edu.stanford.nlp.ling.TaggedWord;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+
+import static java.awt.SystemColor.text;
 
 public class SmartWord implements Comparator<SmartWord> {
 
     private TaggedWord stanfordWord;//TODO: change this to whatever object does POS tagging best
-    private String text;
-    private String pos;//TODO: change from String to enum once I know what Parts of Speech to use
+//    private String text;
+//    private String pos;//TODO: change from String to enum once I know what Parts of Speech to use
+
+    private ArrayList<String> phonemes; //TODO: change from array of strings to array of enum phonemes (or classes!)
+
+    private int occurences; // TODO: make this more specfic to the data source
 
     private double currentW2vDistance;
 
@@ -23,8 +30,6 @@ public class SmartWord implements Comparator<SmartWord> {
 
     public void setStanfordWord(TaggedWord stanfordWord) {
         this.setStanfordWord(stanfordWord);
-        this.setText(this.getStanfordWord().value());
-        this.setPos(this.getStanfordWord().tag());
     }
 
     public double getCurrentW2vDistance() {
@@ -36,19 +41,19 @@ public class SmartWord implements Comparator<SmartWord> {
     }
 
     public String getText() {
-        return this.text;
+        return this.getStanfordWord().value();
     }
 
     public void setText(String text) {
-        this.text = text;
+        this.getStanfordWord().setWord(text);
     }
 
     public String getPos() {
-        return this.pos;
+        return this.getStanfordWord().tag();
     }
 
     public void setPos(String pos) {
-        this.pos = pos;
+        this.getStanfordWord().setTag(pos);
     }
 
     public boolean hasDistance() {
@@ -66,10 +71,6 @@ public class SmartWord implements Comparator<SmartWord> {
 
         final SmartWord that = (SmartWord) o;
 
-        if (!this.getStanfordWord().tag().equals(that.getStanfordWord().tag()))
-            return false;
-        if (!this.getStanfordWord().value().equals(that.getStanfordWord().value()))
-            return false;
         if (!this.getText().equals(that.getText()))
             return false;
         return this.getPos().equals(that.getPos());
@@ -105,6 +106,53 @@ Order matters when deciding the best suggestion to use.
 
 /*
 TODO > Keep track of which parts of software are probabalistic
+ */
+
+
+/*
+TODO > Follow the below guide to ensure I have ALL the complexities of parts of speech covered
+NOUN,
+	VERB,
+	ADJECTIVE,
+	ADVERB,
+	PREPOSITION,
+	//PRONOUN,
+	NORMAL_PRONOUN,
+	INTERROGATIVE_PRONOUN,
+	INDEFINITE_PRONOUN,
+
+	 * Interrogative Pronoun (who, what, where, when, why, how, how much, how many, whither, wherefore, whence)
+	 * Indefinite (whoso, whosoever) So many, look them all up
+
+//CONJUNCTION,
+	COORDINATING_CONJUNCTION,
+            SUBORDINATING_CONJUNCTION,
+            RELATIVE_PRONOUN,
+
+	 * Coordinating (only ones: for, and, nor, but, or, yet, so, wherefore) combines two equal elements
+	 * Subordinating (although, when, before, because, though, since, inasmuch as, that) independent + (Subordinating) dependent clause, in any order
+	 * Relative Pronoun (only ones: who, that, which, whom, whose, when, where)
+	 *
+
+            INTERJECTION,
+            //DETERMINER,
+
+	 * Article
+	 * 	Definite
+	 * 	Indefinite
+	 * 		Number
+	 * Numeral
+	 * Possessive Adjectives (my, thy, our)
+	 * 		Person
+	 * 		Number
+	 * Demonstrative Adjectives (this, these, that)
+	 * 		Proximal Distance
+	 * 		Number
+
+            POSSESSIVE_ADJ,
+            DEMONSTRATIVE_ADJ,
+            NUMERAL,
+            ARTICLE
  */
 
 

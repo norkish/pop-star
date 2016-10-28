@@ -4,15 +4,14 @@ import java.util.HashSet;
 
 public final class RhymeFilter extends WordFilter {
 
-    @Override
-    public HashSet<SmartWord> filter(HashSet<SmartWord> unfilteredLyrics) {
-        this.setPreFilterWords(unfilteredLyrics);
+    //@Override
+    public HashSet<SmartWord> filter(HashSet<SmartWord> unfilteredWords, SmartWord original) {
+        this.setPreFilterWords(unfilteredWords);
         HashSet<SmartWord> result = new HashSet<SmartWord>();
 
         //implement, build result
 
-        this.setFilteredOutWords(result);
-        return this.filteredOutWords;
+        return this.setGetFilteredOutWords(result);
     }
 
 }

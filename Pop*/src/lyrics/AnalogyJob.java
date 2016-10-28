@@ -42,21 +42,6 @@ public class AnalogyJob extends W2vReplacementJob {
     }
 
     @Override
-    public boolean isAnalogyJob() {
-        return true;
-    }
-
-    @Override
-    public boolean isThemeJob() {
-        return false;
-    }
-
-    @Override
-    public boolean isSimilarJob() {
-        return false;
-    }
-
-    @Override
     public int size() {
         return 3;
     }

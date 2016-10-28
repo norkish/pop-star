@@ -45,21 +45,6 @@ public class ThemeJob extends W2vJob {
     }
 
     @Override
-    public boolean isAnalogyJob() {
-        return false;
-    }
-
-    @Override
-    public boolean isThemeJob() {
-        return true;
-    }
-
-    @Override
-    public boolean isSimilarJob() {
-        return false;
-    }
-
-    @Override
     public int size() {
         return relevantWords.size();
     }

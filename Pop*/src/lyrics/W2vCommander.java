@@ -174,11 +174,12 @@ public class W2vCommander {
 
     private void runAllW2vOperations(HashSet<W2vJob> jobs) {
         for (W2vJob job : jobs) {
-            if (job.isAnalogyJob())
+            //TODO: Does this instanceof thing work?
+            if (job instanceof AnalogyJob)
                 this.analogy((AnalogyJob)job);
-            else if (job.isThemeJob())
+            else if (job instanceof ThemeJob)
                 this.theme((ThemeJob)job);
-            else if (job.isSimilarJob())
+            else if (job instanceof SimilarJob)
                 this.similar((SimilarJob)job);
         }
     }
@@ -293,8 +294,6 @@ public class W2vCommander {
     }
 
 }
-
-
 
 
 

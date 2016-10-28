@@ -99,7 +99,7 @@ public class LyricPack {
 	public void replaceMarkedW2vAnalogy() {
 
         HashSet<W2vJob> word2vecJobs = new HashSet<W2vJob>();
-        LyricFilterCommander filter = new LyricFilterCommander();
+        WordFilterCommander filter = new WordFilterCommander();
 
         //Add a theme-finding job first
         ArrayList<SmartWord> markedWords = new ArrayList<SmartWord>();//TODO find better way to do this
@@ -130,7 +130,7 @@ public class LyricPack {
             // Return 1 suggestion list for each W2vJob: ArrayList<HashSet<SmartWord>> w2vSuggestions.
             HashSet<W2vJob> w2vResults = w2v.runAll();
 
-            // Filter each set of suggestions with LyricFilterCommander.
+            // Filter each set of suggestions with WordFilterCommander.
             HashSet<W2vJob> filteredW2vResults = filter.filterSuggestions(w2vResults);
 
             // Return 1 suggestion SmartWord for each filtered suggestion list.

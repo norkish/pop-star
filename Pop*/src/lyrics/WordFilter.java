@@ -18,12 +18,17 @@ public abstract class WordFilter {
         this.preFilterWords = preFilterWords;
     }
 
-    public HashSet<SmartWord> getFilteredOutWords() {
+    private HashSet<SmartWord> getFilteredOutWords() {
         return filteredOutWords;
     }
 
-    public void setFilteredOutWords(HashSet<SmartWord> filteredOutWords) {
+    private void setFilteredOutWords(HashSet<SmartWord> filteredOutWords) {
         this.filteredOutWords = filteredOutWords;
+    }
+
+    public HashSet<SmartWord> setGetFilteredOutWords(HashSet<SmartWord> filteredOutWords) {
+        this.setFilteredOutWords(filteredOutWords);
+        return this.getFilteredOutWords();
     }
 
     public HashSet<SmartWord> getRemainingWords() {
@@ -39,7 +44,7 @@ public abstract class WordFilter {
 
 
 /*
-TODO > (maybe) Make sure only LyricFilterCommander can access WordFilter methods
+TODO > (maybe) Make sure only WordFilterCommander can access WordFilter methods
  */
 
 
