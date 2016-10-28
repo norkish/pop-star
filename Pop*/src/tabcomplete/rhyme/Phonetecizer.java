@@ -22,14 +22,19 @@ import utils.Pair;
 
 public class Phonetecizer {
 
-	private static final String cmuFilePath = TabDriver.dataDir + "/pron_dict/cmudict-0.7b.txt";
-	private static final String phonesFilePath = TabDriver.dataDir + "/pron_dict/cmudict-0.7b.phones.reordered.txt";
+    //private static final String cmuFilePath = TabDriver.dataDir + "/pron_dict/cmudict-0.7b.txt";
+    private static final String cmuFilePath = "/Users/Benjamin/Documents/workspace/pop-star/data/pron_dict/cmudict-0.7b.txt";
+
+	//private static final String phonesFilePath = TabDriver.dataDir + "/pron_dict/cmudict-0.7b.phones.reordered.txt";
+    private static final String phonesFilePath = "/Users/Benjamin/Documents/workspace/pop-star/data/pron_dict/cmudict-0.7b.phones.reordered.txt";
+
 
 	private static Map<String, List<StressedPhone[]>> cmuDict = loadCMUDict();
 	private static Map<String, Pair<Integer, PhoneCategory>> phonesDict = loadPhonesDict();
 	private static List<Pair<String, PhoneCategory>> reversePhonesDict = loadReversePhonesDict();
-	private static G2PConverter converter = new G2PConverter(TabDriver.dataDir + "/pron_dict/model.fst.ser");
-	
+//	private static G2PConverter converter = new G2PConverter(TabDriver.dataDir + "/pron_dict/model.fst.ser");
+	private static G2PConverter converter = new G2PConverter("/Users/Benjamin/Documents/workspace/pop-star/data/pron_dict/model.fst.ser");
+
 	public static Map<String, List<StressedPhone[]>> loadCMUDict() {
 		loadPhonesDict();
 

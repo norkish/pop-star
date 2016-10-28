@@ -11,7 +11,8 @@ import utils.Pair;
 public class HirjeeMatrix {
 
 	private static double[][] matrix = load();
-	private static final String hirjeeFilePath = TabDriver.dataDir + "/hirjeeMatrix.txt";
+	//private static final String hirjeeFilePath = TabDriver.dataDir + "/hirjeeMatrix.txt";
+    private static final String hirjeeFilePath = "/Users/Benjamin/Documents/workspace/pop-star/data/hirjeeMatrix.txt";
 
 	public static double[][] load() {
 		if (matrix == null) {
