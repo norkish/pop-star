@@ -1,6 +1,9 @@
 package main;
 
+import java.io.File;
+
 import composition.Composition;
+import orchestrate.Orchestration;
 import orchestrate.Orchestrator;
 
 /*
@@ -18,7 +21,7 @@ public class PopDriver {
 		System.out.println(newSong);
 		
 		Orchestrator orchestrator = Orchestrator.getOrchestrator();
-		orchestrator.orchestrate(newSong);
-		
+		Orchestration orchestration = orchestrator.orchestrate(newSong);
+		orchestration.saveToFile(new File(System.getProperty("user.home") + "/popstar_hit.kar"));
 	}
 }

@@ -19,6 +19,10 @@ public class Pair<T1, T2> {
 	}
 	
 	public String toString(){
-		return "[" + first.toString() + ", " + second.toString() + "]";
+		return "[" + (first == null?null:first.toString()) + ", " + (second == null?null:second.toString()) + "]";
+	}
+
+	public void setSecond(T2 i) {
+		second = i;
 	}
 }

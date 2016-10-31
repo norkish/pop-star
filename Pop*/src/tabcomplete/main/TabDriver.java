@@ -1,5 +1,6 @@
 package tabcomplete.main;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -10,7 +11,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 
+import harmony.Chord;
 import tabcomplete.rawsheet.ChordSheet;
 import tabcomplete.rawsheet.LyricSheet;
 import tabcomplete.rawsheet.RawDataLoader;
@@ -95,6 +98,17 @@ public class TabDriver {
 				Serializer.serialize(validatedTabs, serializedCompleteTabsPath);
 			}
 			System.out.println("Found " + validatedTabs.size() + " completed tab(s)");
+			
+			PrintWriter pw = new PrintWriter(new File("chordseqs.txt"));
+			for (CompletedTab completeTab : validatedTabs) {
+				for (SortedMap<Integer, Chord> chordLine : completeTab.chords) {
+					for (Chord chord : chordLine.values()) {
+						pw.write(chord.toString());
+						pw.write(" ");
+					}
+				}
+				pw.write("\n");
+			}
 			
 			if (test_accuracy) {
 				int sampleSize = Math.min(1000, validatedTabs.size());
