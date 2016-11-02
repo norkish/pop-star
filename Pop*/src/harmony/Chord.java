@@ -74,7 +74,7 @@ public class Chord implements Serializable{
 			if (token.matches("(?i)(maj|min|dim|aug|dom|sus|add).*")){
 				token = token.substring(3);
 			} else if (token.matches("(?i)(ma|mj).*")){
-				token = token.substring(3);
+				token = token.substring(2);
 			} else if (token.matches("^[mM].*")){
 				token = token.substring(1);
 			}

@@ -23,8 +23,8 @@ import tabcomplete.validate.TabValidator;
 
 public class TabDriver {
 	
-	private static boolean deserializeLyrics = false;
-	private static boolean serializeLyrics = true;
+	private static boolean deserializeLyrics = true;
+	private static boolean serializeLyrics = false;
 	private static boolean deserializeChords = false;
 	private static boolean serializeChords = true;
 	private static boolean deserializeValidatedTabs = false;

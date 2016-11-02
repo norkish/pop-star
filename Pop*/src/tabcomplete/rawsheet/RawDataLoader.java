@@ -45,7 +45,7 @@ public class RawDataLoader {
 			// parse each lyric sheet, perhaps differently depending on the site
 			csvRecordParser = loadCSVRecordParserForSite(lyricSite);
 			csvRecordIterator = csvRecordParser.iterator();
-			
+			csvRecordIterator.next();
 			for (int i = 1; csvRecordIterator.hasNext(); i++) {
 				loadLyricSheet(csvRecordIterator.next(),s);
 				if (i % 20000 == 0) System.out.println("Scanned " + i + " records...");
@@ -82,6 +82,8 @@ public class RawDataLoader {
 		for (String site : chordSites) {
 			csvRecordParser = loadCSVRecordParserForSite(site);
 			csvRecordIterator = csvRecordParser.iterator();
+			
+			csvRecordIterator.next();
 			boolean ug = (site == "ultimate-guitar");
 			for (int i = 1; csvRecordIterator.hasNext(); i++) {
 				loadChordSheet(csvRecordIterator.next(), ug);

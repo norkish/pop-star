@@ -91,8 +91,8 @@ public class ChordSheet implements Serializable {
 	public ChordSheet(CSVRecord csvRecord, String artistName, boolean ug) {
 		this.artist = artistName;
 		this.url = csvRecord.get(URL_COL);
-		if (!url.equals("https://tabs.ultimate-guitar.com/e/eagles/its_your_world_now_ukulele_crd.htm"))
-			return;
+//		if (!url.equals("https://tabs.ultimate-guitar.com/e/eagles/its_your_world_now_ukulele_crd.htm"))
+//			return;
 		
 		this.title = csvRecord.get(TITLE_COL);
 		this.type = csvRecord.get(TYPE_COL).trim();
@@ -158,7 +158,7 @@ public class ChordSheet implements Serializable {
 		this.key = Pitch.getPitchValue(csvRecord.get(KEY_COL));
 		this.contributor = csvRecord.get(CONTRIBUTOR_COL).trim();
 
-		System.out.println(this.toStringWithHeader());
+//		System.out.println(this.toStringWithHeader());
 		
 //		this.key = normalizeChords(this.key);
 	}
@@ -211,7 +211,7 @@ public class ChordSheet implements Serializable {
 		}
 		String[] blocks = rawTab.split("<br>\\s*<br>");
 
-		System.out.println(rawTab.replaceAll("<br>", "\n"));
+//		System.out.println(rawTab.replaceAll("<br>", "\n"));
 		// first try parsing the tab as though not embedded
 		if (!parseTabBlocks(blocks, false)) { // if it proves to be embedded
 			parseTabBlocks(blocks, true); // parse it as embedded
@@ -514,7 +514,9 @@ public class ChordSheet implements Serializable {
 	}
 
 	private String resolveBarredRepeats(String line) {
-		int firstOpenRepeatPos = line.indexOf("||:");
+		//while line has repeats with no repeats in between
+		//get the before and after and duplicate the middle part
+		/*int firstOpenRepeatPos = line.indexOf("||:");
 		int lastOpenRepeatPos = line.lastIndexOf(":||");
 
 		if (firstOpenRepeatPos != -1 && lastOpenRepeatPos != -1) {
@@ -526,7 +528,7 @@ public class ChordSheet implements Serializable {
 			// if (DEBUG) System.out.println("RESOLUTION: \"" + line + "\"");
 			// Utils.promptEnterKey("CHECK OUT BARRED REPEATS...");
 		}
-
+		 */
 		return line;
 	}
 
