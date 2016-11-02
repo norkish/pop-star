@@ -109,6 +109,7 @@ public class TabDriver {
 				}
 				pw.write("\n");
 			}
+			pw.close();
 			
 			if (test_accuracy) {
 				int sampleSize = Math.min(1000, validatedTabs.size());
