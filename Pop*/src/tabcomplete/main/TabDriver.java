@@ -25,8 +25,8 @@ public class TabDriver {
 	
 	private static boolean deserializeLyrics = true;
 	private static boolean serializeLyrics = false;
-	private static boolean deserializeChords = false;
-	private static boolean serializeChords = true;
+	private static boolean deserializeChords = true;
+	private static boolean serializeChords = false;
 	private static boolean deserializeValidatedTabs = false;
 	private static boolean serializeValidatedTabs = true;
 
@@ -92,11 +92,15 @@ public class TabDriver {
 					for (List<ChordSheet> css : chordSheetsByArtist.values()) {
 						for (ChordSheet cs : css) {
 							for(List<SortedMap<Integer, Chord>> chords : cs.getChords()){
-								for(SortedMap<Integer, Chord> chords2: chords)
+								if (chords == null) continue;
+								for(SortedMap<Integer, Chord> chords2: chords) {
+									if (chords2 == null) continue;
 									for (Chord chord : chords2.values()) {
+										if (chord == null) continue;
 										pw.write(chord.toString());
 										pw.write(" ");
 									}
+								}
 							}
 						}
 					}

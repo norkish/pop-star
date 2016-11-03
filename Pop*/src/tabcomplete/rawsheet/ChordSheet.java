@@ -513,25 +513,19 @@ public class ChordSheet implements Serializable {
 		return;
 	}
 
-//	static private final Pattern BARRED_REPEAT_MATCHER = Pattern.compile("()||:([]):||()");
+	static private final Pattern BARRED_REPEAT_MATCHER = Pattern.compile("(.*)\\|\\|:(((?!(\\|\\|:|:\\|\\|)).)*):\\|\\|(.*)");
 
 	private String resolveBarredRepeats(String line) {
 		//while line has repeats with no repeats in between
-//		while()
-		//get the before and after and duplicate the middle part
-		/*int firstOpenRepeatPos = line.indexOf("||:");
-		int lastOpenRepeatPos = line.lastIndexOf(":||");
+		Matcher matcher = BARRED_REPEAT_MATCHER.matcher(line);
 
-		if (firstOpenRepeatPos != -1 && lastOpenRepeatPos != -1) {
+		while(matcher.find()){
 			barRepeats++;
-			// if (DEBUG) System.out.println("RESOLVING REPEATS IN \"" + line + "\"");
-			String resolvedRepeats = resolveBarredRepeats(line.substring(firstOpenRepeatPos + 3, lastOpenRepeatPos));
-			line = line.substring(0, firstOpenRepeatPos) + resolvedRepeats + " " + resolvedRepeats
-					+ line.substring(lastOpenRepeatPos + 3);
-			// if (DEBUG) System.out.println("RESOLUTION: \"" + line + "\"");
-			// Utils.promptEnterKey("CHECK OUT BARRED REPEATS...");
+			line = matcher.group(1) + " " + matcher.group(2) + " " + matcher.group(2) + " " + matcher.group(5);
+			matcher = BARRED_REPEAT_MATCHER.matcher(line);
+			 if (DEBUG) System.out.println("RESOLUTION: \"" + line + "\"");
+			 Utils.promptEnterKey("CHECK OUT BARRED REPEATS...");
 		}
-		 */
 		return line;
 	}
 
