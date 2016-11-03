@@ -85,6 +85,25 @@ public class TabDriver {
 				if(!deserializeChords && serializeChords) {
 					Serializer.serialize(chordSheets, serializedTabsPath);
 				}
+				
+				
+				PrintWriter pw = new PrintWriter(new File("chordseqs.txt"));
+				for (Map<String, List<ChordSheet>> chordSheetsByArtist : chordSheets.values()) {
+					for (List<ChordSheet> css : chordSheetsByArtist.values()) {
+						for (ChordSheet cs : css) {
+							for(List<SortedMap<Integer, Chord>> chords : cs.getChords()){
+								for(SortedMap<Integer, Chord> chords2: chords)
+									for (Chord chord : chords2.values()) {
+										pw.write(chord.toString());
+										pw.write(" ");
+									}
+							}
+						}
+					}
+					pw.write("\n");
+				}
+				pw.close();
+				
 				count = 0;
 				for(Map<String, List<ChordSheet>> songsByArtist:chordSheets.values()) {
 					count+= songsByArtist.size();
@@ -98,18 +117,7 @@ public class TabDriver {
 				Serializer.serialize(validatedTabs, serializedCompleteTabsPath);
 			}
 			System.out.println("Found " + validatedTabs.size() + " completed tab(s)");
-			
-			PrintWriter pw = new PrintWriter(new File("chordseqs.txt"));
-			for (CompletedTab completeTab : validatedTabs) {
-				for (SortedMap<Integer, Chord> chordLine : completeTab.chords) {
-					for (Chord chord : chordLine.values()) {
-						pw.write(chord.toString());
-						pw.write(" ");
-					}
-				}
-				pw.write("\n");
-			}
-			pw.close();
+
 			
 			if (test_accuracy) {
 				int sampleSize = Math.min(1000, validatedTabs.size());

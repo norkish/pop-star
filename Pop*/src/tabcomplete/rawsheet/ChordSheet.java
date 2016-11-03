@@ -513,8 +513,11 @@ public class ChordSheet implements Serializable {
 		return;
 	}
 
+//	static private final Pattern BARRED_REPEAT_MATCHER = Pattern.compile("()||:([]):||()");
+
 	private String resolveBarredRepeats(String line) {
 		//while line has repeats with no repeats in between
+//		while()
 		//get the before and after and duplicate the middle part
 		/*int firstOpenRepeatPos = line.indexOf("||:");
 		int lastOpenRepeatPos = line.lastIndexOf(":||");
@@ -1025,5 +1028,9 @@ public class ChordSheet implements Serializable {
 
 	public String getURL() {
 		return url;
+	}
+
+	public List<List<SortedMap<Integer, Chord>>> getChords() {
+		return chordBlocks;
 	}
 }
