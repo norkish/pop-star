@@ -22,10 +22,9 @@ import harmony.Chord;
 import harmony.Chord.ChordQuality;
 import pitch.Pitch;
 import tabcomplete.alignment.Aligner;
+import tabcomplete.alignment.SequencePair.AlignmentBuilder;
 import tabcomplete.alignment.StringPair;
 import tabcomplete.alignment.StringPairAlignment;
-import tabcomplete.alignment.XGenericPairwiseAlignment;
-import tabcomplete.alignment.SequencePair.AlignmentBuilder;
 import tabcomplete.filter.DirtyFilter;
 import tabcomplete.main.TabDriver;
 import tabcomplete.normalize.ChordNormalizer;
@@ -1000,7 +999,7 @@ public class ChordSheet implements Serializable {
 				} else {
 					lastValidLyricLine = i;
 					// TODO: make first letter upper case
-					finalTabLyrics.add(StringUtils.capitalize(alnLyrLine.replaceAll("\n", " ").replaceAll(""+XGenericPairwiseAlignment.INDEL_CHAR, "").trim()));
+					finalTabLyrics.add(StringUtils.capitalize(alnLyrLine.replaceAll("\n", " ").replaceAll(""+AlignmentBuilder.INDEL_CHAR, "").trim()));
 				}
 			}
 			

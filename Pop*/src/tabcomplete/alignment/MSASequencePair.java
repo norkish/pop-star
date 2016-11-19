@@ -7,7 +7,7 @@ public class MSASequencePair extends SequencePair {
 	public class MSAStringAlignmentBuilder extends AlignmentBuilder {
 
 		StringBuilder[] newAlnSeqBldrs = new StringBuilder[numSeqs];
-		StringBuilder lyrSeqBldr = new StringBuilder();;
+		StringBuilder lyrSeqBldr = new StringBuilder();
 		
 		public MSAStringAlignmentBuilder() {
 			for (int k = 0; k < newAlnSeqBldrs.length; k++) {

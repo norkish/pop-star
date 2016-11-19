@@ -28,4 +28,15 @@ public class Triple<S1, S2, S3> {
 		this.second = second;
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("Triple [first=").append(first).append(", second=").append(second).append(", third=")
+				.append(third).append("]");
+		return builder.toString();
+	}
+
+	public void setFirst(S1 first) {
+		this.first = first;
+	}
 }

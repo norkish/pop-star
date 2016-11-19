@@ -108,7 +108,7 @@ public class TabValidator {
 	}
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException {
-		Map<String, Map<String, List<LyricSheet>>> lyricSheetsByArtist = RawDataLoader.loadLyricSheets();
+		Map<String, Map<String, List<LyricSheet>>> lyricSheetsByArtist = RawDataLoader.loadLyricSheets(null);
 		Map<String, Map<String, List<ChordSheet>>> chordSheetsByArtist = RawDataLoader.loadChordSheets();
 
 		validateTabs(lyricSheetsByArtist, chordSheetsByArtist);

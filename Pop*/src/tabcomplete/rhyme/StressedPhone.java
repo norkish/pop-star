@@ -10,6 +10,6 @@ public class StressedPhone {
 	}
 	
 	public String toString() {
-		return "" + phone + ":" + stress;
+		return "" + Phonetecizer.intToString(phone) + ":" + stress;
 	}
 }

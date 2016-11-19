@@ -293,8 +293,8 @@ public class ProgressiveMSA {
 	 * @throws IOException
 	 * @throws FileNotFoundException
 	 */
-	public static void main(String[] args) throws FileNotFoundException, IOException {
-		Map<String, Map<String, List<LyricSheet>>> lyricSheets = RawDataLoader.loadLyricSheets();
+	/*public static void main(String[] args) throws FileNotFoundException, IOException {
+		Map<String, Map<String, List<LyricSheet>>> lyricSheets = RawDataLoader.loadLyricSheets(null);
 
 		StopWatch refactoredWatch = new StopWatch();
 		StopWatch oldOptimizedWatch = new StopWatch();
@@ -303,7 +303,7 @@ public class ProgressiveMSA {
 		double consistent = 0.;
 		double total = 0.;
 		Aligner.setMinPercOverlap(.7);
-		XOptimizedBandedPairwiseAlignment.setMinPercOverlap(.7);
+		XAlignment.setMinPercOverlap(.7);
 		XSeqToAlnAlignment.setMinPercOverlap(.7);
 		refactoredWatch.reset();
 		oldOptimizedWatch.reset();
@@ -378,7 +378,7 @@ public class ProgressiveMSA {
 		if (!msa.getConsensus().equals(oldMsa.getConsensus()))
 			return false;
 		return true;
-	}
+	}*/
 
 	public SortedMap<Integer, String> getAlignmentsSequence() {
 		return alignedSeqs;

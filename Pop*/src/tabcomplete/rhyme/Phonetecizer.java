@@ -14,10 +14,12 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import edu.cmu.sphinx.linguist.g2p.G2PConverter;
 import edu.cmu.sphinx.linguist.g2p.Path;
 import tabcomplete.main.TabDriver;
+import utils.EnglishNumberToWords;
 import utils.Pair;
 
 public class Phonetecizer {
@@ -30,6 +32,9 @@ public class Phonetecizer {
 	private static List<Pair<String, PhoneCategory>> reversePhonesDict = loadReversePhonesDict();
 	private static G2PConverter converter = new G2PConverter(TabDriver.dataDir + "/pron_dict/model.fst.ser");
 	
+	/**
+	 * Loads CMU dictionary from file into a datastructure
+	 */
 	public static Map<String, List<StressedPhone[]>> loadCMUDict() {
 		loadPhonesDict();
 
@@ -79,7 +84,6 @@ public class Phonetecizer {
 					assert(cmuDict.containsKey(key.substring(0, parenIdx)));
 					newList.add(phones);
 				}
-				
 				// Utils.promptEnterKey("");
 			}
 
@@ -93,6 +97,10 @@ public class Phonetecizer {
 		return cmuDict;
 	}
 
+	/**
+	 * returns loaded dict if not null, otherwise loads dict from file and returns dict
+	 * @return
+	 */
 	public static Map<String, Pair<Integer, PhoneCategory>> loadPhonesDict() {
 		if (phonesDict == null) {
 			loadPhonesDicts();
@@ -135,6 +143,12 @@ public class Phonetecizer {
 	public static void main(String[] args) throws IOException {
 		System.out.println("Loading CMU...");
 		Phonetecizer.loadCMUDict();
+		
+		String alphabet = "abcdeghijklmnopqrstuvwyz1234567890";
+		for (int i = 0; i < alphabet.length(); i++) {
+			getPronunciationForChar(alphabet.charAt(i));
+		}
+		
 		String[] tests = new String[]{"Hey, wind, oh","Hey, wind,", "aw","","aw, aw, aw,"};
 		
 		for (int k = 0; k < tests.length; k++) {
@@ -171,6 +185,10 @@ public class Phonetecizer {
 		}
 	}
 
+	/**
+	 * Returns datastruct mapping phonemes to phoneme category
+	 * @return
+	 */
 	public static List<Pair<String, PhoneCategory>> loadReversePhonesDict() {
 		if (reversePhonesDict == null) {
 			loadPhonesDicts();
@@ -179,18 +197,32 @@ public class Phonetecizer {
 		return reversePhonesDict;
 	}
 
+	/**
+	 * phonemes that should be ignored when computing rhymes
+	 */
 	private static Set<String> stopRhymes = new HashSet<String>(Arrays.asList("AW","OH"));
 
+	/**
+	 * Returns a list of ways the input string could be pronounced. If word is in cmu dictionary, then CMU entry is returned, otherwise G2Pconverter is used to guess. 
+	 * @param string
+	 * @return
+	 */
 	public static List<StressedPhone[]> getPhones(String string) {
 		List<StressedPhone[]> prevPhones = null, nextPhones, pronunciationChoices;
 		
 		for (String s : string.toUpperCase().trim().split("[^A-Z0-9']+")) {
-			if (s.length() == 0 || stopRhymes.contains(s)) continue;
-			pronunciationChoices = cmuDict.get(s);
+			if (s.length() == 0) continue; // || stopRhymes.contains(s)) continue; This second condition should be handled elsewhere.
+			if (StringUtils.isNumeric(s)) {
+				pronunciationChoices = getPhones(EnglishNumberToWords.convert(Integer.parseInt(s)));
+			} else {
+				pronunciationChoices = cmuDict.get(s);
+			}
 			
 			if (pronunciationChoices == null) {
 				pronunciationChoices = new ArrayList<StressedPhone[]>();
-				for(Path path: converter.phoneticize(s.replaceAll("[^A-Z0-9]", " "),3)) {
+				s = s.replaceAll("[^A-Z0-9]", " ");
+				
+				for(Path path: converter.phoneticize(s,3)) {
 					pronunciationChoices.add(parse(path));
 				}
 			}
@@ -209,7 +241,7 @@ public class Phonetecizer {
 			prevPhones = nextPhones;
 		}
 
-		return prevPhones;
+		return prevPhones == null? new ArrayList<StressedPhone[]>(): prevPhones;
 	}
 
 
@@ -387,6 +419,14 @@ public class Phonetecizer {
 			return PhoneCategory.fricative;
 		else
 			return cat;
+	}
+
+	public static StressedPhone[] getPronunciationForChar(char c) {
+		List<StressedPhone[]> pronuns = cmuDict.get("" + Character.toUpperCase(c));
+		if (pronuns == null) {
+			return parse(converter.phoneticize("" + c, 1).get(0));
+		}
+		return pronuns.get(pronuns.size()-1);
 	}
 
 }

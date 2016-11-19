@@ -362,9 +362,9 @@ public class Aligner{
 		System.out.println("___________");
 	}
 
-	public static void main(String[] args) throws FileNotFoundException, IOException {
+	/*public static void main(String[] args) throws FileNotFoundException, IOException {
 		
-		Map<String, Map<String, List<LyricSheet>>> lyricSheets = RawDataLoader.loadLyricSheets();
+		Map<String, Map<String, List<LyricSheet>>> lyricSheets = RawDataLoader.loadLyricSheets(null);
 
 		StopWatch refactoredWatch = new StopWatch();
 		StopWatch oldOptimizedWatch = new StopWatch();
@@ -435,7 +435,7 @@ public class Aligner{
 //		System.out.print("\t" + oldMSAWatch.elapsedTime() / iterations);
 		System.out.print("\t" + total / iterations);
 		System.out.println();
-	}
+	}*/
 
 	public static void setMinPercOverlap(double minPercOverlap) {
 		minPercentOverlap = minPercOverlap;
@@ -446,7 +446,7 @@ public class Aligner{
 	 * @param aln2
 	 * @return
 	 */
-	public static boolean compareAlignments(Alignment aln, XGenericPairwiseAlignment aln2) {
+	/*public static boolean compareAlignments(Alignment aln, XGenericPairwiseAlignment aln2) {
 		String alnFirst = (String) aln.getFirst();
 		String alnSecond = (String) aln.getSecond();
 		double[] alnScores = aln.getScores();
@@ -475,7 +475,7 @@ public class Aligner{
 //			System.out.println(Arrays.toString(aln2Scores));
 //		}
 		return same;
-	}
+	}*/
 
 	public static void printMatrixS(int[][] matrix) {
 		System.out.println("___________");

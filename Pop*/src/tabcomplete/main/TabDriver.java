@@ -42,7 +42,7 @@ public class TabDriver {
 	public static final Set<String> filters = new HashSet<String>(Arrays.asList(filtersArray));
 
 	public final static String dataDir = "../../data";
-	private final static String serializedDataDir = dataDir + "/ser";
+	public final static String serializedDataDir = dataDir + "/ser";
 	private static String serializedLyricsPath = serializedDataDir + "/" + (mini_data_set?"":"new_") +"lyrics" + (filters.size()==0?"":"." + filtersName) + ".ser";
 	private static String serializedTabsPath = serializedDataDir + "/" + (mini_data_set?"":"new_") +"tabs" + (filters.size()==0?"":"." + filtersName) + ".ser";
 	private static String serializedCompleteTabsPath = serializedDataDir + "/" + (mini_data_set?"":"new_") +"complete_tabs" + (filters.size()==0?"":"." + filtersName) + ".ser";
@@ -65,7 +65,7 @@ public class TabDriver {
 		List<CompletedTab> validatedTabs = null;
 		try {
 			if (!deserializeValidatedTabs) {
-				lyricSheets = (deserializeLyrics? (Map<String, Map<String, List<LyricSheet>>>) Serializer.load(serializedLyricsPath): RawDataLoader.loadLyricSheets());
+				lyricSheets = (deserializeLyrics? (Map<String, Map<String, List<LyricSheet>>>) Serializer.load(serializedLyricsPath): RawDataLoader.loadLyricSheets(null));
 				if (lyricSheets == null) return null;
 				if(!deserializeLyrics && serializeLyrics) {
 					Serializer.serialize(lyricSheets, serializedLyricsPath);

@@ -7,8 +7,14 @@
 	<classpathentry kind="lib" path="lib/jsoup-1.9.1.jar"/>
 	<classpathentry kind="lib" path="lib/sphinx4-core-1.0.0-javadoc.jar"/>
 	<classpathentry kind="lib" path="lib/sphinx4-core-1.0.0-sources.jar"/>
-	<classpathentry kind="lib" path="lib/sphinx4-core-1.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/sphinx4-core-1.0.0.jar" sourcepath="lib/sphinx4-core-1.0.0-sources.jar"/>
 	<classpathentry kind="lib" path="lib/sphinx4-data-1.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-csv-1.2/commons-csv-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/gson-2.8.0-javadoc.jar"/>
+	<classpathentry kind="lib" path="lib/gson-2.8.0.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/Pop*/lib/gson-2.8.0-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
