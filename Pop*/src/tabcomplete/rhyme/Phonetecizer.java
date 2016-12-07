@@ -429,4 +429,8 @@ public class Phonetecizer {
 		return pronuns.get(pronuns.size()-1);
 	}
 
+	public static boolean cmuDictContains(String word) {
+		return cmuDict.containsKey(word.toUpperCase());
+	}
+
 }
