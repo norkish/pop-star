@@ -4,9 +4,10 @@ import globalstructure.StructureSource;
 import harmony.HarmonySource;
 import inspiration.InspirationSource;
 import lyrics.LyricalSource;
+import melody.MelodySource;
 import pitch.PitchSource;
 import rhythm.RhythmSource;
-import substructure.SubstructureSource;
+import segmentstructure.SegmentStructureSource;
 
 public class SongConfigurationLoader {
 
@@ -19,9 +20,10 @@ public class SongConfigurationLoader {
 		
 		config.inspirationSource = InspirationSource.randomInspirationSource();
 		config.globalStructureSource = StructureSource.randomStructureSource();
-		config.substructureSource = SubstructureSource.randomSubstructureSource();
+		config.substructureSource = SegmentStructureSource.randomSubstructureSource();
 		config.lyricSource = LyricalSource.randomLyricalSource();
 		config.harmonySource = HarmonySource.randomHarmonySource();
+		config.melodySource = MelodySource.randomMelodySource();
 		config.rhythmSource = RhythmSource.randomRhythmSource();
 		config.pitchSource = PitchSource.randomPitchSource();
 		
@@ -37,9 +39,10 @@ public class SongConfigurationLoader {
 		
 		config.inspirationSource = InspirationSource.RANDOM;
 		config.globalStructureSource = StructureSource.FIXED;
-		config.substructureSource = SubstructureSource.FIXED;
+		config.substructureSource = SegmentStructureSource.FIXED;
 		config.lyricSource = LyricalSource.TEMPLATE;
 		config.harmonySource = HarmonySource.MONOCHORD;
+		config.melodySource = MelodySource.RANDOM;
 		config.rhythmSource = RhythmSource.RANDOM;
 		config.pitchSource = PitchSource.RANDOM;
 		
@@ -51,9 +54,10 @@ public class SongConfigurationLoader {
 		
 		config.inspirationSource = InspirationSource.RANDOM;
 		config.globalStructureSource = StructureSource.TEST;
-		config.substructureSource = SubstructureSource.TEST;
+		config.substructureSource = SegmentStructureSource.TEST;
 		config.lyricSource = LyricalSource.TEST;
 		config.harmonySource = HarmonySource.TEST;
+		config.melodySource = MelodySource.TEST;
 		config.rhythmSource = RhythmSource.TEST;
 		config.pitchSource = PitchSource.TEST;
 		
@@ -65,9 +69,10 @@ public class SongConfigurationLoader {
 		
 		config.inspirationSource = InspirationSource.RANDOM; // TODO
 		config.globalStructureSource = StructureSource.DISTRIBUTION;
-		config.substructureSource = SubstructureSource.DISTRIBUTION;
+		config.substructureSource = SegmentStructureSource.DISTRIBUTION;
 		config.lyricSource = LyricalSource.LYRICAL_NGRAM;
 		config.harmonySource = HarmonySource.SEGMENTSPECIFIC_HMM;
+		config.melodySource = MelodySource.TEST; // TODO
 		config.rhythmSource = RhythmSource.TEST; // TODO
 		config.pitchSource = PitchSource.TEST; // TODO
 		

@@ -1,138 +1,102 @@
 package composition;
 
-import java.util.Iterator;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
+import globalstructure.GlobalStructure;
+import globalstructure.GlobalStructureEngineer;
 import globalstructure.SegmentType;
-import harmony.Harmony;
-import harmony.ProgressionSegment;
+import harmony.HarmonyEngineer;
 import inspiration.Inspiration;
-import lyrics.LyricSegment;
-import lyrics.Lyrics;
-import melody.Melody;
-import pitch.PitchSegment;
-import rhythm.RhythmSegment;
-import structure.Structure;
-import substructure.SegmentSubstructure;
-import utils.Triple;
-import utils.Utils;
+import inspiration.InspirationEngineer;
+import lyrics.LyricalEngineer;
+import melody.MelodyEngineer;
+import segmentstructure.SegmentStructure;
+import segmentstructure.SegmentStructureEngineer;
 
 public class Composition {
 
 	private String title = "BSSF";
 	private String composer = "Pop*";
-	private Structure structure = null;
-	private Inspiration inspiration = null;
-	private Lyrics lyrics = null;
-	private Harmony harmony = null;
-	private Melody melody = null;
+	private Inspiration inspiration;
+	private GlobalStructure globalStructure;
+	Map<SegmentType, SegmentStructure> indexedSegmentStructures;
+	
+	Score score;
 
-	public void setStructure(Structure structure) {
-		this.structure  = structure;
+	public void generateInspiration(InspirationEngineer inspirationEngineer) {
+		this.inspiration = inspirationEngineer.generateInspiration();
 	}
 
-	public void setInspiration(Inspiration inspiration) {
-		this.inspiration = inspiration;
-	}
-
-	public void setLyrics(Lyrics lyrics) {
-		this.lyrics  = lyrics;
-	}
-
-	public void setHarmony(Harmony harmony) {
-		this.harmony  = harmony;
-	}
-
-	public void setMelody(Melody melody) {
-		this.melody  = melody;
-	}
-
-	public String toString()
-	{
-		return print(true, true, true, false, true);
-	}
-
-	public String print(boolean printHeader, boolean printSubstructure, boolean printHarmony, boolean printMelody, boolean printLyrics)
-	{
-		if (!(printHeader || printSubstructure || printHarmony || printMelody || printLyrics))
-			return "";
-		
-		StringBuilder str = new StringBuilder();
-		
-		if (printHeader)
-		{
-			str.append("Title: ");
-			str.append(title);
-			str.append('\n');
-			str.append("Composer: ");
-			str.append(composer);
-			str.append("\nInspiration: ");
-			str.append(inspiration.getExplaination());
-			str.append("\n\n");
+	private static String loadXMLTemplate() {
+		String text = null;
+		try {
+			text = new String(Files.readAllBytes(Paths.get("template.xml")), StandardCharsets.UTF_8);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
+
+		return text;
+	}
+
+	public void generateGlobalStructure(GlobalStructureEngineer globalStructureEngineer) {
+		this.globalStructure = globalStructureEngineer.generateStructure();		
+	}
+	
+	public void generateSegmentStructure(SegmentStructureEngineer segmentStructureEngineer) {
+		// Substructure engineer designs a blueprint for each of the segments established by the global structure
+		// Instantiations of that blueprint may vary, but it is the blueprint we are defining as substructure
+		indexedSegmentStructures = new HashMap<SegmentType,SegmentStructure>();
 		
-		if (printHarmony || printSubstructure || printMelody || printLyrics)
-		{
-			Map<SegmentType, LyricSegment[]> lyricsBySegment = null;
-			Map<SegmentType, ProgressionSegment[]> harmonyBySegment = null;
-			Map<SegmentType, RhythmSegment[]> rhythmBySegment = null;
-			Map<SegmentType, PitchSegment[]> pitchesBySegment = null;
-			
-			if (printLyrics) {
-				lyricsBySegment = lyrics.getLyricsBySegment();
-			}
-			if (printHarmony) {
-				harmonyBySegment = harmony.getProgressions();
-			}
-			if (printMelody) {
-				rhythmBySegment = melody.getRhythms().getRhythmBySegment();
-				pitchesBySegment = melody.getPitches().getPitchesBySegment();
-			}
-			
-			for (Iterator<Triple<SegmentType, Integer, SegmentSubstructure>> segmentIter = structure.new SegmentIterator<Triple<SegmentType, Integer, SegmentSubstructure>>(); segmentIter.hasNext();) {
-				Triple<SegmentType, Integer, SegmentSubstructure> segment = (Triple<SegmentType, Integer, SegmentSubstructure>) segmentIter.next();
-				
-				SegmentType segmentType = segment.getFirst();
-				Integer segTypeIdx = segment.getSecond();
-				SegmentSubstructure substructure = segment.getThird();
-				
-				str.append(segmentType);
-				str.append(' ');
-				str.append((segTypeIdx + 1));
-				str.append(":\n");
-				
-				if (printSubstructure) {
-					str.append("Structure:\n");
-					str.append(substructure);
-					str.append("\n");
-				}
-				
-				if (printLyrics || printMelody || printHarmony) {
-					for (int i = 0; i < substructure.linesPerSegment; i++) {
-						if (printHarmony){
-							str.append(Utils.join(harmonyBySegment.get(segmentType)[segTypeIdx].getLine(i),"\t"));
-							str.append('\n');
-						}
-						if (printMelody) {
-							str.append(Utils.join(pitchesBySegment.get(segmentType)[segTypeIdx].getLine(i),"\t"));
-							str.append('\n');
-							str.append(Utils.join(rhythmBySegment.get(segmentType)[segTypeIdx].getLine(i),"\t"));
-							str.append('\n');
-						}
-						if (printLyrics) {
-							str.append(Utils.join(lyricsBySegment.get(segmentType)[segTypeIdx].getLine(i)," "));
-							str.append('\n');
-						}
-					}
-					str.append('\n');
-				}
+		for (SegmentType segmentType : globalStructure) {
+			if (!indexedSegmentStructures.containsKey(segmentType)) {
+				indexedSegmentStructures.put(segmentType, segmentStructureEngineer.defineSegmentStructure(segmentType));
 			}
 		}
-		
-		return str.toString();
 	}
 
-	public Structure getStructure() {
-		return this.structure;
+	public void instantiateScoreWithSegmentStructure(SegmentStructureEngineer segmentStructureEngineer) {
+		score = new Score();
+		
+		for (int i = 0; i < globalStructure.size(); i++) {
+			// gather data relevant to instantiation
+			SegmentType segmentType = globalStructure.get(i);
+			boolean lastSegment = (i == globalStructure.size()-1);
+			boolean lastOfKind = (globalStructure.lastIndexOf(segmentType) == i);
+			
+			SegmentStructure segmentStructure = indexedSegmentStructures.get(segmentType);
+			List<Measure> instantiatedMeasures = segmentStructureEngineer.instantiateSegmentStructure(segmentType, segmentStructure, lastOfKind, lastSegment);
+			score.addMeasures(instantiatedMeasures);
+		}
+	}
+
+	public void generateHarmony(HarmonyEngineer harmonyEngineer) {
+		harmonyEngineer.addHarmony(inspiration, score);
+	}
+
+	public void generateMelody(MelodyEngineer melodyEngineer) {
+		melodyEngineer.addMelody(inspiration, score);
+	}
+
+	public void generateLyrics(LyricalEngineer lyricalEngineer) {
+		lyricalEngineer.addLyrics(inspiration, score);
+	}
+	
+	public String toString(){
+		String xml = loadXMLTemplate();
+		
+		xml = xml.replaceFirst("TITLE-PLACEHOLDER", title);
+		xml = xml.replaceFirst("COMPOSER-PLACEHOLDER", composer);
+		xml = xml.replaceFirst("LYRICIST-PLACEHOLDER", StringUtils.capitalize(inspiration.getMaxEmotion()));
+		xml = xml.replaceFirst("PART-PLACEHOLDER\n", score.toXML(2));
+		
+		return xml;
 	}
 }

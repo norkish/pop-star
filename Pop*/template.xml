@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<score-partwise version="2.0">
+    <work>
+        <work-number/>
+        <work-title/>
+    </work>
+    <movement-number/>
+    <movement-title>TITLE-PLACEHOLDER</movement-title>
+    <identification>
+        <creator type="composer">COMPOSER-PLACEHOLDER</creator>
+        <creator type="poet">LYRICIST-PLACEHOLDER</creator>
+        <rights/>
+        <source>Pop*</source>
+    </identification>
+    <defaults>
+        <page-layout>
+            <page-height>1980</page-height>
+            <page-width>1400</page-width>
+        </page-layout>
+    </defaults>
+    <part-list>
+        <score-part id="P1">
+            <part-name>Melody</part-name>
+            <part-abbreviation>Mel.</part-abbreviation>
+        </score-part>
+    </part-list>
+    <part id="P1">
+PART-PLACEHOLDER
+    </part>
+</score-partwise>

@@ -1,4 +1,4 @@
-package substructure;
+package segmentstructure;
 
 public class TimeSignature {
 

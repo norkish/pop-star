@@ -1,22 +1,18 @@
 package harmony;
 
+import composition.Score;
 import globalstructure.SegmentType;
 import inspiration.Inspiration;
-import substructure.SegmentSubstructure;
+import segmentstructure.SegmentStructure;
 
 public class MonochordHarmonyEngineer extends HarmonyEngineer {
 
 	@Override
-	protected void applyVariation(ProgressionSegment segmentProgression, Inspiration inspiration, SegmentSubstructure segmentSubstructures, SegmentType segmentType, boolean isLast){
+	public void addHarmony(Inspiration inspiration, Score score) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	@Override
-	protected ProgressionSegment generateSegmentHarmony(Inspiration inspiration, SegmentSubstructure segmentSubstructures,
-			SegmentType segmentKey) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	
 
 }

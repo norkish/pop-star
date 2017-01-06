@@ -74,7 +74,6 @@ public class Phonetecizer {
 				// System.out.println(lineSplit[0] + ":" + Arrays.toString(phones));
 				
 				key = lineSplit[0];
-				
 				parenIdx = key.indexOf('(', 1);
 				if (parenIdx == -1) {
 					newList = new ArrayList<StressedPhone[]>();
@@ -149,12 +148,17 @@ public class Phonetecizer {
 			getPronunciationForChar(alphabet.charAt(i));
 		}
 		
-		String[] tests = new String[]{"Hey, wind, oh","Hey, wind,", "aw","","aw, aw, aw,"};
+		String[] tests = new String[]{"Don't", "Hey, wind, oh","Hey, wind,", "aw","","aw, aw, aw,"};
 		
 		for (int k = 0; k < tests.length; k++) {
+			System.out.println("Getting dictionary syllables of " + tests[k]);
+			List<StressedPhone[]> phones = getPhones(tests[k],true);
+			for (StressedPhone[] stressedPhones : phones) {
+				System.out.println("\t" + Arrays.toString(readable(stressedPhones)));
+			}
 			for (int j = 0; j < 5; j++) {
 				System.out.println("Getting last " + j + " syllables of " + tests[k]);
-				List<StressedPhone[]> phones = getPhonesForXLastSyllables(tests[k], j);
+				phones = getPhonesForXLastSyllables(tests[k], j);
 				for (StressedPhone[] stressedPhones : phones) {
 					System.out.println("\t" + Arrays.toString(readable(stressedPhones)));
 				}
@@ -178,7 +182,7 @@ public class Phonetecizer {
 		tests = new String[]{"Potatoes, tomatoes, windy","hey-you, i.o.u. nu__in","namaste","schtoikandikes","lichtenstein","avadacadabrax"};
 		for (String test : tests) {
 			System.out.println("Pronunciation for \"" + test + "\"");
-			List<StressedPhone[]> phones = getPhones(test);
+			List<StressedPhone[]> phones = getPhones(test, false);
 			for (StressedPhone[] stressedPhones : phones) {
 				System.out.println("\t" + Arrays.toString(readable(stressedPhones)));
 			}
@@ -207,18 +211,18 @@ public class Phonetecizer {
 	 * @param string
 	 * @return
 	 */
-	public static List<StressedPhone[]> getPhones(String string) {
+	public static List<StressedPhone[]> getPhones(String string, boolean fromDictOnly) {
 		List<StressedPhone[]> prevPhones = null, nextPhones, pronunciationChoices;
 		
 		for (String s : string.toUpperCase().trim().split("[^A-Z0-9']+")) {
 			if (s.length() == 0) continue; // || stopRhymes.contains(s)) continue; This second condition should be handled elsewhere.
 			if (StringUtils.isNumeric(s)) {
-				pronunciationChoices = getPhones(EnglishNumberToWords.convert(Integer.parseInt(s)));
+				pronunciationChoices = getPhones(EnglishNumberToWords.convert(Integer.parseInt(s)),fromDictOnly);
 			} else {
 				pronunciationChoices = cmuDict.get(s);
 			}
 			
-			if (pronunciationChoices == null) {
+			if (pronunciationChoices == null && !fromDictOnly) {
 				pronunciationChoices = new ArrayList<StressedPhone[]>();
 				s = s.replaceAll("[^A-Z0-9]", " ");
 				
@@ -231,9 +235,11 @@ public class Phonetecizer {
 				nextPhones = pronunciationChoices;
 			} else {
 				nextPhones = new ArrayList<StressedPhone[]>();
-				for (StressedPhone[] prevPhone : prevPhones) {
-					for (StressedPhone[] pronunciationChoice : pronunciationChoices) {
-						nextPhones.add(ArrayUtils.addAll(prevPhone, pronunciationChoice));
+				if (pronunciationChoices != null) {
+					for (StressedPhone[] prevPhone : prevPhones) {
+						for (StressedPhone[] pronunciationChoice : pronunciationChoices) {
+							nextPhones.add(ArrayUtils.addAll(prevPhone, pronunciationChoice));
+						}
 					}
 				}
 			}

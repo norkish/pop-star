@@ -515,7 +515,7 @@ public class GenerateFilesForLabeling {
 				continue;
 			// for each pronunciation of the word
 			List<Triple<String, StressedPhone[], Integer>> optimalPronunciation = null;
-			for(StressedPhone[] p : Phonetecizer.getPhones(word)) {
+			for(StressedPhone[] p : Phonetecizer.getPhones(word,false)) {
 				List<Triple<String, StressedPhone[], Integer>> pronunciation = Syllabifier.syllabify(word, p);
 				if(optimalPronunciation == null || Math.abs(pronunciation.size() - optimalSyllableCount) < Math.abs(optimalPronunciation.size() - optimalSyllableCount)) { 
 					optimalPronunciation = pronunciation;

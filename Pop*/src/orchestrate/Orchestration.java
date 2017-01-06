@@ -12,7 +12,7 @@ import javax.sound.midi.Sequence;
 import javax.sound.midi.ShortMessage;
 import javax.sound.midi.SysexMessage;
 
-import substructure.TimeSignature;
+import segmentstructure.TimeSignature;
 import utils.Triple;
 
 public class Orchestration {

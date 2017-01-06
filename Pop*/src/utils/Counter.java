@@ -38,8 +38,8 @@ public class Counter<T extends Comparable<T>> {
 		JFreeChart barChart = ChartFactory.createBarChart(plotTitle, xaxis, yaxis, dataset,
 				PlotOrientation.VERTICAL, true, true, false);
 
-		int width = 8*640; /* Width of the image */
-		int height = 8*480; /* Height of the image */
+		int width = 3*640; /* Width of the image */
+		int height = 3*480; /* Height of the image */
 		File BarChart = new File(filename);
 		if (BarChart.exists())
 			BarChart.delete();

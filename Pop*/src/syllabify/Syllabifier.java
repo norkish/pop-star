@@ -33,7 +33,7 @@ public class Syllabifier {
 			System.out.print("\nINPUT: ");
 			test = in.nextLine();
 			System.out.println("Pronunciation for \"" + test + "\"");
-			List<StressedPhone[]> phones = Phonetecizer.getPhones(test);
+			List<StressedPhone[]> phones = Phonetecizer.getPhones(test,false);
 			for (StressedPhone[] stressedPhones : phones) {
 				System.out.println("\t" + Arrays.toString(Phonetecizer.readable(stressedPhones)));
 				List<Triple<String, StressedPhone[], Integer>> value = syllabify(test,stressedPhones);

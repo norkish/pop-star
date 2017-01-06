@@ -1,15 +1,7 @@
 package main;
 
 import composition.Composition;
-import harmony.Harmony;
-import harmony.HarmonyEngineer;
-import inspiration.Inspiration;
-import inspiration.InspirationEngineer;
-import lyrics.LyricalEngineer;
-import lyrics.Lyrics;
 import manager.Manager;
-import structure.Structure;
-import structure.StructureEngineer;
 
 public class Studio {
 
@@ -19,25 +11,19 @@ public class Studio {
 
 		Manager manager = new Manager();
 
-		InspirationEngineer inspirationEngineer = manager.getInspirationEngineer();
-		Inspiration inspiration = inspirationEngineer.generateInspiration();
-		newComposition.setInspiration(inspiration);
+		newComposition.generateInspiration(manager.getInspirationEngineer());
 
-		StructureEngineer structureEngineer = manager.getStructureEngineer();
-		Structure structure = structureEngineer.generateStructure();
-		newComposition.setStructure(structure);
-
-		LyricalEngineer lyircalEngineer = manager.getLyricalEngineer();
-		Lyrics lyrics = lyircalEngineer.generateLyrics(inspiration, structure);
-		newComposition.setLyrics(lyrics);
-
-		HarmonyEngineer harmonyEngineer = manager.getHarmonyEngineer();
-		Harmony harmony = harmonyEngineer.generateHarmony(inspiration, structure);
-		newComposition.setHarmony(harmony);
+		newComposition.generateGlobalStructure(manager.getGlobalStructureEngineer());
 		
-//		MelodyEngineer melodyEngineer = manager.getMelodyEngineer();
-//		Melody melody = melodyEngineer.generateMelody(inspiration, structure, lyrics, harmony);
-//		newComposition.setMelody(melody);
+		newComposition.generateSegmentStructure(manager.getSegmentStructureEngineer());
+		
+		newComposition.instantiateScoreWithSegmentStructure(manager.getSegmentStructureEngineer());
+
+		newComposition.generateHarmony(manager.getHarmonyEngineer());
+
+		newComposition.generateMelody(manager.getMelodyEngineer());
+
+		newComposition.generateLyrics(manager.getLyricalEngineer());
 		
 		return newComposition;
 	}

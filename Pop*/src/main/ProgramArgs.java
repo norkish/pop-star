@@ -2,8 +2,6 @@ package main;
 
 import java.util.Arrays;
 
-import main.ProgramArgs.OrchestratorSetting;
-
 public class ProgramArgs {
 
 	public enum OrchestratorSetting {
@@ -34,8 +32,8 @@ public class ProgramArgs {
 	}
 
 	private static void loadDefaultProgramArgs() {
-//		configurationSetting = SongConfigSourceSetting.TEST;
-		configurationSetting = SongConfigSourceSetting.DISTRIBUTIONAL;
+		configurationSetting = SongConfigSourceSetting.TEST;
+//		configurationSetting = SongConfigSourceSetting.DISTRIBUTIONAL;
 		orchestratorSetting = OrchestratorSetting.COMPING;
 		userInterfaceSetting = UISetting.COMMANDLINE;
 	}

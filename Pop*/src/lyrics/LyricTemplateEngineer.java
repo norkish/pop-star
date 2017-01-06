@@ -1,23 +1,17 @@
 package lyrics;
 
+import composition.Score;
 import globalstructure.SegmentType;
 import inspiration.Inspiration;
-import substructure.SegmentSubstructure;
+import segmentstructure.SegmentStructure;
 
 public class LyricTemplateEngineer extends LyricalEngineer {
 
 	@Override
-	protected void applyVariationToChorus(LyricSegment lyricSegment, Inspiration inspiration,
-			SegmentSubstructure segmentSubstructures, SegmentType segmentKey, boolean isLast) {
+	public void addLyrics(Inspiration inspiration, Score score) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	@Override
-	protected LyricSegment generateSegmentLyrics(Inspiration inspiration, SegmentSubstructure segmentSubstructures,
-			SegmentType segmentKey) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 }

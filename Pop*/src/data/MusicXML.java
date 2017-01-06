@@ -2,6 +2,7 @@ package data;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Stack;
 import java.util.TreeMap;
 import java.util.zip.ZipException;
 
@@ -23,12 +25,110 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
+import data.MusicXML.Barline.RepeatDirection;
 import pitch.Pitch;
+import syllabify.Syllabifier;
+import tabcomplete.rhyme.Phonetecizer;
+import tabcomplete.rhyme.StressedPhone;
 import tabcomplete.utils.Utils;
 import utils.Pair;
 import utils.Triple;
 
 public class MusicXML {
+
+	public enum DirectionType {
+		DS_AL_CODA1, DS_AL_CODA2, SEGNO, IGNORE, CODA1, CODA2, DS_AL_FINE, FINE, DC_AL_FINE, DC_AL_CODA;
+		
+		public static DirectionType parseDirectionType(Node node) {
+			NodeList children = node.getChildNodes();
+			for (int i = 0; i < children.getLength(); i++) {
+				Node child = children.item(i);
+				if (child instanceof Text) continue;
+				String childName = child.getNodeName();
+				if (childName.equals("words")) {
+					String words = child.getTextContent().toLowerCase().replaceAll("[^a-zA-Z0-9]", "").trim();
+					if (words.contains("dsalcoda2")) { 
+						return DirectionType.DS_AL_CODA2;
+					} else if (words.contains("dsalcoda")) {
+						return DirectionType.DS_AL_CODA1;
+					} else if (words.contains("dsalfine")) { 
+						return DirectionType.DS_AL_FINE;
+					} else if (words.contains("dcalfine") || words.contains("dcaalfine")) { 
+						return DirectionType.DC_AL_FINE;
+					} else if (words.contains("dcalcoda")) { 
+						return DirectionType.DC_AL_CODA;
+					} else if (words.contains("coda") || words.contains("tocoda")) {
+						return DirectionType.CODA1;
+					} else if (words.contains("coda2") || words.contains("tocoda2")) {
+						return DirectionType.CODA2;
+					} else if (words.contains("fine") || words.contains("alfine")) {
+						return DirectionType.FINE;
+					} else if (words.contains("voicetacet")) {
+						return DirectionType.IGNORE;
+					} else if (words.contains("rubato")) { 
+						return DirectionType.IGNORE;
+					} else if (words.contains("dcalcoda") || words.contains("fine") && 
+							!words.equals("repeat4timesthendsalfine") && !words.equals("4xfine")) { 
+						throw new RuntimeException("dcalcoda:" + words);
+					} else {
+						System.err.println("Unknown text content of words node in direction:" + words);
+					}
+				} else if (childName.equals("segno")) {
+					return DirectionType.SEGNO;
+				} else if (childName.equals("coda")) {
+					return DirectionType.CODA1;
+				} else if (childName.equals("bracket") || childName.equals("dynamics") 
+						|| childName.equals("metronome")|| childName.equals("rehearsal")
+						|| childName.equals("dashes")|| childName.equals("octave-shift")
+						|| childName.equals("pedal")|| childName.equals("image")
+						|| childName.equals("wedge") || childName.equals("other-direction")) {
+//					return null;
+				} else {
+//					throw new RuntimeException("Unknown direction-type node:" + childName);
+				}
+			}
+			
+			return null;
+		}
+
+	}
+
+	public static class Barline {
+		public enum RepeatDirection {
+			FORWARD, BACKWARD, NO_REPEAT;
+
+			public static RepeatDirection parse(String direction) {
+				if (direction.equals("forward")) {
+					return FORWARD;
+				} else if (direction.equals("backward")) {
+					return BACKWARD;
+				} else {
+					throw new RuntimeException("Unhandled repeat direction:" + direction);
+				}
+			}
+
+		}
+
+		int[] numbers = null;
+		RepeatDirection direction = RepeatDirection.NO_REPEAT;
+		
+		public void addRepeatDirection(RepeatDirection direction) {
+			this.direction = direction;
+		}
+		
+		public void addNumbers(int[] numbers) {
+			this.numbers = numbers;
+		}
+
+		public RepeatDirection getRepeatDirection() {
+			return direction;
+		}
+
+		public int[] getNumbers() {
+			return numbers;
+		}
+		
+	}
 
 	public enum DegreeType {
 		ADD, ALTER, SUBTRACT
@@ -88,7 +188,8 @@ public class MusicXML {
 		public Syllabic syllabic;
 		public String text;
 		public boolean extend;
-		private boolean elision;
+		public boolean elision;
+		public Triple<String, StressedPhone[], Integer> syllableStress;
 
 		public NoteLyric(Syllabic syllabic, String text, boolean extend, boolean elision) {
 			this.syllabic = syllabic;
@@ -131,9 +232,12 @@ public class MusicXML {
 			return true;
 		}
 
+		public void addSyllableStress(Triple<String, StressedPhone[], Integer> triple) {
+			this.syllableStress = triple;
+		}
 	}
 
-	public class Note {
+	public static class Note {
 
 		public int pitch;
 		public int duration;
@@ -154,6 +258,126 @@ public class MusicXML {
 			this.timeModification = timeModification;
 			this.isChordWithPrevious = isChordWithPreviousNote;
 		}
+		
+		public String toString() {
+			StringBuilder str = new StringBuilder();
+			
+			str.append(Pitch.getPitchName((pitch+3)%12));
+			str.append(" ");
+			for (int i = 0; i < dots; i++) {
+				str.append('•');	
+			}
+			str.append(type);
+			if (timeModification != null) {
+				str.append("*");
+			}
+			str.append(' ');
+			if (lyric == null) {
+				str.append("\t");
+			} else {
+				str.append('\"');
+				str.append(lyric.text);
+				str.append('\"');
+				if (lyric.syllabic == Syllabic.BEGIN || lyric.syllabic == Syllabic.MIDDLE)
+					str.append('-');
+				str.append(' ');
+				str.append(lyric.syllableStress);
+			}
+			
+			return str.toString();
+		}
+
+		public String toXML(int indentationLevel) {
+			StringBuilder str = new StringBuilder();
+			
+			//open note tag
+			for (int j = 0; j < indentationLevel; j++) str.append("    "); 
+			str.append("<note>\n");
+			
+			//pitch
+			if (pitch == -1) {
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("<rest/>\n");
+			} else {
+				String pitchString = Pitch.getPitchName((pitch+3)%12);
+				char step = pitchString.charAt(0); 
+				int alter = 0;
+				int octave = pitch/12;
+				
+				while(pitchString.length() > 1) {
+					switch(pitchString.charAt(1)) {
+					case 'b':
+						alter--;
+						break;
+					case '#':
+						alter++;
+						break;
+						default:
+							throw new RuntimeException();
+					}
+					pitchString = pitchString.substring(1);
+				}
+				
+				// step, alter, octave
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("<pitch>\n");
+
+				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+				str.append("<step>").append(step).append("</step>\n");
+				
+				if (alter != 0) {
+					for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+					str.append("<alter>").append(alter).append("</alter>\n");
+				}
+
+				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+				str.append("<octave>").append(octave).append("</octave>\n");
+				
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("</pitch>\n");
+			}
+
+			//duration
+			for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+			str.append("<duration>").append(duration).append("</duration>\n");
+		
+			//tie
+			
+			//type
+			for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+			str.append("<type>").append(interpretNoteType(type)).append("</type>\n");
+			
+			//dot
+			for (int i = 0; i < dots; i++) {
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("<dot/>\n");
+			}
+			
+			//time modification (not sure of order here)
+			
+			//lyric
+			if (lyric != null) {
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("<lyric name=\"verse\" number=\"1\">\n");
+
+				// syllabic, text
+				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+				str.append("<syllabic>").append(lyric.syllabic.toString().toLowerCase()).append("</syllabic>\n");
+				
+				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+				str.append("<text>").append(lyric.text).append("</text>\n");
+				
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("</lyric>\n");
+			}
+			
+			//close note tag
+			for (int j = 0; j < indentationLevel; j++) str.append("    "); 
+			str.append("</note>\n");
+			
+			return str.toString();
+		}
+		
 	}
 
 	
@@ -677,7 +901,7 @@ public class MusicXML {
 	}
 
 	public static class Bass {
-		int bassStep;
+		public int bassStep;
 		public Bass(int bassStep) {
 			this.bassStep = bassStep;
 		}
@@ -710,10 +934,10 @@ public class MusicXML {
 		
 	}
 
-	public class Harmony {
-		Root root;
-		Quality quality;
-		Bass bass;
+	public static class Harmony {
+		public Root root;
+		public Quality quality;
+		public Bass bass;
 		public Harmony(Root root, Quality quality, Bass bass) {
 			this.root = root;
 			this.quality = quality;
@@ -734,7 +958,6 @@ public class MusicXML {
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result + getOuterType().hashCode();
 			result = prime * result + ((bass == null) ? 0 : bass.hashCode());
 			result = prime * result + ((quality == null) ? 0 : quality.hashCode());
 			result = prime * result + ((root == null) ? 0 : root.hashCode());
@@ -750,8 +973,6 @@ public class MusicXML {
 			if (!(obj instanceof Harmony))
 				return false;
 			Harmony other = (Harmony) obj;
-			if (!getOuterType().equals(other.getOuterType()))
-				return false;
 			if (bass == null) {
 				if (other.bass != null)
 					return false;
@@ -769,13 +990,106 @@ public class MusicXML {
 				return false;
 			return true;
 		}
-		private MusicXML getOuterType() {
-			return MusicXML.this;
+
+		public String toXML(int indentationLevel, int offset) {
+			StringBuilder str = new StringBuilder();
+			
+			//open harmony tag
+			for (int j = 0; j < indentationLevel; j++) str.append("    "); 
+			str.append("<harmony default-y=\"25\" print-frame=\"no\" relative-x=\"8\">\n");
+			
+			//root
+			if (root != null) {
+				String rootString = Pitch.getPitchName(root.rootStep);
+				char rootStep = rootString.charAt(0); 
+				int rootAlter = 0;
+				
+				while(rootString.length() > 1) {
+					switch(rootString.charAt(1)) {
+					case 'b':
+						rootAlter--;
+						break;
+					case '#':
+						rootAlter++;
+						break;
+						default:
+							throw new RuntimeException();
+					}
+					rootString = rootString.substring(1);
+				}
+				
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("<root>\n");
+
+				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+				str.append("<root-step>").append(rootStep).append("</root-step>\n");
+				
+				if (rootAlter != 0) {
+					for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+					str.append("<root-alter>").append(rootAlter).append("</root-alter>\n");
+				}
+				
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("</root>\n");
+			}
+			
+			//kind
+			if (quality != null) {
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("<kind text=\"").append(quality).append("\">").append(quality).append("</kind>\n");
+			}
+			
+			//bass
+			if (bass != null) {
+				String bassString = Pitch.getPitchName(bass.bassStep);
+				char bassStep = bassString.charAt(0); 
+				int bassAlter = 0;
+				
+				while(bassString.length() > 1) {
+					switch(bassString.charAt(1)) {
+					case 'b':
+						bassAlter--;
+						break;
+					case '#':
+						bassAlter++;
+						break;
+						default:
+							throw new RuntimeException();
+					}
+					bassString = bassString.substring(1);
+				}
+				
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("<bass>\n");
+
+				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+				str.append("<bass-step>").append(bassStep).append("</bass-step>\n");
+				
+				if (bassAlter != 0) {
+					for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+					str.append("<bass-alter>").append(bassAlter).append("</bass-alter>\n");
+				}
+				
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("</bass>\n");
+			}
+			
+			//offset
+			if (offset != 0.0) {
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("<offset>").append(offset).append("</offset>\n");
+			}
+			
+			//close harmony tag
+			for (int j = 0; j < indentationLevel; j++) str.append("    "); 
+			str.append("</harmony>\n");
+			
+			return str.toString();
 		}
 	}
 
-	public class Root {
-		int rootStep;
+	public static class Root {
+		public int rootStep;
 		public Root(int rootStep) {
 			this.rootStep = rootStep;
 		}
@@ -789,7 +1103,6 @@ public class MusicXML {
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result + getOuterType().hashCode();
 			result = prime * result + rootStep;
 			return result;
 		}
@@ -803,15 +1116,9 @@ public class MusicXML {
 			if (!(obj instanceof Root))
 				return false;
 			Root other = (Root) obj;
-			if (!getOuterType().equals(other.getOuterType()))
-				return false;
 			if (rootStep != other.rootStep)
 				return false;
 			return true;
-		}
-
-		private MusicXML getOuterType() {
-			return MusicXML.this;
 		}
 	}
 
@@ -829,16 +1136,49 @@ public class MusicXML {
 		}
 	}
 
-	public class Key {
-		int fifths;
-		KeyMode mode;
+	public static class Key {
+		public int fifths;
+		public KeyMode mode;
 		public Key(int fifths, KeyMode mode) {
 			this.fifths = fifths;
 			this.mode = mode;
 		}
+		@Override
+		public String toString() {
+			StringBuilder builder = new StringBuilder();
+			builder.append("Key [fifths=").append(fifths).append(", ");
+			if (mode != null)
+				builder.append("mode=").append(mode);
+			builder.append("]");
+			return builder.toString();
+		}
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + fifths;
+			result = prime * result + ((mode == null) ? 0 : mode.hashCode());
+			return result;
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (!(obj instanceof Key))
+				return false;
+			Key other = (Key) obj;
+			if (fifths != other.fifths)
+				return false;
+			if (mode != other.mode)
+				return false;
+			return true;
+		}
+		
 	}
 
-	public class Time {
+	public static class Time {
 		public int beats;
 		public int beatType;
 		public Time(int beats, int beatType) {
@@ -848,6 +1188,31 @@ public class MusicXML {
 		
 		public String toString() {
 			return this.beats + "/" + this.beatType;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + beatType;
+			result = prime * result + beats;
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (!(obj instanceof Time))
+				return false;
+			Time other = (Time) obj;
+			if (beatType != other.beatType)
+				return false;
+			if (beats != other.beats)
+				return false;
+			return true;
 		}
 	}
 
@@ -897,14 +1262,52 @@ public class MusicXML {
 		// note that this data structure has no sense of order as regards repeats, but can easily check the number of times it has been repeated and the previous notelyric
 		Map<Integer, Map<Integer, Pair<Integer, NoteLyric>>> measureOffsetInfo = new TreeMap<Integer, Map<Integer, Pair<Integer, NoteLyric>>>();
 		
+		boolean hasLyrics = false;
 		instruments = new HashSet<String>();
 		Map<Integer,Time> timeByMeasure = new TreeMap<Integer,Time>(); 
 		Time currTime = null;
+		Map<Integer,Key> keyByMeasure = new TreeMap<Integer,Key>(); 
 		Key currKey = null;
 		Map<Integer,Integer> divsByMeasure = new TreeMap<Integer,Integer>(); 
 		int currDivisionsPerQuarterNote = -1;
+		Stack<Integer> forwardRepeatMeasures = new Stack<Integer>();
 		int smallestNoteType = 0;
-		for (int i = 0; i < measures.size(); i++) {
+		int nextMeasure = -1;
+		int prevPlayedMeasure = -1;
+		int segno = -1;
+		int coda1 = findDirectionTypeStartingFrom(measures, DirectionType.CODA1, measures.size());
+		int coda2 = (coda1 == -1? -1 : findDirectionTypeStartingFrom(measures, DirectionType.CODA1, coda1));
+		int dsalcoda = findDirectionTypeStartingFrom(measures, DirectionType.DS_AL_CODA1, measures.size());
+		int dcalcoda = findDirectionTypeStartingFrom(measures, DirectionType.DC_AL_CODA, measures.size());
+		if (coda1 != -1 && dsalcoda == -1 && dcalcoda == -1) {
+			System.err.println("Found coda at measure " + coda1 + ", but no D.S. al Coda. Assuming it directly precedes coda");
+			dsalcoda = coda1 - 1;
+			return null; // not gonna deal with it.
+		}
+		if (coda1 == -1 && (dsalcoda != -1 || dcalcoda != -1)) {
+			System.err.println("Found ds or dc at measure " + (dsalcoda == -1 ? dcalcoda : dsalcoda) + ", but no coda. Assuming it directly follows ds");
+			coda1 = (dsalcoda == -1 ? dcalcoda : dsalcoda) + 1;
+//			return null; // not gonna deal with it.
+		}
+		if (coda1 != -1 && (dsalcoda != -1 || dcalcoda != -1) && coda1 <= (dsalcoda == -1 ? dcalcoda : dsalcoda)) {
+			return null;
+		}
+		int maxMeasure = -1;
+		boolean followCoda = false;
+		boolean followCoda2 = false;
+		boolean endAtFine = false;
+		boolean skippingEnding = false;
+		int loops = 0;
+		boolean barMarkedBeforeNotes = false;
+		for (int i = 0; i < measures.size(); i = (nextMeasure != -1 ? nextMeasure : i + 1)) {
+			loops++;
+			if (loops > 1000) {
+				throw new RuntimeException("Excessive loops");
+			}
+			if (i > maxMeasure) {
+				maxMeasure = i;
+			}
+			nextMeasure = -1;
 			int currMeasurePositionInDivisions = 0; // in divisions
 			Node measure = measures.get(i);
 			try {
@@ -914,7 +1317,83 @@ public class MusicXML {
 					if (mChild instanceof Text) continue;
 					String nodeName = mChild.getNodeName();
 					NodeList mGrandchildren = mChild.getChildNodes();
-					if (nodeName.equals("attributes")) {
+					if (nodeName.equals("barline") || skippingEnding) {
+						if (!nodeName.equals("barline")) {
+							continue;
+						}
+						Barline barline = null;
+						try {
+							barline = parseBarline(mChild);
+						} catch (NumberFormatException e) {
+							return null;
+						}
+						RepeatDirection direction = barline.getRepeatDirection();
+						int[] numbers = barline.getNumbers();
+						if (direction == RepeatDirection.FORWARD) {
+							if (!measureOffsetInfo.containsKey(i))
+								forwardRepeatMeasures.push(i);
+						} else if (direction == RepeatDirection.BACKWARD) {
+							int takeRepeat = 0;
+							final int LAST_TIME = 2;
+							if (skippingEnding) { 
+								takeRepeat = 0;
+							} else if (numbers == null) {
+								if (!measureOffsetInfo.containsKey(i)) {
+									takeRepeat = LAST_TIME;
+									barMarkedBeforeNotes = true;
+								} else  if (barMarkedBeforeNotes){
+									takeRepeat = 0;
+								} else {
+									takeRepeat = measureOffsetInfo.get(i).get(0).getFirst() == 1 ? LAST_TIME : 0;
+								}
+								if (takeRepeat > 0) System.err.println("Repeating at measure " + i);
+							} else {
+								int ending = measureOffsetInfo.get(prevPlayedMeasure).get(0).getFirst();
+								System.err.println("Seen prev measure (" + prevPlayedMeasure + ") " + ending + " times");
+								
+								for (int k = 0; k < numbers.length; k++) {
+									if (ending == numbers[k]) {
+										System.err.println("Repeating at ending " + k);
+										takeRepeat = (k == numbers.length - 1 ? LAST_TIME : 1);
+										break;
+									}
+								}
+							}
+							if (takeRepeat > 0) {
+								if (forwardRepeatMeasures.size() > 1) {
+									System.err.println("Multiple forward repeats on stack");
+								}
+								
+								Integer lastForwardRepeat = forwardRepeatMeasures.isEmpty() ? 0 : (takeRepeat == LAST_TIME ? forwardRepeatMeasures.pop() : forwardRepeatMeasures.peek());
+								nextMeasure = lastForwardRepeat;
+							} else {
+								break;
+							}
+						} else if (direction == RepeatDirection.NO_REPEAT) {
+							if (numbers != null) { // ending
+								System.err.println("Encountered endings " + Arrays.toString(numbers) + " in measure " + i);
+								int ending = measureOffsetInfo.get(prevPlayedMeasure).get(0).getFirst();
+								System.err.println("Seen prev measure (" + prevPlayedMeasure + ") " + ending + " times");
+								skippingEnding = true;
+								for (int k : numbers) {
+									if (ending == k) {
+										System.err.println("Taking ending " + k);
+										skippingEnding = false;
+										break;
+									}
+								}
+								
+								if (skippingEnding) {
+									System.err.println("Skipping this ending");
+									break;
+								}
+							}
+						} else if (direction == null) {
+							
+						} else {
+							throw new RuntimeException("Unknown repeat direction command:" + direction);
+						}
+					} else if (nodeName.equals("attributes")) {
 						for (int k = 0; k < mGrandchildren.getLength(); k++) {
 							Node mGrandchild = mGrandchildren.item(k);
 							if (mGrandchild instanceof Text) continue;
@@ -928,6 +1407,7 @@ public class MusicXML {
 								if (currKey.mode == null) {
 									songsWithMissingMode.put(MusicXMLAnalyzer.getTitle(this),currKey.fifths);
 								}
+								keyByMeasure.put(i, currKey);
 							} else if (gNodeName.equals("time")) {
 								currTime = parseTime(mGrandchild);
 								System.err.println("Current time sig:" +currTime);
@@ -949,6 +1429,92 @@ public class MusicXML {
 						}
 					} else if (nodeName.equals("direction")) {
 						// do nothing, tempo would be found here, theoretically
+						for (int k = 0; k < mGrandchildren.getLength(); k++) {
+							Node mGrandchild = mGrandchildren.item(k);
+							if (mGrandchild instanceof Text) continue;
+							String gNodeName = mGrandchild.getNodeName();
+							if (gNodeName.equals("direction-type")) {
+								DirectionType type = DirectionType.parseDirectionType(mGrandchild);
+								if (type == DirectionType.DS_AL_CODA1) {
+									if (followCoda) {
+										System.err.println("Detected loop (found D.S. twice without coda");
+										return null; // malformatted, already looking for coda and didn't find it.
+									}
+									nextMeasure = (segno == -1 ? 0 : segno);
+									System.err.println("Found D.S. al Coda — skipping back to measure " + nextMeasure + " (coda=" + coda1 + ")");
+									followCoda = true;
+								} else if (type == DirectionType.DS_AL_CODA2) {
+									if (followCoda2) {
+										System.err.println("Detected loop (found D.S. twice without coda");
+										return null;
+									}
+									nextMeasure = (segno == -1 ? 0 : segno);
+									System.err.println("Found D.S. al Coda 2 — skipping back to measure " + nextMeasure);
+									followCoda2 = true;
+								} else if (type == DirectionType.DS_AL_FINE) {
+									if (endAtFine) {
+										System.err.println("Detected loop (found D.S. twice without coda");
+										return null;
+									}
+									nextMeasure = (segno == -1 ? 0 : segno);
+									System.err.println("Found D.S. al Fine — skipping back to measure " + nextMeasure);
+									endAtFine = true;
+								} else if (type == DirectionType.DC_AL_FINE) {
+									if (endAtFine) {
+										System.err.println("Detected loop (found D.C. twice without coda");
+										return null;
+									}
+									nextMeasure = 0;
+									System.err.println("Found D.C. al Fine — skipping back to measure " + nextMeasure);
+									endAtFine = true;
+								}  else if (type == DirectionType.DC_AL_CODA) {
+									if (followCoda) {
+										System.err.println("Detected loop (found D.C. twice without coda");
+										return null;
+									}
+									if (nextMeasure == -1) {
+										nextMeasure = 0;
+										System.err.println("Found D.C. al Coda in measure " + i + " — skipping back to measure " + nextMeasure);
+										followCoda = true;
+									}
+								} else if (type == DirectionType.SEGNO) {
+									segno = i;
+									System.err.println("Found segno at measure " + segno);
+								} else if (type == DirectionType.IGNORE) { 
+									// do nothing
+								} else if (type == DirectionType.CODA1) { 
+									// skip to coda
+									if (followCoda) {
+										nextMeasure = coda1;
+										System.err.println("Found coda at measure " + i + ", skipping to " + nextMeasure);
+										followCoda = false;
+									}
+								} else if (type == DirectionType.CODA2) { 
+									// skip to coda
+									if (followCoda2) {
+										nextMeasure = coda2;
+										System.err.println("Found coda 2 at measure " + i + ", skipping to " + nextMeasure);
+										followCoda = false;
+									}
+								} else if (type == DirectionType.FINE) { 
+									// skip to coda
+									if (endAtFine) {
+										nextMeasure = measures.size();
+										System.err.println("Found fine at measure " + i + ", skipping to " + nextMeasure);
+									}
+								} else {
+									//throw new RuntimeException("Unhandled direction type:" + type);
+								}
+							} else if (gNodeName.equals("offset")||gNodeName.equals("staff")||gNodeName.equals("voice")) {
+
+							} else if (gNodeName.equals("sound")) {
+								if  (!mGrandchild.getTextContent().isEmpty()) {
+//									throw new RuntimeException("Sound node stuff:" + gNodeName);
+								}
+							} else {
+								throw new RuntimeException("Unknown direction node:" + gNodeName);
+							}
+						}
 					} else if (nodeName.equals("harmony")) {
 						Pair<Integer, Harmony> offsetHarmony = parseHarmony(mChild);
 						if (offsetHarmony == null) {
@@ -963,18 +1529,20 @@ public class MusicXML {
 						Harmony harmony = offsetHarmony.getSecond();
 						addHarmonyToMeasure(i, measurePositionInDivisions, harmony, harmonyByMeasure);
 					} else if (nodeName.equals("note")) {
-						Note note = parseNote(mChild);
+						Note note = parseNote(mChild, 1+getRepeatForMeasureOffset(measureOffsetInfo, i, currMeasurePositionInDivisions));
 						if (note == null) continue;
 						if (note.type > smallestNoteType) {
 							smallestNoteType = note.type;
 						}
+						if (note.lyric != null) {
+							hasLyrics = true;
+						}
+						
 						if (!note.isChordWithPrevious) {
 							addNoteToMeasure(i, currMeasurePositionInDivisions, note, notesByMeasure, measureOffsetInfo);
 							currMeasurePositionInDivisions += note.duration;
 						}
 					} else if (nodeName.equals("print")) {
-						// TODO
-					} else if (nodeName.equals("barline")) {
 						// TODO
 					} else if (nodeName.equals("sound")) {
 						// TODO
@@ -1002,9 +1570,9 @@ public class MusicXML {
 				}
 				if (instruments.size() > 1) {
 					throw new RuntimeException("measure introduces second instrument");
-				} else if (i != 0 && i != measures.size()-1 && currMeasurePositionInDivisions != calculateTotalDivisionsInMeasure(currTime, currDivisionsPerQuarterNote)) {
+				} else if (!skippingEnding && i != 0 && i != measures.size()-1 && currMeasurePositionInDivisions != calculateTotalDivisionsInMeasure(currTime, currDivisionsPerQuarterNote)) {
 //					MusicXMLAnalyzer.printNode(measure, System.err);
-					System.err.println("events in measure fill " + currMeasurePositionInDivisions + " of " + calculateTotalDivisionsInMeasure(currTime, currDivisionsPerQuarterNote) + " divisions");
+//					throw new RuntimeException("events in measure " + i + " fill " + currMeasurePositionInDivisions + " of " + calculateTotalDivisionsInMeasure(currTime, currDivisionsPerQuarterNote) + " divisions");
 //					System.err.println("Current Time Signature = " + currTime);
 					return null;
 				}
@@ -1012,6 +1580,13 @@ public class MusicXML {
 				MusicXMLAnalyzer.printNode(measure, System.out);
 				System.err.println("In measure number " + i);
 				throw e;
+			}
+			if (!skippingEnding)
+				prevPlayedMeasure = i;
+			if (!skippingEnding && i == dsalcoda) {
+				nextMeasure = (segno == -1 ? 0 : segno);
+				System.err.println("Found D.S. al Coda in measure " + i + " — skipping back to measure " + nextMeasure);
+				followCoda = true;
 			}
 		}
 		
@@ -1023,31 +1598,325 @@ public class MusicXML {
 		}
 		
 		//Resolve co-occuring harmonies
-		int measure = -1;
-		for (Entry<Integer, Map<Integer, List<Harmony>>> first : harmonyByMeasure.entrySet()) {
-			for (Entry<Integer, List<Harmony>> second : first.getValue().entrySet()) {
-				if (second.getValue().size() > 1) {
-					System.err.println("Co-occuring chords");
-					measure = first.getKey();
-				}
-				for (Harmony harmony : second.getValue()) {
-					System.out.println(first.getKey() + "\t" + second.getKey() + "\t" + harmony);
-				}
-			}
-		}
-
 		Map<Integer, Map<Integer, Harmony>> unoverlappingHarmonyByMeasure = resolveOverlappingHarmonies(harmonyByMeasure, measureOffsetInfo, timeByMeasure, divsByMeasure);
 		
-		for (Entry<Integer, Map<Integer, Harmony>> first : unoverlappingHarmonyByMeasure.entrySet()) {
-			for (Entry<Integer, Harmony> second : first.getValue().entrySet()) {
-				System.out.println(first.getKey() + "\t" + second.getKey() + "\t" + second.getValue());
-			}
-		}
-		if (measure != -1) {
-			Utils.promptEnterKey("Check it out at measure " + measure);
+		// print harmonies
+//		for (Entry<Integer, Map<Integer, Harmony>> first : unoverlappingHarmonyByMeasure.entrySet()) {
+//			for (Entry<Integer, Harmony> second : first.getValue().entrySet()) {
+//				System.out.println(first.getKey() + "\t" + second.getKey() + "\t" + second.getValue());
+//			}
+//		}
+		
+		// print notes with harmonies
+		if (unoverlappingHarmonyByMeasure.isEmpty()) {
+			System.err.println("no chords");
+			return null;
 		}
 		
+		// ADD SYLLABLE STRESS
+		if(!addStressToSyllables(notesByMeasure)) {
+			return null;
+		}
+		
+		// ELUCIDATE SEGMENT STRUCTURE AND RESOLVE REPEATS IN LYRICS
+		
+		// DETECT PATTERNS IN SUB-REPETITION
+		
+		//print pitch (-1 if rest) and chord (-1 if no chord) for each 16th note in a 256-len sequence
+		int interval = 16;
+		int len_measures = 4;
+		
+		// only 4/4 examples
+		System.err.println("checking time sig and key sig");
+		if (timeByMeasure.size() != 1) return null;
+		if (!((currTime.beats == 4 && currTime.beatType == 4) || (currTime.beats == 2 && currTime.beatType == 2))) return null;
+		if (keyByMeasure.size() != 1) return null;
+		int len = currTime.beats * len_measures * interval / 4;
+		
+		List<String> tokens = new ArrayList<String>();
+		List<String> tokens2 = new ArrayList<String>();
+		// normalize by key signature, include start token (%.%)
+		String START = "%.%";
+		tokens.add(START);
+		tokens2.add(START);
+		
+		for (Triple<Integer, Integer, Note> triple : notesByMeasure) {
+			Integer measure = triple.getFirst();
+			final Integer divsPerQuarter = divsAtMeasure(divsByMeasure, measure);
+			Double divsPerInterval = divsPerQuarter / (interval/4.0);
+			double divsPerMeasure = calculateTotalDivisionsInMeasure(currTime, divsPerQuarter);
+			Integer divOffset = triple.getSecond();
+			
+			final Note note = triple.getThird();
+			for (double j = 0.; j < divsPerMeasure; j += divsPerInterval) {
+				if (j >= divOffset && j < divOffset + note.duration) {
+					tokens.add("" + normalizePitch(note.pitch, currKey));
+					tokens2.add("" + normalizeHarmony(getCurrHarmony(unoverlappingHarmonyByMeasure,measure,(int) j), currKey));
+				}
+			}
+			
+			System.out.println(measure + "\t" + divOffset + "\t" + note + "\t" + getCurrHarmony(unoverlappingHarmonyByMeasure,measure,divOffset));
+		}
+		
+//		for (int seqOffset = 0; seqOffset < tokens.size(); seqOffset++) {
+//			tmpDataWriter.print(tokens.get(seqOffset));
+//			tmp2DataWriter.print(tokens2.get(seqOffset));
+//			tmpDataWriter.print(" ");
+//			tmp2DataWriter.print(" ");
+//		}
+//		tmpDataWriter.println();
+//		tmp2DataWriter.println();
+//		for (int seqOffset = 0; seqOffset < tokens.size()-len; seqOffset++) {
+//			for (int pos = seqOffset; pos < seqOffset+len; pos++) {
+//				tmpDataWriter.print(tokens.get(pos));
+//				tmpDataWriter.print(" ");
+//			}
+//			tmpDataWriter.println();
+//		}
+		
 		return events;
+	}
+
+	private boolean addStressToSyllables(List<Triple<Integer, Integer, Note>> notesByMeasure) {
+		List<NoteLyric> currentWordNotes = null;
+		int totalSyllablesWithStress = 0;
+		int totalSyllables = 0;
+		List<StressedPhone[]> phones;
+		for (Triple<Integer,Integer,Note> triple : notesByMeasure) {
+			System.out.println(triple);
+			final Note note = triple.getThird();
+			if ( note == null ) {
+				continue;
+			}
+			NoteLyric currNoteLyric = note.lyric;
+			if ( currNoteLyric == null || currNoteLyric.text == null) {
+				continue;
+			}
+			totalSyllables++;
+			if (currNoteLyric.syllabic == null) {
+				phones = Phonetecizer.getPhones(currNoteLyric.text,true);
+				if (phones.size() == 1) {
+					List<Triple<String, StressedPhone[], Integer>> syllables = Syllabifier.syllabify(currNoteLyric.text, phones.get(0));
+					if (syllables.size() == 1) {
+						currNoteLyric.addSyllableStress(syllables.get(0));
+						totalSyllablesWithStress++;
+					} else {
+						System.err.println("Multiple syllables for note with lyric \"" + currNoteLyric.text + "\"");
+					}
+				} else {
+					System.err.println("" + phones.size() + " entries in phone dict for \"" + currNoteLyric.text + "\"");
+				}
+				currentWordNotes = null;
+				continue;
+			}
+			switch(currNoteLyric.syllabic) {
+			case BEGIN:
+				currentWordNotes = new ArrayList<NoteLyric>();
+				currentWordNotes.add(currNoteLyric);
+				break;
+			case END:
+				StringBuilder wordBuilder = new StringBuilder();
+				if (currentWordNotes == null) {
+					currentWordNotes = new ArrayList<NoteLyric>();
+				}
+				currentWordNotes.add(currNoteLyric);
+				for (NoteLyric noteLyric : currentWordNotes) {
+					wordBuilder.append(noteLyric.text);
+				}
+				final String word = wordBuilder.toString();
+				phones = Phonetecizer.getPhones(word,true);
+				if (phones.size() == 1 || allPhonesHaveSameSyllablesAndStress(word,phones)) {
+					List<Triple<String, StressedPhone[], Integer>> syllables = Syllabifier.syllabify(word, phones.get(0));
+					if (syllables.size() == currentWordNotes.size()) {
+						for (int i = 0; i < currentWordNotes.size(); i++) {
+							currentWordNotes.get(i).addSyllableStress(syllables.get(i));
+							totalSyllablesWithStress++;
+						}
+					} else {
+						System.err.println("" + currentWordNotes.size() + " notes mismatch with " + syllables.size() + " syllables:" + word);
+					}
+				} else {
+					System.err.println("" + phones.size() + " entries with different stresses in phone dict for multi-syllable \"" + word + "\"");
+				}
+				currentWordNotes = null;
+				break;
+			case MIDDLE:
+				if (currentWordNotes == null) {
+					currentWordNotes = new ArrayList<NoteLyric>();
+				}
+				currentWordNotes.add(currNoteLyric);
+				break;
+			case SINGLE:
+				phones = Phonetecizer.getPhones(currNoteLyric.text,true);
+				if (phones.size() == 1) {
+					List<Triple<String, StressedPhone[], Integer>> syllables = Syllabifier.syllabify(currNoteLyric.text, phones.get(0));
+					if (syllables.size() == 1) {
+						currNoteLyric.addSyllableStress(syllables.get(0));
+						totalSyllablesWithStress++;
+					} else {
+						System.err.println("Multiple syllables for note with lyric \"" + currNoteLyric.text + "\"");
+					}
+				} else {
+					System.err.println("" + phones.size() + " entries in phone dict for \"" + currNoteLyric.text + "\"");
+				}
+				currentWordNotes = null;
+				break;
+			default:
+				//check elision and extend
+				break;
+			
+			}
+		}
+		System.err.println("For " + notesByMeasure.size() + " notes with " + totalSyllables + " syllables, " + totalSyllablesWithStress + " had stress info from phone dict");
+		return totalSyllables > .1 * notesByMeasure.size() && ((double)totalSyllablesWithStress)/totalSyllables > .25;
+	}
+
+	private boolean allPhonesHaveSameSyllablesAndStress(String word, List<StressedPhone[]> phones) {
+		if (phones.size() == 0) return false;
+		
+		List<Triple<String, StressedPhone[], Integer>> first = Syllabifier.syllabify(word, phones.get(0));
+		
+		for (int i = 1; i < phones.size(); i++) {
+			List<Triple<String, StressedPhone[], Integer>> next = Syllabifier.syllabify(word, phones.get(i));
+			if (first.size() != next.size()) return false;
+			
+			for (int j = 0; j < next.size(); j++) {
+				if (first.get(j).getThird() != next.get(j).getThird()) return false;
+			}
+		}
+		
+		return true;
+	}
+
+	private Harmony normalizeHarmony(Harmony currHarmony, Key currKey) {
+		if (currHarmony == null || currHarmony.root == null || currHarmony.root.rootStep == Pitch.NO_KEY || currKey.fifths == 0) return currHarmony;
+		int newRootStep = normalizePitch(currHarmony.root.rootStep, currKey);
+		if (newRootStep < 0) {
+			newRootStep += 12;
+		} else if (newRootStep >= 12) {
+			newRootStep -= 12;
+		}
+		Root newRoot = new Root(newRootStep);
+		
+		Bass newBass = null;
+		if (currHarmony.bass != null) {
+			int newBassStep = normalizePitch(currHarmony.bass.bassStep, currKey);
+			if (newBassStep < 0) {
+				newBassStep += 12;
+			} else if (newBassStep >= 12) {
+				newBassStep -= 12;
+			}
+			newBass = new Bass(newBassStep);
+			if (newBassStep == currHarmony.bass.bassStep)
+				throw new RuntimeException("Shouldn't happen");
+		}
+		
+		if (newRootStep == currHarmony.root.rootStep)
+			throw new RuntimeException("Shouldn't happen");
+		return new Harmony(newRoot,currHarmony.quality,newBass);
+	}
+
+	private int normalizePitch(int pitch, Key currKey) {
+		if (pitch < 0) return pitch;
+		
+		int modification = (7*currKey.fifths + 144) % 12;
+		if (modification > 6) {
+			modification -= 12;
+		}
+		return (pitch - modification);
+	}
+
+	private int findDirectionTypeStartingFrom(List<Node> measures, DirectionType directionType, int startPoint) {
+		for (int i = startPoint-1; i >= 0; i--) {
+			Node measure = measures.get(i);
+			NodeList mChildren = measure.getChildNodes();
+			for (int j = 0; j < mChildren.getLength(); j++) {
+				Node mChild = mChildren.item(j);
+				if (mChild instanceof Text) continue;
+				String nodeName = mChild.getNodeName();
+				if (nodeName.equals("direction")) {
+					NodeList mGrandchildren = mChild.getChildNodes();
+					// do nothing, tempo would be found here, theoretically
+					for (int k = 0; k < mGrandchildren.getLength(); k++) {
+						Node mGrandchild = mGrandchildren.item(k);
+						if (mGrandchild instanceof Text) continue;
+						String gNodeName = mGrandchild.getNodeName();
+						if (gNodeName.equals("direction-type")) {
+							DirectionType type = DirectionType.parseDirectionType(mGrandchild);
+							if (type == directionType) { 
+								return i;
+							} 
+						} 
+					}
+				} 
+			}
+		}
+		return -1;
+	}
+
+	private Barline parseBarline(Node node) {
+		Barline barline = new Barline();
+		NodeList children = node.getChildNodes();
+		for (int i = 0; i < children.getLength(); i++) {
+			Node child = children.item(i);
+			if (child instanceof Text) continue;
+			String childName = child.getNodeName();
+			if (childName.equals("bar-style")) {
+				// do nothing
+			} else if (childName.equals("repeat")) {
+				String direction = child.getAttributes().getNamedItem("direction").getTextContent();
+				barline.addRepeatDirection(RepeatDirection.parse(direction));
+			} else if (childName.equals("ending")) { 
+				final String textContent = child.getAttributes().getNamedItem("number").getTextContent().trim();
+				if (textContent.isEmpty())
+					continue;
+				String[] numberStrings = textContent.split("\\s*[,.]\\s*");
+				int[] numbers = new int[numberStrings.length];
+				for (int j = 0; j < numberStrings.length; j++) {
+					numbers[j] = Integer.parseInt(numberStrings[j]);
+				}
+				barline.addNumbers(numbers);
+			} else {
+				throw new RuntimeException("Unhandled barline child node:" + childName);
+			}
+		}
+		return barline;
+	}
+
+	private Harmony getCurrHarmony(Map<Integer, Map<Integer, Harmony>> harmonyByMeasure, Integer measure,
+			Integer divOffset) {
+		Harmony lastHarmony = null;
+		for (Integer lastMeasure : harmonyByMeasure.keySet()) {
+			if (lastMeasure > measure) {
+				return lastHarmony;
+			}
+			
+			Map<Integer, Harmony> harmonyByOffset = harmonyByMeasure.get(lastMeasure);
+			for (Integer lastDivOffset : harmonyByOffset.keySet()) {
+				if (lastMeasure == measure && lastDivOffset > divOffset) {
+					return lastHarmony;
+				}
+				lastHarmony = harmonyByOffset.get(lastDivOffset);
+			}
+			
+		}
+		
+		assert lastHarmony != null;
+		return lastHarmony;
+	}
+
+	private int getRepeatForMeasureOffset(Map<Integer, Map<Integer, Pair<Integer, NoteLyric>>> measureOffsetInfo, int measure,
+			int offset) {
+		Map<Integer, Pair<Integer, NoteLyric>> repeatsByOffset = measureOffsetInfo.get(measure);
+		if (repeatsByOffset == null)
+			return 0;
+		else {
+			Pair<Integer, NoteLyric> repeat = repeatsByOffset.get(offset);
+			if (repeat == null) 
+				return 0;
+			else
+				return repeat.getFirst();
+		}
 	}
 
 	private Map<Integer, Map<Integer, Harmony>> resolveOverlappingHarmonies(Map<Integer, Map<Integer, List<Harmony>>> harmonyByMeasure, 
@@ -1103,22 +1972,23 @@ public class MusicXML {
 		return lastTime;
 	}
 
+	static int removedChordsCount = 0;
+	
 	private Map<Integer, Harmony> resolveOverlappingHarmonies(List<Harmony> harmonies, Integer startOffset, Integer offsetLimit, int divsPerBeat, Time currTime) {
 		Map<Integer, Harmony> harmonyByOffset = new TreeMap<Integer, Harmony>();
-		harmonyByOffset.put(startOffset, harmonies.get(0));
+		harmonyByOffset.put(startOffset, harmonies.remove(0));
 
 		List<Integer> validChordOffsets = null;
 		
-		validChordOffsets = getValidChordOffsets(startOffset, offsetLimit, divsPerBeat, currTime, harmonies.size());
+		validChordOffsets = getValidChordOffsets(startOffset+1, offsetLimit, divsPerBeat, currTime, harmonies.size());
 		
-		for (Integer integer : validChordOffsets) {
-			System.out.print(integer + ", ");
+//		assert validChordOffsets.size() != 0 : "no valid chord positions in interval";
+		while (validChordOffsets.size() < harmonies.size()) {
+			System.err.println("insufficient measure divisions for overlapping chord resolution");
+			harmonies.remove(0);
+			removedChordsCount++;
 		}
-		System.out.println(startOffset + "," + offsetLimit  + "," + divsPerBeat  + "," +currTime);
 		
-		assert validChordOffsets.size() >= harmonies.size() : "insufficient measure divisions for overlapping chord resolution";
-		
-		//TODO: More evenly distribute chords rather than just do backfill
 		for (int i = 1; i < harmonies.size(); i++) {
 			harmonyByOffset.put(validChordOffsets.get(validChordOffsets.size()-i), harmonies.get(harmonies.size()-i));
 		}
@@ -1202,7 +2072,7 @@ public class MusicXML {
 			info.setFirst(info.getFirst()+1);
 			NoteLyric prevLyric = info.getSecond();
 			if (prevLyric != MULTIVERSE) {
-				if (!prevLyric.equals(note.lyric)) {
+				if (prevLyric == null && note.lyric != null || prevLyric != null && !prevLyric.equals(note.lyric)) {
 					info.setSecond(MULTIVERSE);
 				}
 			}
@@ -1255,7 +2125,7 @@ public class MusicXML {
 
 	private static final int REST = -2;
 	private static final int UNPITCHED_RHYTHM = -3;
-	private Note parseNote(Node node) {
+	private Note parseNote(Node node, int verse) {
 		int pitch = -1;
 		int duration = -1;
 		int type = -1;
@@ -1265,7 +2135,6 @@ public class MusicXML {
 		NoteTimeModification timeModification = null;
 		boolean isChordWithPreviousNote = false;
 		boolean isGrace = false;
-		// triplet
 				
 		NodeList children = node.getChildNodes();
 		for (int i = 0; i < children.getLength(); i++) {
@@ -1287,8 +2156,9 @@ public class MusicXML {
 			} else if (childName.equals("beam")) {
 				// do nothing (this is for visualizing music)
 			} else if (childName.equals("lyric")) {
-				lyric = parseNoteLyric(child);
-				// TODO: handle multiple lyrics (i.e., verses) per note
+				int currVerse = Integer.parseInt(child.getAttributes().getNamedItem("number").getTextContent());
+				if (currVerse == verse)
+					lyric = parseNoteLyric(child);
 			} else if (childName.equals("dot")) {
 				dots++;
 			} else if (childName.equals("tie")) {
@@ -1450,6 +2320,23 @@ public class MusicXML {
 		else 
 			throw new RuntimeException("Unknown note type:" + text);
 	}
+	
+	private static String interpretNoteType(int type) {
+		switch(type){
+		case 1:
+			return "whole";
+		case 2:
+			return "half";
+		case 4:
+			return "quarter";
+		case 8:
+			return "eighth";
+		case 32:
+			return "32nd";
+			default:
+				return "" + type + "th";
+		}
+	}
 
 	private Pair<Integer, Harmony> parseHarmony(Node node) {
 		Root root = null;
@@ -1607,19 +2494,33 @@ public class MusicXML {
 		return new Time(beats, beatType);
 	}
 
+	
+	static PrintWriter tmpDataWriter = null;
+	static PrintWriter tmp2DataWriter = null;
 	public static void main(String[] args) throws ZipException, IOException, ParserConfigurationException, SAXException, TransformerException {
 		int unrecoverableXML = 0;
+		tmpDataWriter = new PrintWriter("/Users/norkish/Archive/2016_BYU/501R_Deep_Learning/final/pitch_data.txt");
+		tmp2DataWriter = new PrintWriter("/Users/norkish/Archive/2016_BYU/501R_Deep_Learning/final/harmony_data.txt");
 		File[] files = new File("/Users/norkish/Archive/2015_BYU/ComputationalCreativity/data/Wikifonia").listFiles();
 		for (File file : files) {
-//			 if (!file.getName().equals("Billy Joel - Piano Man.mxl"))
+//			 if (!file.getName().equals("Billy Joel - Just The Way You Are.mxl"))
 //				 continue;
-//			if (file.getName().charAt(0) < 'M') {
+//			if (file.getName().charAt(0) < 'T') {
 //				continue;
 //			}
 			 System.out.println(file.getName());
 			 MusicXML musicXML = new MusicXML(MusicXMLAnalyzer.mxlToXML(file));
-//			 MusicXMLAnalyzer.printDocument(musicXML.xml, System.out);
-			 String melogenString = musicXML.toMelogenString();
+			 MusicXMLAnalyzer.printDocument(musicXML.xml, System.out);
+			 String melogenString;
+			 try {
+				 melogenString = musicXML.toMelogenString();
+			 } catch (AssertionError e) {
+				 System.err.println(file.getName());
+				 throw e;
+			 } catch (Exception e) {
+				 System.err.println(file.getName());
+				 throw e;
+			 }
 			 if (melogenString == null)
 				 unrecoverableXML++;
 			 System.out.println(melogenString);
@@ -1635,7 +2536,9 @@ public class MusicXML {
 		for (Integer i : smallestNoteTypePerSong.keySet()) {
 			System.out.println("\t" + i + ":" + smallestNoteTypePerSong.get(i));
 		}
-		
+		tmpDataWriter.close();
+		tmp2DataWriter.close();
+		System.out.println("Chords removed in resolving overlapping chords:" + removedChordsCount);
 		System.out.println("Songs nixed for unparseable harmony:" + unparseableHarmonies);
 	}
 }

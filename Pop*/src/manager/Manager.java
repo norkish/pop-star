@@ -23,6 +23,8 @@ import lyrics.NGramNonLyricEngineer;
 import lyrics.TestLyricEngineer;
 import main.ProgramArgs;
 import melody.MelodyEngineer;
+import melody.RandomMelodyEngineer;
+import melody.TestMelodyEngineer;
 import pitch.HMMPitchEngineer;
 import pitch.IdiomaticPitchEngineer;
 import pitch.PitchEngineer;
@@ -33,12 +35,11 @@ import rhythm.PhraseDictRhythmEngineer;
 import rhythm.RandomRhythmEngineer;
 import rhythm.RhythmEngineer;
 import rhythm.TestRhythmEngineer;
-import structure.StructureEngineer;
-import substructure.DistributionalSubstructureEngineer;
-import substructure.FixedSubstructureEngineer;
-import substructure.HierarchicalSubstructureEngineer;
-import substructure.SubstructureEngineer;
-import substructure.TestSubstructureEngineer;
+import segmentstructure.DistributionalSegmentStructureEngineer;
+import segmentstructure.FixedSegmentStructureEngineer;
+import segmentstructure.HierarchicalSegmentStructureEngineer;
+import segmentstructure.SegmentStructureEngineer;
+import segmentstructure.TestSegmentStructureEngineer;
 
 public class Manager {
 
@@ -89,18 +90,6 @@ public class Manager {
 		return engineer;
 	}
 	
-	public StructureEngineer getStructureEngineer() {
-		StructureEngineer engineer = new StructureEngineer();
-		
-		GlobalStructureEngineer globalStructureEngineer = getGlobalStructureEngineer();
-		engineer.setGlobalStructureEngineer(globalStructureEngineer);
-		
-		SubstructureEngineer substructureEngineer = getSubstructureEngineer();
-		engineer.setSubstructureEngineer(substructureEngineer);
-		
-		return engineer;
-	}
-	
 	public GlobalStructureEngineer getGlobalStructureEngineer() {
 		GlobalStructureEngineer engineer = null;
 
@@ -124,21 +113,21 @@ public class Manager {
 		return engineer;
 	}
 
-	public SubstructureEngineer getSubstructureEngineer() {
-		SubstructureEngineer engineer = null;
+	public SegmentStructureEngineer getSegmentStructureEngineer() {
+		SegmentStructureEngineer engineer = null;
 
 		switch (config.substructureSource) {
 		case FIXED:
-			engineer = new FixedSubstructureEngineer();
+			engineer = new FixedSegmentStructureEngineer();
 			break;
 		case DISTRIBUTION:
-			engineer = new DistributionalSubstructureEngineer();
+			engineer = new DistributionalSegmentStructureEngineer();
 			break;
 		case HIERARCHICAL:
-			engineer = new HierarchicalSubstructureEngineer();
+			engineer = new HierarchicalSegmentStructureEngineer();
 			break;
 		case TEST:
-			engineer = new TestSubstructureEngineer();
+			engineer = new TestSegmentStructureEngineer();
 			break;
 		default:
 			throw new RuntimeException("Invalid substructure configuration: " + config.substructureSource);
@@ -194,15 +183,20 @@ public class Manager {
 	}
 
 	public MelodyEngineer getMelodyEngineer() {
-		MelodyEngineer engineer = new MelodyEngineer();
+		MelodyEngineer melodyEngineer = null;
 		
-		RhythmEngineer rhythmEngineer = getRhythmEngineer();
-		engineer.setRhythmEngineer(rhythmEngineer);
+		switch (config.melodySource) {
+		case RANDOM:
+			melodyEngineer = new RandomMelodyEngineer();
+			break;
+		case TEST:
+			melodyEngineer = new TestMelodyEngineer();
+			break;
+		default:
+			throw new RuntimeException("Invalid harmony configuration: " + config.pitchSource);
+		}
 		
-		PitchEngineer pitchEngineer = getPitchEngineer();
-		engineer.setPitchEngineer(pitchEngineer);
-		
-		return engineer;
+		return melodyEngineer;
 	}
 
 	public PitchEngineer getPitchEngineer() {
