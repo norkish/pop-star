@@ -1,10 +1,10 @@
 package harmony;
 
 import composition.Score;
-import data.MusicXML.Bass;
-import data.MusicXML.Harmony;
-import data.MusicXML.Quality;
-import data.MusicXML.Root;
+import data.MusicXMLParser.Bass;
+import data.MusicXMLParser.Harmony;
+import data.MusicXMLParser.Quality;
+import data.MusicXMLParser.Root;
 import inspiration.Inspiration;
 import markov.SingleOrderMarkovModel;
 import pitch.Pitch;

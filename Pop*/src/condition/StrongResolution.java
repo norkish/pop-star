@@ -1,13 +1,13 @@
 package condition;
 
-import harmony.Chord;
+import data.MusicXMLParser.Harmony;
 
 public class StrongResolution<T> extends ConstraintCondition<T> {
 
 	@Override
 	public boolean isSatisfiedBy(T t) {
-		if (t instanceof Chord) {
-			return ((Chord) t).toString().equals("C");
+		if (t instanceof Harmony) {
+			return ((Harmony) t).toString().equals("C");
 		}
 		return false;
 	}

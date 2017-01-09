@@ -44,13 +44,13 @@ import utils.Counter;
 import utils.Pair;
 import utils.Triple;
 
-public class MusicXMLAnalyzer {
+public class MusicXMLSummaryGenerator {
 
-	public static int getBackupEventCount(MusicXML m) {
+	public static int getBackupEventCount(MusicXMLParser m) {
 		return m.xml.getElementsByTagName("backup").getLength();
 	}
 
-	public static int getRevisionCount(MusicXML m) {
+	public static int getRevisionCount(MusicXMLParser m) {
 		NodeList sourceNodes = m.xml.getElementsByTagName("source");
 
 		for (int i = 0; i < sourceNodes.getLength(); i++) {
@@ -64,12 +64,12 @@ public class MusicXMLAnalyzer {
 		return -1;
 	}
 
-	public static String getTitle(MusicXML m) {
+	public static String getTitle(MusicXMLParser m) {
 		Node titleItem = m.xml.getElementsByTagName("movement-title").item(0);
 		return titleItem == null? "MISSING_TITLE" : titleItem.getTextContent();
 	}
 
-	public static String getComposer(MusicXML m) {
+	public static String getComposer(MusicXMLParser m) {
 		NodeList creators = m.xml.getElementsByTagName("creator");
 		for (int i = 0; i < creators.getLength(); i++) {
 			Element creator = (Element) creators.item(i);
@@ -167,7 +167,7 @@ public class MusicXMLAnalyzer {
 		return new Pair<String, String>(root, kind);
 	}
 
-	public static String getScoreVersion(MusicXML m) {
+	public static String getScoreVersion(MusicXMLParser m) {
 		return ((Element) m.xml.getElementsByTagName("score-partwise").item(0)).getAttribute("version").toString();
 	}
 
@@ -177,7 +177,7 @@ public class MusicXMLAnalyzer {
 		return new Pair<Integer, Integer>(beats, beat_type);
 	}
 
-	public static NodeList getTimeSignatures(MusicXML m) {
+	public static NodeList getTimeSignatures(MusicXMLParser m) {
 		return m.xml.getElementsByTagName("time");
 	}
 
@@ -188,11 +188,11 @@ public class MusicXMLAnalyzer {
 		return new Pair<Integer, String>(fifths, mode);
 	}
 
-	public static NodeList getChords(MusicXML m) {
+	public static NodeList getChords(MusicXMLParser m) {
 		return m.xml.getElementsByTagName("harmony");
 	}
 
-	public static List<Node> getMeasures(MusicXML m) {
+	public static List<Node> getMeasures(MusicXMLParser m) {
 		List<Node> returnList = new ArrayList<Node>();
 		
 		NodeList nodeList = m.xml.getElementsByTagName("measure");
@@ -203,7 +203,7 @@ public class MusicXMLAnalyzer {
 		return returnList;
 	}
 	
-	public static List<Node> getMeasuresForPart(MusicXML m, int i) {
+	public static List<Node> getMeasuresForPart(MusicXMLParser m, int i) {
 		NodeList scorePartwiseEls = m.xml.getElementsByTagName("score-partwise");
 		assert scorePartwiseEls.getLength() == 1 : "Score has " + scorePartwiseEls.getLength() + " parts";
 		
@@ -225,12 +225,12 @@ public class MusicXMLAnalyzer {
 		return null;
 	}
 
-	public static NodeList getKeySignatures(MusicXML m) {
+	public static NodeList getKeySignatures(MusicXMLParser m) {
 		Element el = (Element) m.xml.getElementsByTagName("part-list").item(0);
 		return m.xml.getElementsByTagName("key");
 	}
 
-	public static NodeList getPartsList(MusicXML m) {
+	public static NodeList getPartsList(MusicXMLParser m) {
 		Element el = (Element) m.xml.getElementsByTagName("part-list").item(0);
 		return el.getElementsByTagName("score-part");
 	}
@@ -387,7 +387,7 @@ public class MusicXMLAnalyzer {
 //			 if (!file.getName().equals("Ahmad Jamal - Poinciana.mxl"))
 //			 continue;
 			System.out.println(file.getAbsolutePath());
-			MusicXML musicXML = new MusicXML(mxlToXML(file));
+			MusicXMLParser musicXML = new MusicXMLParser(mxlToXML(file));
 			try {
 
 				String scoreVersion = getScoreVersion(musicXML);

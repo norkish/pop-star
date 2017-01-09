@@ -32,7 +32,8 @@ public class ProgramArgs {
 	}
 
 	private static void loadDefaultProgramArgs() {
-		configurationSetting = SongConfigSourceSetting.TEST;
+//		configurationSetting = SongConfigSourceSetting.TEST;
+		configurationSetting = SongConfigSourceSetting.SIMPLE;
 //		configurationSetting = SongConfigSourceSetting.DISTRIBUTIONAL;
 		orchestratorSetting = OrchestratorSetting.COMPING;
 		userInterfaceSetting = UISetting.COMMANDLINE;

@@ -95,8 +95,21 @@ public class Composition {
 		xml = xml.replaceFirst("TITLE-PLACEHOLDER", title);
 		xml = xml.replaceFirst("COMPOSER-PLACEHOLDER", composer);
 		xml = xml.replaceFirst("LYRICIST-PLACEHOLDER", StringUtils.capitalize(inspiration.getMaxEmotion()));
-		xml = xml.replaceFirst("PART-PLACEHOLDER\n", score.toXML(2));
+		xml = xml.replaceFirst("PART1-PLACEHOLDER\n", score.partToXML(2, 'l'));
+		
+		if (score.hasOrchestration()) {
+			xml = xml.replaceFirst("PART2-PLACEHOLDER\n", score.partToXML(2, 'p'));
+			xml = xml.replaceFirst("PART3-PLACEHOLDER\n", score.partToXML(2, 'b'));
+
+		} else {
+			xml = xml.replaceFirst("        <score-part id=\"P2\">.*</score-part>\n", "");
+			xml = xml.replaceFirst("    <part id=\"P2\">.*</part>\n", "");
+		}
 		
 		return xml;
+	}
+
+	public Score getScore() {
+		return score;
 	}
 }

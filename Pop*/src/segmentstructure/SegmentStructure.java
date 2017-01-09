@@ -6,7 +6,7 @@ import java.util.List;
 
 import composition.Measure;
 import constraint.Constraint;
-import data.MusicXML.KeyMode;
+import data.MusicXMLParser.KeyMode;
 
 public class SegmentStructure implements Serializable {
 	

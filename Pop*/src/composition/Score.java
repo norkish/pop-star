@@ -3,14 +3,15 @@ package composition;
 import java.util.ArrayList;
 import java.util.List;
 
-import data.MusicXML.Harmony;
-import data.MusicXML.Key;
-import data.MusicXML.Note;
-import data.MusicXML.Time;
+import data.MusicXMLParser.Harmony;
+import data.MusicXMLParser.Key;
+import data.MusicXMLParser.Note;
+import data.MusicXMLParser.Time;
 
 public class Score {
 
 	List<Measure> measures = new ArrayList<Measure>();
+	private boolean hasOrchestration = false;
 
 	public void addMeasures(List<Measure> instantiatedMeasures) {
 		measures.addAll(instantiatedMeasures);
@@ -32,7 +33,7 @@ public class Score {
 		return measures;
 	}
 
-	public String toXML(int indentationLevel) {
+	public String partToXML(int indentationLevel, char part) {
 		StringBuilder str = new StringBuilder();
 		
 		int currDivisions = -1;
@@ -52,7 +53,7 @@ public class Score {
             </barline>*/
 			
 			//if attributes have changed
-			boolean divChange = (currDivisions != measure.divisions && measure.divisions != -1);
+			boolean divChange = (currDivisions != measure.divisionsPerQuarterNote && measure.divisionsPerQuarterNote != -1);
 			boolean keyChange = (currKey != measure.key && measure.key != null);
 			boolean timeChange = (currTime != measure.time && measure.time != null);
 			
@@ -61,7 +62,7 @@ public class Score {
 				str.append("<attributes>\n");
 				
 				if (divChange) {
-					currDivisions = measure.divisions;
+					currDivisions = measure.divisionsPerQuarterNote;
 					for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
 					str.append("<divisions>").append(currDivisions).append("</divisions>\n");
 				}
@@ -92,7 +93,14 @@ public class Score {
 				str.append("</attributes>\n");
 			}
 			
-			str.append(measure.toXML(indentationLevel+1));
+			switch(part) {
+			case 'l':
+				str.append(measure.leadToXML(indentationLevel+1));
+				break;
+				default:
+				str.append(measure.orchestrationToXML(indentationLevel+1,part));
+				break;
+			}
 			
 			for (int j = 0; j < indentationLevel; j++) str.append("    "); 
 			str.append("</measure>\n");
@@ -100,5 +108,12 @@ public class Score {
 		
 		return str.toString();
 	}
-	
+
+	public boolean hasOrchestration() {
+		return hasOrchestration ;
+	}
+
+	public void hasOrchestration(boolean b) {
+		hasOrchestration = b;
+	}	
 }

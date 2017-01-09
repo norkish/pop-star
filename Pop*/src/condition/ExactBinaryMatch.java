@@ -2,8 +2,8 @@ package condition;
 
 public class ExactBinaryMatch<T> extends DelayedConstraintCondition<T> {
 
-	public ExactBinaryMatch(int line, int pos) {
-		super(line,pos);
+	public ExactBinaryMatch(int measure, double offset) {
+		super(measure,offset);
 	}
 
 	@Override

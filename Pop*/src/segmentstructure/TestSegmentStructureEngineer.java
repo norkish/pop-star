@@ -1,8 +1,6 @@
 package segmentstructure;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
 
 import composition.Measure;
 import condition.ExactBinaryMatch;
@@ -10,7 +8,7 @@ import condition.ExactUnaryMatch;
 import condition.Rhyme;
 import condition.StrongResolution;
 import constraint.Constraint;
-import data.MusicXML.KeyMode;
+import data.MusicXMLParser.KeyMode;
 import globalstructure.SegmentType;
 import harmony.Chord;
 import lyrics.Lyric;
@@ -51,26 +49,9 @@ public class TestSegmentStructureEngineer extends SegmentStructureEngineer {
 		return segmentStructure;
 	}
 
-	@Override
 	public List<Measure> instantiateSegmentStructure(SegmentType segmentType, SegmentStructure segmentStructure, 
 			boolean lastOfKind, boolean lastSegment) {
-		List<Measure> segmentMeasures = new ArrayList<Measure>();
-
-		for (int i = 0; i < segmentStructure.getMeasureCount(); i++) {
-			Measure instantiatedMeasure = new Measure();
-			Measure measureStructure = segmentStructure.measures.get(i);
-			
-			for (Entry<Double, List<Constraint>> constraint: measureStructure.getConstraints().entrySet()) {
-				instantiatedMeasure.divisions = measureStructure.divisions;
-				instantiatedMeasure.key = measureStructure.key;
-				instantiatedMeasure.time = measureStructure.time;
-				instantiatedMeasure.addAllConstraints(constraint.getKey(), constraint.getValue());
-			}
-			
-			segmentMeasures.add(instantiatedMeasure);
-		}		
-		
-		return segmentMeasures;
+		return instantiateExactSegmentStructure(segmentType, segmentStructure, lastOfKind, lastSegment);
 	}
 
 }

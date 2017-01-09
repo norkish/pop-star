@@ -2,6 +2,7 @@ package constraint;
 import java.io.Serializable;
 import java.util.List;
 
+import composition.Measure;
 import condition.ConstraintCondition;
 import condition.DelayedConstraintCondition;
 import utils.Utils;
@@ -13,6 +14,7 @@ public class Constraint<T> implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 	public static final int FINAL_POSITION = -1;
+	public static final double ALL_POSITIONS = -2.0;
 	
 	public boolean getDesiredConditionState() {
 		return desiredConditionState;
@@ -32,17 +34,17 @@ public class Constraint<T> implements Serializable {
 	protected ConstraintCondition<T> condition;
 
 	public Constraint(int i, ConstraintCondition<T> condition, boolean desiredConditionState) {
-		this.position = i;
+		this.position = i; // Thinking we don't need this.
 		this.condition = condition;
 		this.desiredConditionState = desiredConditionState;
 	}
 
-	public static <T> void reifyConstraints(List<Constraint<T>> constraints, List<List<T>> tokenLine) {
+	public static <T> void reifyConstraints(List<Constraint<T>> constraints, List<Measure> measures) {
 		for (Constraint<T> constraint : constraints) {
 			ConstraintCondition<T> condition = constraint.getCondition();
 			if(condition instanceof DelayedConstraintCondition)
 			{
-				((DelayedConstraintCondition<T>) condition).reify(tokenLine);
+				((DelayedConstraintCondition<T>) condition).reify(measures);
 			}
 		}
 	}

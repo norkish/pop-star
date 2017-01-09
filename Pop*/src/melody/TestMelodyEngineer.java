@@ -1,8 +1,8 @@
 package melody;
 
 import composition.Score;
-import data.MusicXML.Note;
-import data.MusicXML.NoteTie;
+import data.MusicXMLParser.Note;
+import data.MusicXMLParser.NoteTie;
 import inspiration.Inspiration;
 
 

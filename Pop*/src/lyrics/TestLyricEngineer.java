@@ -5,10 +5,10 @@ import java.util.TreeMap;
 
 import composition.Measure;
 import composition.Score;
-import data.MusicXML.Note;
-import data.MusicXML.NoteLyric;
-import data.MusicXML.NoteTie;
-import data.MusicXML.Syllabic;
+import data.MusicXMLParser.Note;
+import data.MusicXMLParser.NoteLyric;
+import data.MusicXMLParser.NoteTie;
+import data.MusicXMLParser.Syllabic;
 import inspiration.Inspiration;
 
 public class TestLyricEngineer extends LyricalEngineer {

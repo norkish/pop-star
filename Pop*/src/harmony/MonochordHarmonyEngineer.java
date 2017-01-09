@@ -1,16 +1,20 @@
 package harmony;
 
 import composition.Score;
-import globalstructure.SegmentType;
+import data.MusicXMLParser.Harmony;
+import data.MusicXMLParser.Quality;
+import data.MusicXMLParser.Root;
 import inspiration.Inspiration;
-import segmentstructure.SegmentStructure;
+import pitch.Pitch;
 
 public class MonochordHarmonyEngineer extends HarmonyEngineer {
 
 	@Override
 	public void addHarmony(Inspiration inspiration, Score score) {
-		// TODO Auto-generated method stub
-		
+		Quality majorQuality = new Quality();
+		for (int i = 0; i < score.length(); i++) {
+			score.addHarmony(i, 0.0, new Harmony(new Root(Pitch.getPitchValue("C")), majorQuality, null));
+		}
 	}
 
 	

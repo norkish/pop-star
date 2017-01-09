@@ -15,8 +15,8 @@ public class Rhyme<T> extends DelayedConstraintCondition<Lyric> {
 	private static final long serialVersionUID = 1L;
 	private static final double MATCHING_LINE_THRESHOLD = .6;
 
-	public Rhyme(int line, int pos) {
-		super(line,pos);
+	public Rhyme(int measure, double offset) {
+		super(measure,offset);
 	}
 
 	public boolean isSatisfiedBy(Lyric t) {

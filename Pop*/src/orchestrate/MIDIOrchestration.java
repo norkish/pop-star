@@ -15,7 +15,7 @@ import javax.sound.midi.SysexMessage;
 import segmentstructure.TimeSignature;
 import utils.Triple;
 
-public class Orchestration {
+public class MIDIOrchestration {
 
 	public class MeasureTextEvent extends MeasureEvent {
 
@@ -218,7 +218,7 @@ public class Orchestration {
 	}
 
 	public static void main(String[] args) {
-		Orchestration orch = new Orchestration();
+		MIDIOrchestration orch = new MIDIOrchestration();
 		orch.addTrack("Melody", 0);
 		orch.addMeasures(4, new TimeSignature(4, 4));
 		orch.addNoteEvent(0, 0, 0, 64, 1);

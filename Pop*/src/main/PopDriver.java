@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import composition.Composition;
+import orchestrate.Orchestrator;
 
 /*
  * Generates a new song inspired from a system-selected inspiring idea
@@ -19,10 +20,10 @@ public class PopDriver {
 		Composition newSong = studio.generate();
 		
 //		System.out.println(newSong);
-		Files.write(Paths.get("./newSong.xml"), newSong.toString().getBytes());
+		Files.write(Paths.get("./compositions/newSong.xml"), newSong.toString().getBytes());
 		
-//		Orchestrator orchestrator = Orchestrator.getOrchestrator();
-//		Orchestration orchestration = orchestrator.orchestrate(newSong);
-//		orchestration.saveToFile(new File(System.getProperty("user.home") + "/popstar_hit.kar"));
+		Orchestrator orchestrator = Orchestrator.getOrchestrator();
+		orchestrator.orchestrate(newSong);
+		Files.write(Paths.get("./compositions/newSongOrchestrated.xml"), newSong.toString().getBytes());
 	}
 }

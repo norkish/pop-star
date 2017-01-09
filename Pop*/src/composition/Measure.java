@@ -6,16 +6,19 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import constraint.Constraint;
-import data.MusicXML.Harmony;
-import data.MusicXML.Key;
-import data.MusicXML.KeyMode;
-import data.MusicXML.Note;
-import data.MusicXML.Time;
+import data.MusicXMLParser.Harmony;
+import data.MusicXMLParser.Key;
+import data.MusicXMLParser.KeyMode;
+import data.MusicXMLParser.Note;
+import data.MusicXMLParser.NoteLyric;
+import data.MusicXMLParser.Quality;
+import data.MusicXMLParser.Time;
 import globalstructure.SegmentType;
+import melody.MelodyEngineer;
 
 public class Measure {
 
-	public int divisions = -1;
+	public int divisionsPerQuarterNote = -1;
 	public Key key = null;
 	public Time time = null;
 	// harmony
@@ -26,9 +29,11 @@ public class Measure {
 	private TreeMap<Double, List<Constraint>> constraints = new TreeMap<Double, List<Constraint>>();
 	private TreeMap<Double, Harmony> harmonies = new TreeMap<Double, Harmony>();
 	private TreeMap<Double, Note> notes = new TreeMap<Double, Note>();
+	private TreeMap<Double, List<Note>> orchestration = null;
+	private TreeMap<Double, List<Note>> bassOrchestration;
 	
 	public void setDivions(int divisions) {
-		this.divisions = divisions;
+		this.divisionsPerQuarterNote = divisions;
 	}
 	
 	public void setKey(int fifths, KeyMode mode) {
@@ -73,7 +78,7 @@ public class Measure {
 		return constraints;
 	}
 
-	public String toXML(int indentationLevel) {
+	public String leadToXML(int indentationLevel) {
 		StringBuilder str = new StringBuilder();
 		
 		// TODO: spread staves, make chords bigger
@@ -92,5 +97,98 @@ public class Measure {
 		
 		return str.toString();
 	}
+
+	public String orchestrationToXML(int indentationLevel, char part) {
+		StringBuilder str = new StringBuilder();
+		
+		TreeMap<Double, List<Note>> partNotes = part == 'p' ? orchestration : bassOrchestration;
+		
+		// do chords, assigning to staves 
+		for (Entry<Double, List<Note>> offsetHarmony : partNotes.entrySet()) {
+			for (Note note : offsetHarmony.getValue()) {
+				str.append(note.toXML(indentationLevel));
+			}
+		}
+		
+		return str.toString();
+	}
+	
+	public Note getClosestNote(double prevMeasureOffset) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public NoteLyric getClosestNoteLyric(double prevMeasureOffset) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Harmony getClosestHarmony(double prevMeasureOffset) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void initOrchestration() {
+		orchestration = new TreeMap<Double, List<Note>>();
+		bassOrchestration = new TreeMap<Double, List<Note>>();
+	}
+
+	public void addChordForHarmonyAt(double currPos, double durationsInBeats) {
+		Harmony harmonyAtCurrPos = tokenAtPos(currPos, harmonies);
+		if (harmonyAtCurrPos == null) return;
+		
+		List<Note> orchestrationNotes = orchestration.get(currPos);
+		if (orchestrationNotes == null) {
+			orchestrationNotes = new ArrayList<Note>();
+			orchestration.put(currPos, orchestrationNotes);
+		}
+		
+		boolean[] pitches = harmonyAtCurrPos.quality.getPitches();
+		int rootPitch = harmonyAtCurrPos.root.rootStep + 57;
+		int durationInDivs = (int) (durationsInBeats * (4.0 / this.time.beatType) * this.divisionsPerQuarterNote);
+		final List<Note> chordRootWithTies = MelodyEngineer.createTiedNoteWithDuration(durationInDivs, rootPitch, this.divisionsPerQuarterNote);
+		assert chordRootWithTies.size() == 1: "Chord note requested that requires tied notes to accomplish desired duration";
+		Note chordRoot = chordRootWithTies.get(0);
+		orchestrationNotes.add(chordRoot);
+		
+		for (int i = 0; i < pitches.length; i++) {
+			boolean intervalOn = pitches[i];
+			if (intervalOn) {
+				Note newNote = new Note(rootPitch + Quality.HARMONY_CONSTANT_INTERVALS[i], 
+						chordRoot.duration, chordRoot.type, null, chordRoot.dots, chordRoot.tie, null, orchestrationNotes.size()>0);
+				orchestrationNotes.add(newNote);
+			}
+		}
+	}
+
+	private <T> T tokenAtPos(double currPos, TreeMap<Double, T> tokens) {
+		T currToken = null;
+		for (Double pos : tokens.keySet()) {
+			if (pos > currPos) {
+				return currToken;
+			}
+			currToken = tokens.get(pos);
+		}
+		return currToken;
+	}
+
+	public void addBassNoteForHarmony(double currPos, double durationsInBeats) {
+		Harmony harmonyAtCurrPos = tokenAtPos(currPos, harmonies);
+		if (harmonyAtCurrPos == null) return;
+		
+		List<Note> bassOrchestrationNotes = bassOrchestration.get(currPos);
+		if (bassOrchestrationNotes == null) {
+			bassOrchestrationNotes = new ArrayList<Note>();
+			bassOrchestration.put(currPos, bassOrchestrationNotes);
+		}
+		
+		int rootPitch = harmonyAtCurrPos.root.rootStep + 33;
+		int durationInDivs = (int) (durationsInBeats * (4.0 / this.time.beatType) * this.divisionsPerQuarterNote);
+		final List<Note> chordBassWithTies = MelodyEngineer.createTiedNoteWithDuration(durationInDivs, rootPitch, this.divisionsPerQuarterNote);
+		assert chordBassWithTies.size() == 1: "Chord Bass note requested that requires tied notes to accomplish desired duration";
+		Note chordRoot = chordBassWithTies.get(0);
+		bassOrchestrationNotes.add(chordRoot);
+	}
+
 
 }
