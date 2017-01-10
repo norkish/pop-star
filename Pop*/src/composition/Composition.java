@@ -102,8 +102,8 @@ public class Composition {
 			xml = xml.replaceFirst("PART3-PLACEHOLDER\n", score.partToXML(2, 'b'));
 
 		} else {
-			xml = xml.replaceFirst("        <score-part id=\"P2\">.*</score-part>\n", "");
-			xml = xml.replaceFirst("    <part id=\"P2\">.*</part>\n", "");
+			xml = xml.replaceFirst("(?s) *<score-part id=\"P2\">.*</score-part>\n", "");
+			xml = xml.replaceFirst("(?s) *<part id=\"P2.*</part>\n", "");
 		}
 		
 		return xml;

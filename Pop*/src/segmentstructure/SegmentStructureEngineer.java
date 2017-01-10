@@ -6,6 +6,8 @@ import java.util.Map.Entry;
 
 import composition.Measure;
 import constraint.Constraint;
+import data.MusicXMLParser.Key;
+import data.MusicXMLParser.Time;
 import globalstructure.SegmentType;
 
 public abstract class SegmentStructureEngineer {
@@ -19,13 +21,24 @@ public abstract class SegmentStructureEngineer {
 			boolean lastOfKind, boolean lastSegment) {
 		List<Measure> segmentMeasures = new ArrayList<Measure>();
 
+		int currDivsPerQuarter = -1;
+		Key currKey = null;
+		Time currTime = null;
+		
 		for (int i = 0; i < segmentStructure.getMeasureCount(); i++) {
-			Measure instantiatedMeasure = new Measure();
 			Measure measureStructure = segmentStructure.measures.get(i);
+			Measure instantiatedMeasure = new Measure(measureStructure.segmentType,measureStructure.offsetWithinSegment);
 			
-			instantiatedMeasure.divisionsPerQuarterNote = measureStructure.divisionsPerQuarterNote;
-			instantiatedMeasure.key = measureStructure.key;
-			instantiatedMeasure.time = measureStructure.time;
+			if (measureStructure.divisionsPerQuarterNote != -1)
+				currDivsPerQuarter = measureStructure.divisionsPerQuarterNote;
+			if (measureStructure.key != null)
+				currKey = measureStructure.key;
+			if (measureStructure.time != null)
+				currTime = measureStructure.time;
+
+			instantiatedMeasure.divisionsPerQuarterNote = currDivsPerQuarter;
+			instantiatedMeasure.key = currKey;
+			instantiatedMeasure.time = currTime;
 
 			for (Entry<Double, List<Constraint>> constraint: measureStructure.getConstraints().entrySet()) {
 				instantiatedMeasure.addAllConstraints(constraint.getKey(), constraint.getValue());

@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import data.MusicXMLParser.Harmony;
 import data.MusicXMLParser.Key;
 import data.MusicXMLParser.Note;
 import data.MusicXMLParser.NoteLyric;
@@ -33,6 +34,9 @@ public class ParsedMusicXMLObject {
 	public List<NoteLyric> syllablesNotLookedUp = new ArrayList<NoteLyric>();
 	public List<Pair<List<NoteLyric>, List<Triple<String, StressedPhone[], Integer>>>> lyricsWithDifferentSyllableCountThanAssociatedNotes 
 		= new ArrayList<Pair<List<NoteLyric>, List<Triple<String, StressedPhone[], Integer>>>>();
+	public int harmonyCount = 0;
+	//measure, offset in divs, 
+	public Map<Integer, Map<Integer, Harmony>> unoverlappingHarmonyByMeasure;
 
 	public ParsedMusicXMLObject(boolean followRepeats) {
 		this.followRepeats = followRepeats;

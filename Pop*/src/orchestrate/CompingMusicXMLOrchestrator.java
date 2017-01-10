@@ -11,7 +11,7 @@ public class CompingMusicXMLOrchestrator extends Orchestrator {
 		boolean timeIsThree = measure.time.beats == 3;
 		
 		double currPos = 0.0;
-		while (true) {
+		while (currPos < measure.time.beats) {
 			double formPosition = currPos % (timeIsThree?3.0:2.0);
 			if (formPosition == 0.0 || formPosition == 2.0) {
 				// add chord

@@ -68,13 +68,13 @@ public class SongConfigurationLoader {
 		SongConfiguration config = new SongConfiguration();
 		
 		config.inspirationSource = InspirationSource.RANDOM; // TODO
-		config.globalStructureSource = StructureSource.DISTRIBUTION;
-		config.substructureSource = SegmentStructureSource.DISTRIBUTION;
-		config.lyricSource = LyricalSource.LYRICAL_NGRAM;
+		config.globalStructureSource = StructureSource.FIXED; // TODO: distributional
+		config.substructureSource = SegmentStructureSource.FIXED; // TODO: distributional
+		config.lyricSource = LyricalSource.TEMPLATE; // TODO: Lyrical ngram
 		config.harmonySource = HarmonySource.SEGMENTSPECIFIC_HMM;
-		config.melodySource = MelodySource.TEST; // TODO
-		config.rhythmSource = RhythmSource.TEST; // TODO
-		config.pitchSource = PitchSource.TEST; // TODO
+		config.melodySource = MelodySource.RANDOM; // TODO
+		config.rhythmSource = RhythmSource.RANDOM; // TODO
+		config.pitchSource = PitchSource.RANDOM; // TODO
 		
 		return config;
 	}

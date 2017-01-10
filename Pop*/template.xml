@@ -23,11 +23,11 @@
             <part-name>Melody</part-name>
             <part-abbreviation>Mel.</part-abbreviation>
         </score-part>
-        <score-part id="P2”>
+        <score-part id="P2">
             <part-name>Piano</part-name>
             <part-abbreviation>Piano</part-abbreviation>
         </score-part>
-        <score-part id="P3”>
+        <score-part id="P3">
             <part-name>Bass</part-name>
             <part-abbreviation>Bass</part-abbreviation>
         </score-part>
@@ -35,10 +35,10 @@
     <part id="P1">
 PART1-PLACEHOLDER
     </part>
-    <part id="P2”>
+    <part id="P2">
 PART2-PLACEHOLDER
     </part>
-    <part id="P3”>
+    <part id="P3">
 PART3-PLACEHOLDER
     </part>
 </score-partwise>

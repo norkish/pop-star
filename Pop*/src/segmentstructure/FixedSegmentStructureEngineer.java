@@ -37,7 +37,7 @@ public class FixedSegmentStructureEngineer extends SegmentStructureEngineer {
 	private SegmentStructure defineVerseSegmentStructure() {
 		int measureCount = 32;
 		
-		SegmentStructure segmentStructure = new SegmentStructure(measureCount);
+		SegmentStructure segmentStructure = new SegmentStructure(measureCount, SegmentType.VERSE);
 		segmentStructure.addDivisionsPerQuarterNote(0,4);
 		segmentStructure.addKey(0,0,KeyMode.MAJOR);
 		segmentStructure.addTime(0,4,4);
@@ -58,7 +58,7 @@ public class FixedSegmentStructureEngineer extends SegmentStructureEngineer {
 	private SegmentStructure defineOutroSegmentStructure() {
 		int measureCount = 8;
 		
-		SegmentStructure segmentStructure = new SegmentStructure(measureCount);
+		SegmentStructure segmentStructure = new SegmentStructure(measureCount, SegmentType.OUTRO);
 		segmentStructure.addDivisionsPerQuarterNote(0,4);
 		segmentStructure.addKey(0,0,KeyMode.MAJOR);
 		segmentStructure.addTime(0,4,4);
@@ -75,7 +75,7 @@ public class FixedSegmentStructureEngineer extends SegmentStructureEngineer {
 		int measureCount = 8;
 		
 		
-		SegmentStructure segmentStructure = new SegmentStructure(measureCount);
+		SegmentStructure segmentStructure = new SegmentStructure(measureCount, SegmentType.INTRO);
 		segmentStructure.addDivisionsPerQuarterNote(0,4);
 		segmentStructure.addKey(0,0,KeyMode.MAJOR);
 		segmentStructure.addTime(0,4,4);
@@ -89,7 +89,7 @@ public class FixedSegmentStructureEngineer extends SegmentStructureEngineer {
 	private SegmentStructure defineChorusSegmentStructure() {
 		int measureCount = 16;
 		
-		SegmentStructure segmentStructure = new SegmentStructure(measureCount);
+		SegmentStructure segmentStructure = new SegmentStructure(measureCount, SegmentType.CHORUS);
 		segmentStructure.addDivisionsPerQuarterNote(0,4);
 		segmentStructure.addKey(0,0,KeyMode.MAJOR);
 		segmentStructure.addTime(0,4,4);
@@ -112,7 +112,7 @@ public class FixedSegmentStructureEngineer extends SegmentStructureEngineer {
 	private SegmentStructure defineBridgeSegmentStructure() {
 		int measureCount = 16;
 		
-		SegmentStructure segmentStructure = new SegmentStructure(measureCount);
+		SegmentStructure segmentStructure = new SegmentStructure(measureCount, SegmentType.BRIDGE);
 		segmentStructure.addDivisionsPerQuarterNote(0,4);
 		segmentStructure.addKey(0,0,KeyMode.MAJOR);
 		segmentStructure.addTime(0,4,4);

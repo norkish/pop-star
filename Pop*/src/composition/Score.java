@@ -7,6 +7,7 @@ import data.MusicXMLParser.Harmony;
 import data.MusicXMLParser.Key;
 import data.MusicXMLParser.Note;
 import data.MusicXMLParser.Time;
+import globalstructure.SegmentType;
 
 public class Score {
 
@@ -39,23 +40,19 @@ public class Score {
 		int currDivisions = -1;
 		Key currKey = null;
 		Time currTime = null;
+		SegmentType type = null;
 		
 		for (int i = 0; i < measures.size(); i++) {
 			final Measure measure = measures.get(i);
 			for (int j = 0; j < indentationLevel; j++) str.append("    "); 
 			str.append("<measure number=\"").append(i).append("\">\n");
 			
-			// if first bar
-			// TODO: add barline 
-			/*<barline location="left">
-            <bar-style>heavy-light</bar-style>
-            <repeat direction="forward"/>
-            </barline>*/
 			
 			//if attributes have changed
 			boolean divChange = (currDivisions != measure.divisionsPerQuarterNote && measure.divisionsPerQuarterNote != -1);
-			boolean keyChange = (currKey != measure.key && measure.key != null);
-			boolean timeChange = (currTime != measure.time && measure.time != null);
+			boolean keyChange = ((currKey == null && measure.key != null) || (currKey != null) && !currKey.equals(measure.key));
+			boolean timeChange = ((currTime == null && measure.time != null) || (currTime != null) && !currTime.equals(measure.time));
+			boolean segmentTypeChange = type != measure.segmentType;
 			
 			if (divChange || keyChange || timeChange) {
 				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
@@ -89,8 +86,43 @@ public class Score {
 					str.append("</time>\n");
 				}
 				
+				if (i == 0) {
+					for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+					str.append("<clef>\n");
+					char sign = part == 'b'? 'F' : 'G';
+					int line = part == 'b'? 4 : 2;
+					for (int j = 0; j <= indentationLevel+2; j++) str.append("    "); 
+					str.append("<sign>").append(sign).append("</sign>\n");
+					for (int j = 0; j <= indentationLevel+2; j++) str.append("    "); 
+					str.append("<line>").append(line).append("</line>\n");
+					for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+					str.append("</clef>\n");
+				}
+				
+				
 				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
 				str.append("</attributes>\n");
+			}
+			
+			if (segmentTypeChange) {
+				type = measure.segmentType;
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("<barline location=\"left\">\n");
+				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+				str.append("<bar-style>").append(i == 0?"heavy-light":"light-light").append("</bar-style>\n");
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("</barline>\n");
+				
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("<direction placement=\"above\">\n");
+				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+				str.append("<direction-type>\n");
+				for (int j = 0; j <= indentationLevel+2; j++) str.append("    "); 
+				str.append("<words>").append(type).append("</words>\n");
+				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+				str.append("</direction-type>\n");
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("</direction>\n");
 			}
 			
 			switch(part) {

@@ -7,15 +7,16 @@ import java.util.List;
 import composition.Measure;
 import constraint.Constraint;
 import data.MusicXMLParser.KeyMode;
+import globalstructure.SegmentType;
 
 public class SegmentStructure implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	public List<Measure> measures = new ArrayList<Measure>();
 
-	public SegmentStructure(int measureCount) {
+	public SegmentStructure(int measureCount, SegmentType segType) {
 		for (int i = 0; i < measureCount; i++) {
-			measures.add(new Measure());
+			measures.add(new Measure(segType, i));
 		}
 	}
 

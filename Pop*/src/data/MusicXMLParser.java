@@ -345,8 +345,18 @@ public class MusicXMLParser {
 			if (tie != NoteTie.NONE) {
 				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
 				str.append("<tie type=\"").append(tie.toString().toLowerCase()).append("\"/>\n");
+				
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("<notations>\n");
+				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+				str.append("<tied type=\"").append(tie.toString().toLowerCase()).append("\"/>\n");
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("</notations>\n");
+				
 			}
 		
+			
+			
 			//type
 			for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
 			str.append("<type>").append(interpretNoteType(type)).append("</type>\n");
@@ -378,7 +388,7 @@ public class MusicXMLParser {
 			// chord
 			if (isChordWithPrevious) {
 				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
-				str.append("<chord>");
+				str.append("<chord/>\n");
 			}
 			
 			//close note tag
@@ -1606,6 +1616,7 @@ public class MusicXMLParser {
 		musicXML.timeByMeasure = timeByMeasure;
 		musicXML.keyByMeasure = keyByMeasure;
 		musicXML.notesByMeasure = notesByMeasure;
+		musicXML.unoverlappingHarmonyByMeasure = unoverlappingHarmonyByMeasure;
 		
 		return musicXML;
 	}

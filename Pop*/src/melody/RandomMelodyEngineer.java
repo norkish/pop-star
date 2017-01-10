@@ -16,15 +16,11 @@ public class RandomMelodyEngineer extends MelodyEngineer {
 	
 	@Override
 	public void addMelody(Inspiration inspiration, Score score) {
-		Time currTime = null;
-		Key currKey = null;
-		int divisionsPerQuarterNote = -1;
 		
 		for (Measure measure : score.getMeasures()) {
-			if (measure.time != null) currTime = measure.time;
-			if (measure.key != null) currKey = measure.key;
-			if (measure.divisionsPerQuarterNote != -1) divisionsPerQuarterNote = measure.divisionsPerQuarterNote;
-			
+			Time currTime = measure.time;
+			Key currKey = measure.key;
+			int divisionsPerQuarterNote = measure.divisionsPerQuarterNote;
 			
 			int accumulativeDivisions = 0;
 			final int divsPerQuarter = divisionsPerQuarterNote;

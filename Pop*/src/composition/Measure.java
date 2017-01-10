@@ -21,17 +21,20 @@ public class Measure {
 	public int divisionsPerQuarterNote = -1;
 	public Key key = null;
 	public Time time = null;
-	// harmony
-	// notes
-	// lyrics
-	SegmentType segmentType; // SegmentType
-	int offsetWithinSegment;// MeasureOffsetWithinSegment
+	public SegmentType segmentType = null; // SegmentType
+	public int offsetWithinSegment = -1;// MeasureOffsetWithinSegment
+
 	private TreeMap<Double, List<Constraint>> constraints = new TreeMap<Double, List<Constraint>>();
 	private TreeMap<Double, Harmony> harmonies = new TreeMap<Double, Harmony>();
 	private TreeMap<Double, Note> notes = new TreeMap<Double, Note>();
 	private TreeMap<Double, List<Note>> orchestration = null;
 	private TreeMap<Double, List<Note>> bassOrchestration;
 	
+	public Measure(SegmentType segType, int offset) {
+		this.segmentType = segType;
+		this.offsetWithinSegment = offset;
+	}
+
 	public void setDivions(int divisions) {
 		this.divisionsPerQuarterNote = divisions;
 	}
@@ -144,7 +147,7 @@ public class Measure {
 		}
 		
 		boolean[] pitches = harmonyAtCurrPos.quality.getPitches();
-		int rootPitch = harmonyAtCurrPos.root.rootStep + 57;
+		int rootPitch = harmonyAtCurrPos.root.rootStep + 45;
 		int durationInDivs = (int) (durationsInBeats * (4.0 / this.time.beatType) * this.divisionsPerQuarterNote);
 		final List<Note> chordRootWithTies = MelodyEngineer.createTiedNoteWithDuration(durationInDivs, rootPitch, this.divisionsPerQuarterNote);
 		assert chordRootWithTies.size() == 1: "Chord note requested that requires tied notes to accomplish desired duration";

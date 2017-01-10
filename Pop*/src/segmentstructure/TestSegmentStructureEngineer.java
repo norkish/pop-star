@@ -24,7 +24,7 @@ public class TestSegmentStructureEngineer extends SegmentStructureEngineer {
 		// the segment structure should be easily used to create measures (perhaps even it should be measures)
 		int measureCount = 17;
 		
-		SegmentStructure segmentStructure = new SegmentStructure(measureCount);
+		SegmentStructure segmentStructure = new SegmentStructure(measureCount, SegmentType.VERSE);
 		segmentStructure.addDivisionsPerQuarterNote(0,2);
 		segmentStructure.addKey(0,0,KeyMode.MAJOR);
 		segmentStructure.addTime(0,3,4);
