@@ -1,5 +1,9 @@
 package lyrics;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -86,7 +90,7 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 		//use score to get constraints and then model to find lyrics that fit constraints
 		List<Measure> measures = score.getMeasures();
 		
-		List<NoteLyric> lyrics = model.templatesBySyllableLength.get(258).get(0);
+		List<NoteLyric> lyrics = getExternalLyrics();//model.templatesBySyllableLength.get(258).get(0);
 		int lyrIdx = 0;
 		
 		int chorusStartMeasure = -1;
@@ -146,5 +150,20 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 			}
 			prevType = measure.segmentType;
 		}
+	}
+
+	private List<NoteLyric> getExternalLyrics() {
+		String text = null;
+		try {
+			text = new String(Files.readAllBytes(Paths.get("externalLyrics.txt")), StandardCharsets.UTF_8);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		String[] words = text.split("\\s+");
+		List<NoteLyric> lyrics = new ArrayList<NoteLyric>();
+		for (String word : words) {
+			lyrics.add(new NoteLyric(Syllabic.SINGLE, word, false, false));
+		}
+		return lyrics;
 	}
 }
