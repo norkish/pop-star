@@ -7,6 +7,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import constraint.ConstraintBlock;
+import data.MusicXMLParser.Harmony;
 import lyrics.Lyric;
 
 public class Utils {
@@ -118,4 +120,22 @@ public class Utils {
 
         return sortedMap;
     }
+
+	public static <T> void incrementValueForKey(Map<T, Integer> map, T key) {
+		Integer count = map.get(key);
+		map.put(key, count == null ? 1 : count + 1);		
+	}
+
+	public static <S, T> void incrementValueForKeys(Map<S, Map<T, Integer>> map2d, S key1,
+			T key2) {
+		Map<T,Integer> map1d = map2d.get(key1);
+		if (map1d == null) { // never even seen prevState
+			map1d = new HashMap<T,Integer>();
+			map1d.put(key2, 1);
+			map2d.put(key1, map1d);
+		} else { // seen prev state
+			Integer count = map1d.get(key2);
+			map1d.put(key2, count == null ? 1 : count + 1);
+		}		
+	}
 }

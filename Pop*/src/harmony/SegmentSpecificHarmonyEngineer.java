@@ -1,30 +1,33 @@
 package harmony;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import composition.Measure;
 import composition.Score;
+import constraint.Constraint;
 import data.MusicXMLModel;
 import data.MusicXMLModelLearner;
 import data.MusicXMLParser.Harmony;
-import data.MusicXMLParser.NoteLyric;
-import data.MusicXMLParser.Quality;
-import data.MusicXMLParser.Syllabic;
 import data.ParsedMusicXMLObject;
+import globalstructure.SegmentType;
 import inspiration.Inspiration;
-import markov.AbstractMarkovModel;
+import markov.SparseNHMM;
 import markov.SparseSingleOrderMarkovModel;
+import utils.Pair;
+import utils.Utils;
 
 public class SegmentSpecificHarmonyEngineer extends HarmonyEngineer {
 
 	public static class SegmentSpecificHarmonyEngineerMusicXMLModel extends MusicXMLModel {
 
-		AbstractMarkovModel<Harmony> markovModel;
+		SparseSingleOrderMarkovModel<Harmony> markovModel;
 		Map<Harmony,Integer> statesByIndex = new HashMap<Harmony,Integer>();
-		Map<Integer, Double> priorCounts = new HashMap<Integer, Double>();
-		Map<Integer,Map<Integer,Double>> transitionCounts = new HashMap<Integer,Map<Integer, Double>>();
+		Map<Integer, Integer> priorCounts = new HashMap<Integer, Integer>();
+		Map<Integer,Map<Integer,Integer>> transitionCounts = new HashMap<Integer,Map<Integer, Integer>>();
 		
 		@Override
 		/**
@@ -41,6 +44,7 @@ public class SegmentSpecificHarmonyEngineer extends HarmonyEngineer {
 			
 			Integer prevHarmIdx = -1;
 			
+			// TODO: condition on duration, change to roman numeral chord names, condition on segment type
 			for (Entry<Integer, Map<Integer, Harmony>> measureEntry : musicXML.unoverlappingHarmonyByMeasure.entrySet()){
 //				int measure = measureEntry.getKey();
 				for (Entry<Integer, Harmony> offsetHarmony : measureEntry.getValue().entrySet()) {
@@ -56,18 +60,9 @@ public class SegmentSpecificHarmonyEngineer extends HarmonyEngineer {
 					}
 					
 					if (prevHarmIdx == -1) {
-						Double count = priorCounts.get(harmIdx);
-						priorCounts.put(harmIdx, count == null ? 1.0 : count + 1.0);
+						Utils.incrementValueForKey(priorCounts, harmIdx);
 					} else {
-						Map<Integer,Double> toMap = transitionCounts.get(prevHarmIdx);
-						if (toMap == null) { // never even seen prevState
-							toMap = new HashMap<Integer,Double>();
-							toMap.put(harmIdx, 1.0);
-							transitionCounts.put(prevHarmIdx, toMap);
-						} else { // seen prev state
-							Double count = toMap.get(harmIdx);
-							toMap.put(harmIdx, count == null ? 1.0 : count + 1.0);
-						}
+						Utils.incrementValueForKeys(transitionCounts, prevHarmIdx, harmIdx);
 					}
 					
 					prevHarmIdx = harmIdx;
@@ -84,20 +79,44 @@ public class SegmentSpecificHarmonyEngineer extends HarmonyEngineer {
 			return str.toString();
 		}
 
-		public List<Harmony> sampleHarmonySequenceOfLength(int length) {
+		public List<Harmony> sampleHarmonySequenceOfLength(int length, SegmentType type, List<Constraint<Harmony>> contextualConstraints) {
+			// TODO Add constraints according to type, including constraints which depend on the harm sequence 
 			if (markovModel == null) {
 				markovModel = buildModel();
 			}
-			return markovModel.generate(length);
+			SparseNHMM<Harmony> constrainedModel = new SparseNHMM<Harmony>(markovModel,length,new ArrayList<Constraint<Harmony>>());
+			return constrainedModel.generate(length);
 		}
 
-		private AbstractMarkovModel<Harmony> buildModel() {
+		private SparseSingleOrderMarkovModel<Harmony> buildModel() {
 			Map<Integer, Double> priors = new HashMap<Integer, Double>();
 			Map<Integer,Map<Integer,Double>> transitions = new HashMap<Integer,Map<Integer, Double>>();
 			
+			double totalCount = 0;
+			for (Integer count: priorCounts.values()) {
+				totalCount += count;
+			}
+			for (Entry<Integer, Integer> entry : priorCounts.entrySet()) {
+				priors.put(entry.getKey(), entry.getValue()/totalCount);
+			}
 			
+			for (Entry<Integer, Map<Integer, Integer>> outerEntry : transitionCounts.entrySet()) {
+				Integer fromIdx = outerEntry.getKey();
+				Map<Integer, Integer> innerMap = outerEntry.getValue();
+
+				Map<Integer, Double> newInnerMap = new HashMap<Integer,Double>();
+				transitions.put(fromIdx, newInnerMap);
+
+				totalCount = 0;
+				for (Integer count: innerMap.values()) {
+					totalCount += count;
+				}
+				for (Entry<Integer, Integer> entry : innerMap.entrySet()) {
+					newInnerMap.put(entry.getKey(), entry.getValue()/totalCount);
+				}
+			}
 			
-			return new SparseSingleOrderMarkovModel<>(statesByIndex, priors, transitions);
+			return new SparseSingleOrderMarkovModel<Harmony>(statesByIndex, priors, transitions);
 		}
 	}
 	
@@ -108,40 +127,45 @@ public class SegmentSpecificHarmonyEngineer extends HarmonyEngineer {
 	}
 	@Override
 	public void addHarmony(Inspiration inspiration, Score score) {
-		List<Harmony> harmSeq = model.sampleHarmonySequenceOfLength(score.length());
-		for (int i = 0; i < score.length(); i++) {
-			score.addHarmony(i, 0.0, harmSeq.get(i));
-		}		
+		List<Pair<SegmentType,Integer>> segmentsLengths = score.getSegmentsLengths();
+		
+		for (SegmentType type : new SegmentType[]{SegmentType.CHORUS, SegmentType.VERSE, SegmentType.BRIDGE,SegmentType.INTRO,
+				SegmentType.OUTRO,SegmentType.INTERLUDE}) {
+			int length = getMinLengthForSegmentType(segmentsLengths, type);
+			// TODO: may want to generate new sequences for every repetition if length varies, probably easiest that way rather than adapting existing seq
+			if (length != Integer.MAX_VALUE) {
+				List<Harmony> harmSeq = model.sampleHarmonySequenceOfLength(length, type, null);
+				addHarmonyBySegmentType(score, harmSeq, type);
+			}
+		}
+		
 	}
-
-	// Legacy Code
-//	private Map<SegmentType, Map<Integer, BackedDistribution<ConstraintBlock<Chord>>>> chordConstraintsDistribution = DataLoader.getChordConstraintsDistribution();
-//	private Map<SegmentType, SparseSingleOrderMarkovModel<Chord>> mModel = DataLoader.getChordMarkovModel();
-//	
-//	@Override
-//	protected void applyVariation(ProgressionSegment segmentProgression, Inspiration inspiration, SegmentStructure segmentSubstructures, SegmentType segmentType, boolean isLast){
-//		// TODO Auto-generated method stub
-//		
-//	}
-//
-//	@Override
-//	protected ProgressionSegment generateSegmentHarmony(Inspiration inspiration, SegmentStructure segmentSubstructures,
-//			SegmentType segmentKey) {
-//		
-//		List<List<Chord>> chordLines = new ArrayList<List<Chord>>();
-//		ConstraintBlock<Chord> constraintBlock = chordConstraintsDistribution.get(segmentKey).get(segmentSubstructures.linesPerSegment).sampleRandomly();
-//		
-//		int chordsPerLine;
-//		for (int i = 0; i < segmentSubstructures.linesPerSegment; i++) {
-//			List<Constraint<Chord>> constraints = segmentSubstructures.chordConstraints.getConstraintsForLine(i);
-//			Constraint.reifyConstraints(constraints,chordLines);
-//			chordsPerLine = constraintBlock.getLengthConstraint(i);
-//			SparseNHMM<Chord> constrainedLyricModel = new SparseNHMM<Chord>(mModel.get(segmentKey), chordsPerLine, constraints);
-//			chordLines.add(constrainedLyricModel.generate(chordsPerLine));
-//		}
-//		
-//		return new ProgressionSegment(chordLines);
-//	}
-//
-
+	private void addHarmonyBySegmentType(Score score, List<Harmony> harmSeq, SegmentType type) {
+		SegmentType prevType = null;
+		int counter = -1;
+		for (Measure measure : score.getMeasures()) {
+			if (measure.segmentType != prevType) {
+				if (measure.segmentType == type) {
+					counter = 0;
+				}
+				prevType = measure.segmentType;
+			}
+			
+			if (measure.segmentType == type) {
+				measure.addHarmony(0.0, harmSeq.get(counter));
+				counter++;
+			}
+		}
+	}
+	
+	private int getMinLengthForSegmentType(List<Pair<SegmentType, Integer>> segmentsLengths, SegmentType type) {
+		int length = Integer.MAX_VALUE;
+		for (Pair<SegmentType, Integer> pair : segmentsLengths) {
+			Integer segmentLength = pair.getSecond();
+			if (pair.getFirst() == type && segmentLength < length) {
+				length = segmentLength;
+			}
+		}
+		return length;
+	}
 }

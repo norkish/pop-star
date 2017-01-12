@@ -72,7 +72,7 @@ public class SongConfigurationLoader {
 		config.substructureSource = SegmentStructureSource.FIXED; // TODO: distributional
 		config.lyricSource = LyricalSource.TEMPLATE; // TODO: Lyrical ngram
 		config.harmonySource = HarmonySource.SEGMENTSPECIFIC_HMM;
-		config.melodySource = MelodySource.RANDOM; // TODO
+		config.melodySource = MelodySource.SEGMENTSPECIFIC_HMM; // TODO
 		config.rhythmSource = RhythmSource.RANDOM; // TODO
 		config.pitchSource = PitchSource.RANDOM; // TODO
 		

@@ -35,7 +35,7 @@ public class FixedSegmentStructureEngineer extends SegmentStructureEngineer {
 	}
 
 	private SegmentStructure defineVerseSegmentStructure() {
-		int measureCount = 32;
+		int measureCount = 16;
 		
 		SegmentStructure segmentStructure = new SegmentStructure(measureCount, SegmentType.VERSE);
 		segmentStructure.addDivisionsPerQuarterNote(0,4);
@@ -43,36 +43,35 @@ public class FixedSegmentStructureEngineer extends SegmentStructureEngineer {
 		segmentStructure.addTime(0,4,4);
 
 		// lyric
-		segmentStructure.addConstraint(15, 0.0, new Constraint<Lyric>(Constraint.FINAL_POSITION, new Rhyme<Lyric>(7, 0.0), true));
-		segmentStructure.addConstraint(31, 0.0, new Constraint<Lyric>(Constraint.FINAL_POSITION, new Rhyme<Lyric>(23, 0.0), true));
+		segmentStructure.addConstraint(7, 0.0, new Constraint<Lyric>(Constraint.FINAL_POSITION, new Rhyme<Lyric>(3, 0.0), true));
+		segmentStructure.addConstraint(15, 0.0, new Constraint<Lyric>(Constraint.FINAL_POSITION, new Rhyme<Lyric>(11, 0.0), true));
 		
 		// harmony and melody
-		for (int i = 16; i < 28; i++) {
-			segmentStructure.addConstraint(i, Constraint.ALL_POSITIONS, new Constraint<Harmony>(2345, new ExactBinaryMatch<Harmony>(i-16, Constraint.ALL_POSITIONS), true));
-			segmentStructure.addConstraint(i, Constraint.ALL_POSITIONS, new Constraint<Note>(2345, new ExactBinaryMatch<Note>(i-16, Constraint.ALL_POSITIONS), true));
+		for (int i = 8; i < 14; i++) {
+			segmentStructure.addConstraint(i, Constraint.ALL_POSITIONS, new Constraint<Harmony>(2345, new ExactBinaryMatch<Harmony>(i-8, Constraint.ALL_POSITIONS), true));
+			segmentStructure.addConstraint(i, Constraint.ALL_POSITIONS, new Constraint<Note>(2345, new ExactBinaryMatch<Note>(i-8, Constraint.ALL_POSITIONS), true));
 		}
 		
 		return segmentStructure;
 	}
 
 	private SegmentStructure defineOutroSegmentStructure() {
-		int measureCount = 8;
+		int measureCount = 4;
 		
 		SegmentStructure segmentStructure = new SegmentStructure(measureCount, SegmentType.OUTRO);
 		segmentStructure.addDivisionsPerQuarterNote(0,4);
 		segmentStructure.addKey(0,0,KeyMode.MAJOR);
 		segmentStructure.addTime(0,4,4);
 		
-		segmentStructure.addConstraint(4, Constraint.ALL_POSITIONS, new Constraint<Harmony>(2345, new ExactBinaryMatch<Harmony>(0, Constraint.ALL_POSITIONS), true));
-		segmentStructure.addConstraint(5, Constraint.ALL_POSITIONS, new Constraint<Harmony>(2345, new ExactBinaryMatch<Harmony>(1, Constraint.ALL_POSITIONS), true));
-		segmentStructure.addConstraint(7, Constraint.ALL_POSITIONS, new Constraint<Harmony>(2345, new StrongResolution<Harmony>(), true));
+		segmentStructure.addConstraint(2, Constraint.ALL_POSITIONS, new Constraint<Harmony>(2345, new ExactBinaryMatch<Harmony>(0, Constraint.ALL_POSITIONS), true));
+		segmentStructure.addConstraint(3, Constraint.ALL_POSITIONS, new Constraint<Harmony>(2345, new StrongResolution<Harmony>(), true));
 		// TODO:Extrasegmental matching ? Outro should match the intro somewhat
 		
 		return segmentStructure;
 	}
 
 	private SegmentStructure defineIntroSegmentStructure() {
-		int measureCount = 8;
+		int measureCount = 4;
 		
 		
 		SegmentStructure segmentStructure = new SegmentStructure(measureCount, SegmentType.INTRO);
@@ -80,8 +79,7 @@ public class FixedSegmentStructureEngineer extends SegmentStructureEngineer {
 		segmentStructure.addKey(0,0,KeyMode.MAJOR);
 		segmentStructure.addTime(0,4,4);
 		
-		segmentStructure.addConstraint(4, Constraint.ALL_POSITIONS, new Constraint<Harmony>(2345, new ExactBinaryMatch<Harmony>(0, Constraint.ALL_POSITIONS), true));
-		segmentStructure.addConstraint(5, Constraint.ALL_POSITIONS, new Constraint<Harmony>(2345, new ExactBinaryMatch<Harmony>(1, Constraint.ALL_POSITIONS), true));
+		segmentStructure.addConstraint(2, Constraint.ALL_POSITIONS, new Constraint<Harmony>(2345, new ExactBinaryMatch<Harmony>(0, Constraint.ALL_POSITIONS), true));
 		
 		return segmentStructure;
 	}
@@ -110,15 +108,15 @@ public class FixedSegmentStructureEngineer extends SegmentStructureEngineer {
 	}
 
 	private SegmentStructure defineBridgeSegmentStructure() {
-		int measureCount = 16;
+		int measureCount = 8;
 		
 		SegmentStructure segmentStructure = new SegmentStructure(measureCount, SegmentType.BRIDGE);
 		segmentStructure.addDivisionsPerQuarterNote(0,4);
 		segmentStructure.addKey(0,0,KeyMode.MAJOR);
 		segmentStructure.addTime(0,4,4);
 		
-		segmentStructure.addConstraint(11, 0.0, new Constraint<Lyric>(Constraint.FINAL_POSITION, new Rhyme<Lyric>(3, 0.0), true));
-		segmentStructure.addConstraint(14, 0.0, new Constraint<Lyric>(Constraint.FINAL_POSITION, new Rhyme<Lyric>(6, 0.0), true));
+		segmentStructure.addConstraint(5, 0.0, new Constraint<Lyric>(Constraint.FINAL_POSITION, new Rhyme<Lyric>(1, 0.0), true));
+		segmentStructure.addConstraint(7, 0.0, new Constraint<Lyric>(Constraint.FINAL_POSITION, new Rhyme<Lyric>(3, 0.0), true));
 		
 		// TODO: constrain melody shape over chords? e.g., Just the way you are doesn't have exact copy but shape is same for first and second halves
 		

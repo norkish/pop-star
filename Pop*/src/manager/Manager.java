@@ -24,6 +24,7 @@ import lyrics.TestLyricEngineer;
 import main.ProgramArgs;
 import melody.MelodyEngineer;
 import melody.RandomMelodyEngineer;
+import melody.SegmentSpecificMelodyEngineer;
 import melody.TestMelodyEngineer;
 import pitch.HMMPitchEngineer;
 import pitch.IdiomaticPitchEngineer;
@@ -191,6 +192,9 @@ public class Manager {
 			break;
 		case TEST:
 			melodyEngineer = new TestMelodyEngineer();
+			break;
+		case SEGMENTSPECIFIC_HMM:
+			melodyEngineer = new SegmentSpecificMelodyEngineer();
 			break;
 		default:
 			throw new RuntimeException("Invalid harmony configuration: " + config.pitchSource);

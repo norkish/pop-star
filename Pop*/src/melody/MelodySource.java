@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Random;
 
 public enum MelodySource {
-	UNSET, TEST, RANDOM;
+	UNSET, TEST, RANDOM, SEGMENTSPECIFIC_HMM;
 
 	private static final List<MelodySource> VALUES = Collections.unmodifiableList(Arrays.asList(values()));
 	private static final int SIZE = VALUES.size();

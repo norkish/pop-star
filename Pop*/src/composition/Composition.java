@@ -95,11 +95,12 @@ public class Composition {
 		xml = xml.replaceFirst("TITLE-PLACEHOLDER", title);
 		xml = xml.replaceFirst("COMPOSER-PLACEHOLDER", composer);
 		xml = xml.replaceFirst("LYRICIST-PLACEHOLDER", StringUtils.capitalize(inspiration.getMaxEmotion()));
-		xml = xml.replaceFirst("PART1-PLACEHOLDER\n", score.partToXML(2, 'l'));
+		int systemsPerPage = score.hasOrchestration() ? 3 : 6;
+		xml = xml.replaceFirst("PART1-PLACEHOLDER\n", score.partToXML(2, 'l', systemsPerPage));
 		
 		if (score.hasOrchestration()) {
-			xml = xml.replaceFirst("PART2-PLACEHOLDER\n", score.partToXML(2, 'p'));
-			xml = xml.replaceFirst("PART3-PLACEHOLDER\n", score.partToXML(2, 'b'));
+			xml = xml.replaceFirst("PART2-PLACEHOLDER\n", score.partToXML(2, 'p', systemsPerPage));
+			xml = xml.replaceFirst("PART3-PLACEHOLDER\n", score.partToXML(2, 'b', systemsPerPage));
 
 		} else {
 			xml = xml.replaceFirst("(?s) *<score-part id=\"P2\">.*</score-part>\n", "");

@@ -15,6 +15,7 @@ import data.MusicXMLParser.NoteLyric;
 import data.MusicXMLParser.NoteTie;
 import data.MusicXMLParser.Syllabic;
 import data.ParsedMusicXMLObject;
+import globalstructure.SegmentType;
 import inspiration.Inspiration;
 import utils.Triple;
 
@@ -88,16 +89,61 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 		List<NoteLyric> lyrics = model.templatesBySyllableLength.get(258).get(0);
 		int lyrIdx = 0;
 		
-		for (Measure measure : measures) {
-			TreeMap<Double, Note> notes = measure.getNotes();
-			for (Note note : notes.values()) {
-				if (note.pitch != -1 && note.tie != NoteTie.STOP) {
-					note.lyric = lyrics.get(lyrIdx++);
-					if (lyrIdx == lyrics.size()) return;
+		int chorusStartMeasure = -1;
+		int chorusMeasureCounter = -1;
+		
+		SegmentType prevType = null;
+		
+		for (int currMeasureNumber = 0; currMeasureNumber < measures.size(); currMeasureNumber++) {
+			Measure measure = measures.get(currMeasureNumber);
+			
+			boolean generateLyrics = true;
+			switch (measure.segmentType) {
+			case INTERLUDE:
+			case INTRO:
+			case OUTRO:
+				generateLyrics = false;
+				break; // don't generate new lyrics
+			case CHORUS:
+				if (prevType != SegmentType.CHORUS) {
+					// beginning of chorus
+					if (chorusStartMeasure == -1) {
+						// first chorus
+						chorusStartMeasure = currMeasureNumber;
+						break; // go on to generate lyrics
+					} else {
+						chorusMeasureCounter = 0;
+					}
+				}
+				
+				if (chorusMeasureCounter != -1) {
+					// we're on a repeat of the chorus, need to go back and copy previous chorus lyrics
+					TreeMap<Double, Note> otherNotes = measures.get(chorusStartMeasure+chorusMeasureCounter).getNotes();
+					TreeMap<Double, Note> notes = measure.getNotes();
+					for (Double offset: otherNotes.keySet()) {
+						Note thisNote = notes.get(offset);
+						Note otherNote = otherNotes.get(offset);
+						thisNote.lyric = otherNote.lyric == null ? null : new NoteLyric(otherNote.lyric);
+					}
+					
+					chorusMeasureCounter++;
+					generateLyrics = false;
+				}
+				break;
+			default:
+				break;
+			}
+			
+			if (generateLyrics) {
+				TreeMap<Double, Note> notes = measure.getNotes();
+				for (Note note : notes.values()) {
+					if (note.pitch != -1 && note.tie != NoteTie.STOP) {
+						note.lyric = lyrics.get(lyrIdx++);
+						if (lyrIdx == lyrics.size()) return;
+					}
 				}
 			}
+			prevType = measure.segmentType;
 		}
 	}
-
-
 }

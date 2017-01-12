@@ -26,6 +26,8 @@ import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
 import data.MusicXMLParser.Barline.RepeatDirection;
+import data.MusicXMLParser.Note;
+import data.MusicXMLParser.NoteLyric;
 import pitch.Pitch;
 import syllabify.Syllabifier;
 import tabcomplete.rhyme.Phonetecizer;
@@ -137,10 +139,10 @@ public class MusicXMLParser {
 
 	public static class NoteTimeModification {
 
-		public int actualNotes;
-		public int normalNotes;
-		public int normalType;
-		public boolean normalDot;
+		final public int actualNotes;
+		final public int normalNotes;
+		final public int normalType;
+		final public boolean normalDot;
 
 		public NoteTimeModification(int actualNotes, int normalNotes, int normalType, boolean normalDot) {
 			this.actualNotes = actualNotes;
@@ -185,10 +187,10 @@ public class MusicXMLParser {
 
 	public static class NoteLyric {
 
-		public Syllabic syllabic;
-		public String text;
-		public boolean extend;
-		public boolean elision;
+		final public Syllabic syllabic;
+		final public String text;
+		final public boolean extend;
+		final public boolean elision;
 		public Triple<String, StressedPhone[], Integer> syllableStress;
 
 		public NoteLyric(Syllabic syllabic, String text, boolean extend, boolean elision) {
@@ -196,6 +198,14 @@ public class MusicXMLParser {
 			this.text = text;
 			this.extend = extend;
 			this.elision = elision;
+		}
+
+		public NoteLyric(NoteLyric other) {
+			this.syllabic = other.syllabic;
+			this.text = other.text;
+			this.extend = other.extend;
+			this.elision = other.elision;
+			this.syllableStress = other.syllableStress;
 		}
 
 		@Override
@@ -259,6 +269,17 @@ public class MusicXMLParser {
 			this.isChordWithPrevious = isChordWithPreviousNote;
 		}
 		
+		public Note(Note other) {
+			this.pitch = other.pitch;
+			this.duration = other.duration;
+			this.type = other.type;
+			this.lyric = other.lyric;
+			this.dots = other.dots;
+			this.tie = other.tie;
+			this.timeModification = other.timeModification;
+			this.isChordWithPrevious = other.isChordWithPrevious;
+		}
+
 		public String toString() {
 			StringBuilder str = new StringBuilder();
 			
@@ -294,6 +315,13 @@ public class MusicXMLParser {
 			for (int j = 0; j < indentationLevel; j++) str.append("    "); 
 			str.append("<note>\n");
 			
+			// chord
+			if (isChordWithPrevious) {
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("<chord/>\n");
+			}
+			
+			int alter = 0;
 			//pitch
 			if (pitch == -1) {
 				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
@@ -301,7 +329,6 @@ public class MusicXMLParser {
 			} else {
 				String pitchString = Pitch.getPitchName((pitch+3)%12);
 				char step = pitchString.charAt(0); 
-				int alter = 0;
 				int octave = pitch/12;
 				
 				while(pitchString.length() > 1) {
@@ -345,18 +372,8 @@ public class MusicXMLParser {
 			if (tie != NoteTie.NONE) {
 				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
 				str.append("<tie type=\"").append(tie.toString().toLowerCase()).append("\"/>\n");
-				
-				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
-				str.append("<notations>\n");
-				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
-				str.append("<tied type=\"").append(tie.toString().toLowerCase()).append("\"/>\n");
-				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
-				str.append("</notations>\n");
-				
 			}
 		
-			
-			
 			//type
 			for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
 			str.append("<type>").append(interpretNoteType(type)).append("</type>\n");
@@ -365,6 +382,22 @@ public class MusicXMLParser {
 			for (int i = 0; i < dots; i++) {
 				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
 				str.append("<dot/>\n");
+			}
+
+			//accidental
+			if(alter != 0) {
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("<accidental>").append(alter == 1?"sharp":"flat").append("</accidental>\n");
+			}
+
+			// notations
+			if (tie != NoteTie.NONE) {
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("<notations>\n");
+				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+				str.append("<tied type=\"").append(tie.toString().toLowerCase()).append("\"/>\n");
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("</notations>\n");
 			}
 			
 			//time modification (not sure of order here)
@@ -385,12 +418,6 @@ public class MusicXMLParser {
 				str.append("</lyric>\n");
 			}
 			
-			// chord
-			if (isChordWithPrevious) {
-				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
-				str.append("<chord/>\n");
-			}
-			
 			//close note tag
 			for (int j = 0; j < indentationLevel; j++) str.append("    "); 
 			str.append("</note>\n");
@@ -402,8 +429,6 @@ public class MusicXMLParser {
 
 	
 	public static class Quality {
-
-		
 		private static final int FLAT_SECONDi = 0, SECONDi = 1, FLAT_THIRDi = 2, THIRDi = 3, FOURTHi = 4, FLAT_FIFTHi = 5,
 				FIFTHi = 6, FLAT_SIXTHi = 7, SIXTHi = 8, FLAT_SEVENTHi = 9, SEVENTHi = 10, FLAT_NINTHi = 11, 
 				NINTHi = 12, SHARP_NINTHi = 13, FLAT_ELEVENTHi = 14, ELEVENTHi = 15, SHARP_ELEVENTHi = 16, 
@@ -411,25 +436,26 @@ public class MusicXMLParser {
 		// this needs to reflect the intervals of the above constants
 		public static final int[] HARMONY_CONSTANT_INTERVALS = new int[]{1,2,3,4,5,6,7,8,9,10,11,13,14,15,17,18,19,20,21,22};
 
-		private static final String IMPLICIT_MAJOR = "", EXPLICIT_MAJOR = "M", MINOR = "m", MINOR_MAJOR = "mM", 
-				DOMINANT = "", HALF_DIMINISHED = "ø", DIMINISHED = "°", AUGMENTED = "+", SUSPENDED = "sus",
-				POWER = "5", NO_CHORD = "N.C.", PEDAL = " pedal";
+		private static final String MAJOR = "major", MINOR = "minor", MINOR_MAJOR = "major-minor", 
+				DOMINANT = "dominant", HALF_DIMINISHED = "half-diminished", DIMINISHED = "diminished", AUGMENTED = "augmented", SUSPENDED = "suspended",
+				POWER = "power", NO_CHORD = "none", PEDAL = "pedal";
 		
-		private static final String SECOND = "2", THIRD = "3", FOURTH = "4",  
-				FOURSEVEN = "47", FLAT_FIFTH = "b5", FIFTH = "5", SHARP_FIFTH = "#5", SIXTH = "6", 
-				SEVENTH = "7", FLAT_NINTH = "b9", NINTH = "9", SHARP_NINTH = "#9", 
-				ELEVENTH = "11", SHARP_ELEVENTH = "#11", FLAT_THIRTEENTH = "b13", THIRTEENTH = "13", 
-				SHARP_THIRTEENTH = "#13", SIXNINE = "69";
+		private static final String SECOND = "second", FOURTH = "fourth", SIXTH = "sixth", SEVENTH = "seventh", NINTH = "ninth", 
+				ELEVENTH = "eleventh", THIRTEENTH = "thirteenth";
+		
+		private static final String TWO = "2", THREE = "3", FOUR = "4",  
+				FOURSEVEN = "47", FLAT_FIVE = "b5", FIVE = "5", SHARP_FIVE = "#5", SIX = "6", 
+				FLAT_SEVEN = "b7", SEVEN = "7", FLAT_NINE = "b9", NINE = "9", SHARP_NINE = "#9", 
+				ELEVEN = "11", SHARP_ELEVEN = "#11", FLAT_THIRTEEN = "b13", THIRTEEN = "13", 
+				SHARP_THIRTEEN = "#13", SIXNINE = "69";
 
-		private static final String ADD = "add", ALTER = "", SUBTRACT = "sin"; 
-		
 		boolean[] notesOn = new boolean[SHARP_THIRTEENTHi+1];
 		// as per https://en.wikipedia.org/wiki/Chord_names_and_symbols_(popular_music)
-		String quality = IMPLICIT_MAJOR;
-		String interval = null;
-		String alteredFifth = null;
-		String additionalIntervalInstruction = null;
-		String additionalInterval = null;
+		String kind = MAJOR;
+		String kindInterval = null;
+		DegreeType degreeType = null;
+		int degreeAlter = 0;
+		int degreeValue = 0;
 		
 		public Quality() {
 			notesOn[THIRDi] = true;
@@ -442,39 +468,40 @@ public class MusicXMLParser {
 			} else {
 				String text = node.getTextContent().trim();
 				if (text.isEmpty() || text.equals("Maj") || text.equals("ma")) {
-					quality = IMPLICIT_MAJOR;
+					kind = MAJOR;
 					// do nothing
 				} else if (text.equals("°") || text.equals("dim")) {
 					notesOn[THIRDi] = false;
 					notesOn[FLAT_THIRDi] = true;
 					notesOn[FIFTHi] = false;
 					notesOn[FLAT_FIFTHi] = true;
-					quality = DIMINISHED;
+					kind = DIMINISHED;
 				} else if (text.equals("5b")) {
 					notesOn[FIFTHi] = false;
 					notesOn[FLAT_FIFTHi] = true;
-					alteredFifth = "5b";
+					degreeValue = 5;
+					degreeAlter = -1;
+					degreeType = DegreeType.ALTER;
 				} else if (text.equals("m")) {
 					notesOn[THIRDi] = false;
 					notesOn[FLAT_THIRDi] = true;
-					quality = MINOR;
+					kind = MINOR;
 				} else if (text.equals("7")) {
 					notesOn[FLAT_SEVENTHi] = true;
-					quality = DOMINANT;
-					interval = SEVENTH;
+					kind = DOMINANT;
 				} else if (text.equals("m7")) {
 					notesOn[THIRDi] = false;
 					notesOn[FLAT_THIRDi] = true;
 					notesOn[FLAT_SEVENTHi] = true;
-					quality = MINOR;
-					interval = SEVENTH;
+					kind = MINOR;
+					kindInterval = SEVENTH;
 				} else if (text.equals("sus7")) {
 					notesOn[THIRDi] = false;
 					notesOn[FLAT_THIRDi] = false;
 					notesOn[FOURTHi] = true;
 					notesOn[FLAT_SEVENTHi] = true;
-					quality = SUSPENDED;
-					interval = FOURSEVEN;
+					kind = SUSPENDED;
+					kindInterval = SEVENTH;
 				} else if (text.matches("^[A-G].*")) {
 					// ignore it
 				} else { 
@@ -523,99 +550,101 @@ public class MusicXMLParser {
 			if (text.startsWith("minor")) {
 				notesOn[THIRDi] = false;
 				notesOn[FLAT_THIRDi] = true;
-				quality = MINOR;
+				kind = MINOR;
 				text = text.substring(5);
 				if (text.isEmpty()) {
 					return true;
 				} else if (text.equals("-major")) {
 					notesOn[SEVENTHi] = true;
-					quality = MINOR_MAJOR;
-					interval = SEVENTH;
+					kind = MINOR_MAJOR;
 				} else if (text.equals("-seventh")) {
 					notesOn[FLAT_SEVENTHi] = true;
-					interval = SEVENTH;
+					kindInterval = SEVENTH;
 				} else if (text.equals("-sixth")) {
 					notesOn[SIXTHi] = true;
-					interval = SIXTH;
+					kindInterval = SIXTH;
 				} else if (text.equals("-ninth")){
 					notesOn[FLAT_SEVENTHi] = true;
 					notesOn[NINTHi] = true;
-					interval = NINTH;
+					kindInterval = NINTH;
 				} else if (text.equals("-11th")){
 					notesOn[FLAT_SEVENTHi] = true;
 					notesOn[NINTHi] = true;
 					notesOn[ELEVENTHi] = true;
-					interval = ELEVENTH;
+					kindInterval = ELEVENTH;
 				} else if (text.equals("-13th")){
 					notesOn[FLAT_SEVENTHi] = true;
 					notesOn[NINTHi] = true;
 					notesOn[ELEVENTHi] = true;
 					notesOn[THIRTEENTHi] = true;
-					interval = THIRTEENTH;
+					kindInterval = THIRTEENTH;
 				} else {
 					throw new RuntimeException("Unknown chord: \"minor" + text + "\"");
 				}
 			} else if (text.startsWith("major")) {
 				text = text.substring(5);
 				if (text.isEmpty()) {
-					quality = IMPLICIT_MAJOR;
+					kind = MAJOR;
 					return true;
 				} else if (text.equals("-minor")) {
 					notesOn[THIRDi] = false;
 					notesOn[FLAT_THIRDi] = true;
 					notesOn[SEVENTHi] = true;
-					quality = MINOR_MAJOR;
-					interval = SEVENTH;
+					kind = MINOR_MAJOR;
+					kindInterval = SEVENTH;
 				} else if (text.equals("-sixth")) {
 					notesOn[SIXTHi] = true;
-					quality = IMPLICIT_MAJOR;
-					interval = SIXTH;
+					kind = MAJOR;
+					kindInterval = SIXTH;
 				} else if (text.equals("-sixnine")) {
 					notesOn[SIXTHi] = true;
 					notesOn[NINTHi] = true;
-					quality = IMPLICIT_MAJOR;
-					interval = SIXNINE;
+					kind = MAJOR;
+					kindInterval = SIXTH;
+					// add flat nine
+					degreeValue = 9;
+					degreeAlter = -1;
+					degreeType = DegreeType.ADD;
 				} else if (text.equals("-seventh")) {
 					notesOn[SEVENTHi] = true;
-					quality = EXPLICIT_MAJOR;
-					interval = SEVENTH;
+					kind = MAJOR;
+					kindInterval = SEVENTH;
 				} else if (text.equals("-ninth")) {
 					notesOn[SEVENTHi] = true;
 					notesOn[NINTHi] = true;
-					quality = EXPLICIT_MAJOR;
-					interval = NINTH;
+					kind = MAJOR;
+					kindInterval = NINTH;
 				} else if (text.equals("-11th")) {
 					notesOn[SEVENTHi] = true;
 					notesOn[NINTHi] = true;
 					notesOn[ELEVENTHi] = true;
-					quality = EXPLICIT_MAJOR;
-					interval = ELEVENTH;
+					kind = MAJOR;
+					kindInterval = ELEVENTH;
 				} else if (text.equals("-13th")) {
 					notesOn[SEVENTHi] = true;
 					notesOn[NINTHi] = true;
 					notesOn[ELEVENTHi] = true;
 					notesOn[THIRTEENTHi] = true;
-					quality = EXPLICIT_MAJOR;
-					interval = THIRTEENTH;
+					kind = MAJOR;
+					kindInterval = THIRTEENTH;
 				} else {
 					throw new RuntimeException("Unknown chord: \"major" + text + "\"");
 				}
 			} else if (text.startsWith("dominant")) {
 				notesOn[FLAT_SEVENTHi] = true;
 				text = text.substring(8);
-				quality = DOMINANT;
+				kind = DOMINANT;
 				if (text.equals("") || text.equals("-seventh")) {
-					interval = SEVENTH;
 					return true;
 				} else if (text.equals("-ninth")) {
-					interval = NINTH;
+					kindInterval = NINTH;
 					notesOn[NINTHi] = true;
 				} else if (text.equals("-11th")) {
-					interval = ELEVENTH;
+					kindInterval = ELEVENTH;
 					notesOn[NINTHi] = true;
 					notesOn[ELEVENTHi] = true;
 				} else if (text.equals("-13th")) {
-					interval = THIRTEENTH;
+					kindInterval = THIRTEENTH;
 					notesOn[NINTHi] = true;
 					notesOn[ELEVENTHi] = true;
 					notesOn[THIRTEENTHi] = true;
@@ -624,36 +653,40 @@ public class MusicXMLParser {
 				}
 			} else if (text.startsWith("augmented")) {
 				text = text.substring(9);
-				quality = AUGMENTED;
+				kind = AUGMENTED;
 				if (text.isEmpty()) {
 					return true;
 				} else if (text.equals("-seventh")) {
 					notesOn[FIFTHi] = false;
 					notesOn[FLAT_SIXTHi] = true;
 					notesOn[FLAT_SEVENTHi] = true;
-					interval = SEVENTH;
+					kindInterval = SEVENTH;
 				} else if (text.equals("-ninth")) {
 					notesOn[FLAT_SEVENTHi] = true;
 					notesOn[SHARP_NINTHi] = true;
-					interval = NINTH;
+					kindInterval = NINTH;
 				} else {
 					throw new RuntimeException("Unknown chord: augmented" + text);
 				}
 			} else if (text.startsWith("suspended")) {
 				notesOn[THIRDi] = false;
 				notesOn[FLAT_THIRDi] = false;
-				quality = SUSPENDED;
+				kind = SUSPENDED;
 				text = text.substring(9);
 				if (text.equals("-fourth")) {
 					notesOn[FOURTHi] = true;
-					interval = FOURTH;
+					kindInterval = FOURTH;
 				} else if (text.equals("-second")) {
 					notesOn[SECONDi] = true;
-					interval = SECOND;
+					kindInterval = SECOND;
 				} else if (text.equals("-fourseven")) {
 					notesOn[FOURTHi] = true;
 					notesOn[FLAT_SEVENTHi] = true;
-					interval = FOURSEVEN;
+					kindInterval = FOURTH;
+					// add flat seventh
+					degreeValue = 7;
+					degreeAlter = -1;
+					degreeType = DegreeType.ADD;
 				} else {
 					throw new RuntimeException("Unknown chord: dominant" + text);
 				}
@@ -662,13 +695,13 @@ public class MusicXMLParser {
 				notesOn[FLAT_THIRDi] = true;
 				notesOn[FIFTHi] = false;
 				notesOn[FLAT_FIFTHi] = true;
-				quality = DIMINISHED;
+				kind = DIMINISHED;
 				text = text.substring(10);
 				if (text.isEmpty()) {
 					return true;
 				} else if (text.equals("-seventh")) {
 					notesOn[SIXTHi] = true;
-					interval = SEVENTH;
+					kindInterval = SEVENTH;
 				} else {
 					throw new RuntimeException("Unknown chord: diminished" + text);
 				}
@@ -678,7 +711,7 @@ public class MusicXMLParser {
 				notesOn[FIFTHi] = false;
 				notesOn[FLAT_FIFTHi] = true;
 				notesOn[FLAT_SEVENTHi] = true;
-				quality = HALF_DIMINISHED;
+				kind = HALF_DIMINISHED;
 				text = text.substring(15);
 				if (text.isEmpty()) {
 					return true;
@@ -687,7 +720,7 @@ public class MusicXMLParser {
 				}
 			} else if (text.startsWith("power")) {
 				notesOn[THIRDi] = false;
-				quality = POWER;
+				kind = POWER;
 				text = text.substring(5);
 				if (text.isEmpty()) {
 					return true;
@@ -696,13 +729,13 @@ public class MusicXMLParser {
 				}
 			} else if (text.equals("none")) {
 				notesOn = null;
-				quality = NO_CHORD;
+				kind = NO_CHORD;
 			} else if (text.startsWith("/")) {
 				// do nothing, quality does not parse bass notes
 			} else if (text.equals("pedal")) {
 				notesOn[THIRDi] = false;
 				notesOn[FIFTHi] = false;
-				quality = PEDAL;
+				kind = PEDAL;
 			} else if (text.isEmpty() || text.equals("other")) {
 				return false;
 			} else {
@@ -711,11 +744,48 @@ public class MusicXMLParser {
 			return true;
 		}
 
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + degreeAlter;
+			result = prime * result + ((degreeType == null) ? 0 : degreeType.hashCode());
+			result = prime * result + degreeValue;
+			result = prime * result + ((kind == null) ? 0 : kind.hashCode());
+			result = prime * result + ((kindInterval == null) ? 0 : kindInterval.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Quality other = (Quality) obj;
+			if (degreeAlter != other.degreeAlter)
+				return false;
+			if (degreeType != other.degreeType)
+				return false;
+			if (degreeValue != other.degreeValue)
+				return false;
+			if (kind == null) {
+				if (other.kind != null)
+					return false;
+			} else if (!kind.equals(other.kind))
+				return false;
+			if (kindInterval == null) {
+				if (other.kindInterval != null)
+					return false;
+			} else if (!kindInterval.equals(other.kindInterval))
+				return false;
+			return true;
+		}
+
 		public void parseDegreeNode(Node node) {
 			NodeList children = node.getChildNodes();
-			int degreeValue = -1;
-			int degreeAlter = 0;
-			DegreeType degreeType = null;
 			for (int i = 0; i < children.getLength(); i++) {
 				Node child = children.item(i);
 				if (child instanceof Text) continue;
@@ -728,13 +798,10 @@ public class MusicXMLParser {
 					String type = child.getTextContent().trim();
 					if (type.equals("add")) {
 						degreeType = DegreeType.ADD;
-						additionalIntervalInstruction = ADD;
 					} else if (type.equals("alter")) {
 						degreeType = DegreeType.ALTER;
-						additionalIntervalInstruction = ALTER;
 					} else if (type.equals("subtract")) {
 						degreeType = DegreeType.SUBTRACT;
-						additionalIntervalInstruction = SUBTRACT;
 					} else {
 						throw new RuntimeException("Unknown degree-type:" + type);
 					}
@@ -758,62 +825,6 @@ public class MusicXMLParser {
 				}
 				notesOn[getNoteIndex(degreeValue,degreeAlter)] = false;
 				break;
-			}
-			additionalInterval = getNoteInterval(degreeValue, degreeAlter);
-		}
-
-		private String getNoteInterval(int degreeValue, int degreeAlter) {
-			switch(degreeValue) {
-			case 2:
-				if (degreeAlter == -1)
-					throw new RuntimeException("flat " + degreeValue + "?");
-				else if (degreeAlter == 1)
-					throw new RuntimeException("sharp " + degreeValue + "?");
-				return SECOND;
-			case 3:
-				if (degreeAlter == -1)
-					throw new RuntimeException("flat " + degreeValue + "?");
-				else if (degreeAlter == 1)
-					throw new RuntimeException("sharp " + degreeValue + "?");
-				return THIRD;
-			case 4:
-				if (degreeAlter == -1)
-					throw new RuntimeException("flat " + degreeValue + "?");
-				else if (degreeAlter == 1)
-					throw new RuntimeException("sharp " + degreeValue + "?");
-				return FIFTH;
-			case 5:
-				if (degreeAlter == -1)
-					return FLAT_FIFTH;
-				else if (degreeAlter == 1)
-					return SHARP_FIFTH;
-				return FIFTH;
-			case 7:
-				if (degreeAlter == -1)
-					throw new RuntimeException("flat " + degreeValue + "?");
-				else if (degreeAlter == 1)
-					throw new RuntimeException("sharp " + degreeValue + "?");
-				return SEVENTH;
-			case 9:
-				if (degreeAlter == -1)
-					return FLAT_NINTH;
-				else if (degreeAlter == 1)
-					return SHARP_NINTH;
-				return NINTH;
-			case 11:
-				if (degreeAlter == -1)
-					throw new RuntimeException("flat " + degreeValue + "?");
-				else if (degreeAlter == 1)
-					return SHARP_ELEVENTH;
-				return ELEVENTH;
-			case 13:
-				if (degreeAlter == -1)
-					return FLAT_THIRTEENTH;
-				else if (degreeAlter == 1)
-					return SHARP_THIRTEENTH;
-				return THIRTEENTH;
-			default:
-				throw new RuntimeException("Unhandled degree value:" + degreeValue);
 			}
 		}
 
@@ -856,70 +867,15 @@ public class MusicXMLParser {
 		@Override
 		public String toString() {
 			StringBuilder builder = new StringBuilder();
-			if (quality != null)
-				builder.append(quality);
-			if (interval != null)
-				builder.append(interval);
-			if (alteredFifth != null)
-				builder.append(alteredFifth);
-			if (additionalIntervalInstruction != null)
-				builder.append(additionalIntervalInstruction);
-			if (additionalInterval != null)
-				builder.append(additionalInterval);
+			if (kind != null)
+				builder.append(kind);
+			if (kindInterval != null)
+				builder.append(kindInterval);
+			if (degreeType != null)
+				builder.append(degreeType);
+			if (degreeValue != -1)
+				builder.append(degreeValue);
 			return builder.toString();
-		}
-
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((additionalInterval == null) ? 0 : additionalInterval.hashCode());
-			result = prime * result
-					+ ((additionalIntervalInstruction == null) ? 0 : additionalIntervalInstruction.hashCode());
-			result = prime * result + ((alteredFifth == null) ? 0 : alteredFifth.hashCode());
-			result = prime * result + ((interval == null) ? 0 : interval.hashCode());
-			result = prime * result + Arrays.hashCode(notesOn);
-			result = prime * result + ((quality == null) ? 0 : quality.hashCode());
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (!(obj instanceof Quality))
-				return false;
-			Quality other = (Quality) obj;
-			if (additionalInterval == null) {
-				if (other.additionalInterval != null)
-					return false;
-			} else if (!additionalInterval.equals(other.additionalInterval))
-				return false;
-			if (additionalIntervalInstruction == null) {
-				if (other.additionalIntervalInstruction != null)
-					return false;
-			} else if (!additionalIntervalInstruction.equals(other.additionalIntervalInstruction))
-				return false;
-			if (alteredFifth == null) {
-				if (other.alteredFifth != null)
-					return false;
-			} else if (!alteredFifth.equals(other.alteredFifth))
-				return false;
-			if (interval == null) {
-				if (other.interval != null)
-					return false;
-			} else if (!interval.equals(other.interval))
-				return false;
-			if (!Arrays.equals(notesOn, other.notesOn))
-				return false;
-			if (quality == null) {
-				if (other.quality != null)
-					return false;
-			} else if (!quality.equals(other.quality))
-				return false;
-			return true;
 		}
 
 		public boolean[] getPitches() {
@@ -1023,7 +979,7 @@ public class MusicXMLParser {
 			
 			//open harmony tag
 			for (int j = 0; j < indentationLevel; j++) str.append("    "); 
-			str.append("<harmony default-y=\"25\" print-frame=\"no\" relative-x=\"8\">\n");
+			str.append("<harmony default-y=\"75\" font-size=\"12\" print-frame=\"no\" relative-x=\"8\">\n");
 			
 			//root
 			if (root != null) {
@@ -1063,7 +1019,9 @@ public class MusicXMLParser {
 			//kind
 			if (quality != null) {
 				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
-				str.append("<kind text=\"").append(quality).append("\">").append(quality).append("</kind>\n");
+				str.append("<kind>").append(quality.kind);
+				if (quality.kindInterval != null) str.append('-').append(quality.kindInterval);
+				str.append("</kind>\n");
 			}
 			
 			//bass
@@ -1099,6 +1057,26 @@ public class MusicXMLParser {
 				
 				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
 				str.append("</bass>\n");
+			}
+			
+			//degree
+			if (quality.degreeType != null) {
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("<degree>\n");
+
+				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+				str.append("<degree-value>").append(quality.degreeValue).append("</degree-value>\n");
+				
+				if (quality.degreeAlter != 0) {
+					for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+					str.append("<degree-alter>").append(quality.degreeAlter).append("</degree-alter>\n");
+				}
+
+				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+				str.append("<degree-type>").append(quality.degreeType).append("</degree-type>\n");
+				
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("</degree>\n");
 			}
 			
 			//offset
@@ -1537,9 +1515,9 @@ public class MusicXMLParser {
 							throw new RuntimeException("measurePosition is negative:" + measurePositionInDivisions);
 						}
 						Harmony harmony = offsetHarmony.getSecond();
-						addHarmonyToMeasure(i, measurePositionInDivisions, harmony, harmonyByMeasure);
+						addHarmonyToMeasure(i, measurePositionInDivisions, normalizeHarmony(harmony, currKey), harmonyByMeasure);
 					} else if (nodeName.equals("note")) {
-						Note note = parseNote(mChild, 1+getRepeatForMeasureOffset(measureOffsetInfo, i, currMeasurePositionInDivisions));
+						Note note = parseNote(mChild, 1+getRepeatForMeasureOffset(measureOffsetInfo, i, currMeasurePositionInDivisions), currKey);
 						if (note == null) continue;
 						if (note.type > smallestNoteType) {
 							smallestNoteType = note.type;
@@ -1608,7 +1586,7 @@ public class MusicXMLParser {
 		}
 		
 		//Resolve co-occuring harmonies
-		Map<Integer, Map<Integer, Harmony>> unoverlappingHarmonyByMeasure = resolveOverlappingHarmonies(harmonyByMeasure, measureOffsetInfo, timeByMeasure, divsByMeasure);
+		Map<Integer, Map<Integer, Harmony>> unoverlappingHarmonyByMeasure = resolveOverlappingHarmonies(harmonyByMeasure, measureOffsetInfo, timeByMeasure, divsByMeasure, musicXML);
 		
 		// ADD SYLLABLE STRESS
 		addStressToSyllables(notesByMeasure, musicXML);
@@ -1882,7 +1860,7 @@ public class MusicXMLParser {
 	}
 
 	private static Map<Integer, Map<Integer, Harmony>> resolveOverlappingHarmonies(Map<Integer, Map<Integer, List<Harmony>>> harmonyByMeasure, 
-			Map<Integer, Map<Integer, Pair<Integer, NoteLyric>>> measureOffsetInfo, Map<Integer,Time> timeByMeasure, Map<Integer, Integer> divsByMeasure) {
+			Map<Integer, Map<Integer, Pair<Integer, NoteLyric>>> measureOffsetInfo, Map<Integer,Time> timeByMeasure, Map<Integer, Integer> divsByMeasure, ParsedMusicXMLObject musicXML) {
 		Map<Integer, Map<Integer, Harmony>> unoverlappingHarmonyByMeasure = new TreeMap<Integer, Map<Integer, Harmony>>(); 
 		// If there are multiple chords, they must all occur before the next note occurs after the first chord,
 		// otherwise they'd have marked the chord later.
@@ -1903,6 +1881,7 @@ public class MusicXMLParser {
 					harmonyByOffset.putAll(resolveOverlappingHarmonies(harmonies, offset, offsetLimit, totalDivisionsInCurrMeasure/currTime.beats, currTime));
 				}
 			}
+			musicXML.harmonyCount += harmonyByOffset.size();
 		}
 		
 		return unoverlappingHarmonyByMeasure;
@@ -2087,7 +2066,7 @@ public class MusicXMLParser {
 
 	private static final int REST = -2;
 	private static final int UNPITCHED_RHYTHM = -3;
-	private static Note parseNote(Node node, int verse) {
+	private static Note parseNote(Node node, int verse, Key currKey) {
 		int pitch = -1;
 		int duration = -1;
 		int type = -1;
@@ -2164,7 +2143,7 @@ public class MusicXMLParser {
 			throw new RuntimeException("Note missing pitch or duration or type");
 		}
 		
-		return new Note(pitch, duration, type, lyric, dots, tie, timeModification, isChordWithPreviousNote); 
+		return new Note(normalizePitch(pitch, currKey), duration, type, lyric, dots, tie, timeModification, isChordWithPreviousNote); 
 	}
 	
 	private static NoteTimeModification parseNoteTimeModification(Node node) {

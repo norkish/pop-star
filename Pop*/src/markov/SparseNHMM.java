@@ -38,7 +38,6 @@ public class SparseNHMM<T> extends AbstractMarkovModel<T>{
 				logTransitions.add(deepCopy(model.logTransitions));
 			}
 		
-		
 			Entry<Integer, Map<Integer, Double>> next;
 			Map<Integer, Integer> inSupportAtPosLessOne, inSupportAtPos = inSupport.get(0);
 			// for each possible transition (fromState -> toState) from the original naive transition matrix

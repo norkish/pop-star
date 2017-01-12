@@ -37,6 +37,7 @@ public class ParsedMusicXMLObject {
 	public int harmonyCount = 0;
 	//measure, offset in divs, 
 	public Map<Integer, Map<Integer, Harmony>> unoverlappingHarmonyByMeasure;
+	public int noteCount = -1; // needs to be set
 
 	public ParsedMusicXMLObject(boolean followRepeats) {
 		this.followRepeats = followRepeats;

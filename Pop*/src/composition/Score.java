@@ -3,11 +3,14 @@ package composition;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import data.MusicXMLParser.Harmony;
 import data.MusicXMLParser.Key;
 import data.MusicXMLParser.Note;
 import data.MusicXMLParser.Time;
 import globalstructure.SegmentType;
+import utils.Pair;
 
 public class Score {
 
@@ -34,7 +37,8 @@ public class Score {
 		return measures;
 	}
 
-	public String partToXML(int indentationLevel, char part) {
+	final static int measuresPerSystem = 3;
+	public String partToXML(int indentationLevel, char part, int systemsPerPage) {
 		StringBuilder str = new StringBuilder();
 		
 		int currDivisions = -1;
@@ -46,6 +50,31 @@ public class Score {
 			final Measure measure = measures.get(i);
 			for (int j = 0; j < indentationLevel; j++) str.append("    "); 
 			str.append("<measure number=\"").append(i).append("\">\n");
+			
+			if (part == 'l' && i % measuresPerSystem == 0) {
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("<print").append(i==0?"":" new-" + (i%(systemsPerPage*measuresPerSystem)==0?"page":"system") + "=\"yes\"").append(">\n");
+				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+				str.append("<system-layout>\n");
+				for (int j = 0; j <= indentationLevel+2; j++) str.append("    "); 
+				str.append("<system-margins>\n");
+				for (int j = 0; j <= indentationLevel+3; j++) str.append("    "); 
+				str.append("<left-margin>0</left-margin>\n");
+				for (int j = 0; j <= indentationLevel+3; j++) str.append("    "); 
+				str.append("<right-margin>0</right-margin>\n");
+				for (int j = 0; j <= indentationLevel+2; j++) str.append("    "); 
+				str.append("</system-margins>\n");
+				for (int j = 0; j <= indentationLevel+2; j++) str.append("    "); 
+				if (i==0) {
+					str.append("<top-system-distance>300</top-system-distance>\n");
+				} else {
+					str.append("<system-distance>200</system-distance>\n");
+				}
+				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+				str.append("</system-layout>\n");
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("</print>\n");
+			}
 			
 			
 			//if attributes have changed
@@ -109,20 +138,21 @@ public class Score {
 				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
 				str.append("<barline location=\"left\">\n");
 				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
-				str.append("<bar-style>").append(i == 0?"heavy-light":"light-light").append("</bar-style>\n");
+				str.append("<bar-style>").append(i == 0?"heavy-light":"heavy-heavy").append("</bar-style>\n");
 				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
 				str.append("</barline>\n");
-				
-				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
-				str.append("<direction placement=\"above\">\n");
-				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
-				str.append("<direction-type>\n");
-				for (int j = 0; j <= indentationLevel+2; j++) str.append("    "); 
-				str.append("<words>").append(type).append("</words>\n");
-				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
-				str.append("</direction-type>\n");
-				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
-				str.append("</direction>\n");
+				if (part == 'l') {
+					for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+					str.append("<direction placement=\"above\">\n");
+					for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+					str.append("<direction-type>\n");
+					for (int j = 0; j <= indentationLevel+2; j++) str.append("    "); 
+					str.append("<words default-y=\"110\" font-size=\"16\" font-weight=\"bold\" color=\"red\" font-style=\"italic\">").append(StringUtils.capitalize(type.toString().toLowerCase())).append("</words>\n");
+					for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+					str.append("</direction-type>\n");
+					for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+					str.append("</direction>\n");
+				}
 			}
 			
 			switch(part) {
@@ -132,6 +162,14 @@ public class Score {
 				default:
 				str.append(measure.orchestrationToXML(indentationLevel+1,part));
 				break;
+			}
+			
+			if (i == measures.size()-1) {
+				str.append("<barline location=\"right\">\n");
+				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+				str.append("<bar-style>light-heavy</bar-style>\n");
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("</barline>\n");
 			}
 			
 			for (int j = 0; j < indentationLevel; j++) str.append("    "); 
@@ -147,5 +185,26 @@ public class Score {
 
 	public void hasOrchestration(boolean b) {
 		hasOrchestration = b;
+	}
+
+	public List<Pair<SegmentType, Integer>> getSegmentsLengths() {
+		List<Pair<SegmentType, Integer>> segmentsLengths = new ArrayList<Pair<SegmentType, Integer>>();
+		
+		SegmentType prevType = null;
+		int length = 0;
+		for (Measure measure : measures) {
+			if (measure.segmentType != prevType) {
+				if (prevType != null) {
+					segmentsLengths.add(new Pair<SegmentType, Integer>(prevType,length));
+				}
+				prevType = measure.segmentType;
+			}
+			length++;
+		}
+		if (prevType != null) {
+			segmentsLengths.add(new Pair<SegmentType, Integer>(prevType,length));
+		}
+		
+		return segmentsLengths;
 	}	
 }

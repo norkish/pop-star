@@ -7,12 +7,16 @@ import java.util.Map;
 
 import org.w3c.dom.Document;
 
+import harmony.SegmentSpecificHarmonyEngineer;
+import harmony.SegmentSpecificHarmonyEngineer.SegmentSpecificHarmonyEngineerMusicXMLModel;
 import lyrics.LyricTemplateEngineer;
 import lyrics.LyricTemplateEngineer.LyricTemplateEngineerMusicXMLModel;
+import melody.SegmentSpecificMelodyEngineer;
+import melody.SegmentSpecificMelodyEngineer.SegmentSpecificMelodyEngineerMusicXMLModel;
 
 public class MusicXMLModelLearner {
 	private static final File[] files = new File(
-			"/Users/norkish/Archive/2015_BYU/ComputationalCreativity/data/Wikifonia").listFiles();
+			"/Users/norkish/Archive/2016_BYU/ComputationalCreativity/data/Wikifonia").listFiles();
 
 	private static Map<Class,MusicXMLModel> trainedModels = null;
 	
@@ -22,6 +26,8 @@ public class MusicXMLModelLearner {
 
 			// populate from configuration
 			models.put(LyricTemplateEngineer.class, new LyricTemplateEngineerMusicXMLModel());
+			models.put(SegmentSpecificHarmonyEngineer.class, new SegmentSpecificHarmonyEngineerMusicXMLModel());
+			models.put(SegmentSpecificMelodyEngineer.class, new SegmentSpecificMelodyEngineerMusicXMLModel());
 			
 			System.out.println("Training models on XML dataset");
 			trainModelsOnWholeDataset(models.values());

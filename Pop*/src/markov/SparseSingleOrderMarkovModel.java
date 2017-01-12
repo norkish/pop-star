@@ -64,9 +64,10 @@ public class SparseSingleOrderMarkovModel<T> extends AbstractMarkovModel<T>{
 			newInnerMap = new HashMap<Integer, Double>();
 			this.logTransitions.put(i, newInnerMap);
 			oldInnerMap = transitions.get(i);
-			for (Entry<Integer, Double> entry : oldInnerMap.entrySet()) {
-				newInnerMap.put(entry.getKey(),Math.log(entry.getValue()));
-			}
+			if (oldInnerMap != null)
+				for (Entry<Integer, Double> entry : oldInnerMap.entrySet()) {
+					newInnerMap.put(entry.getKey(),Math.log(entry.getValue()));
+				}
 		}
 	}
 
