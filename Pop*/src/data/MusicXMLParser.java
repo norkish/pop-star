@@ -249,6 +249,8 @@ public class MusicXMLParser {
 
 	public static class Note {
 
+		public static final int REST = -2;
+		
 		public int pitch;
 		public int duration;
 		public int type; // represents the denominator in the note (e.g., quarter = 1/4)
@@ -308,7 +310,7 @@ public class MusicXMLParser {
 			return str.toString();
 		}
 
-		public String toXML(int indentationLevel) {
+		public String toXML(int indentationLevel, boolean allowDownStem) {
 			StringBuilder str = new StringBuilder();
 			
 			//open note tag
@@ -323,7 +325,7 @@ public class MusicXMLParser {
 			
 			int alter = 0;
 			//pitch
-			if (pitch == -1) {
+			if (pitch == REST) {
 				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
 				str.append("<rest/>\n");
 			} else {
@@ -388,6 +390,12 @@ public class MusicXMLParser {
 			if(alter != 0) {
 				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
 				str.append("<accidental>").append(alter == 1?"sharp":"flat").append("</accidental>\n");
+			}
+			
+			//stem
+			if (pitch != REST) {
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("<stem>").append(pitch > 60 && allowDownStem?"down":"up").append("</stem>\n");
 			}
 
 			// notations
@@ -979,7 +987,7 @@ public class MusicXMLParser {
 			
 			//open harmony tag
 			for (int j = 0; j < indentationLevel; j++) str.append("    "); 
-			str.append("<harmony default-y=\"75\" font-size=\"12\" print-frame=\"no\" relative-x=\"8\">\n");
+			str.append("<harmony default-y=\"25\" font-size=\"12\" print-frame=\"no\" relative-x=\"8\">\n");
 			
 			//root
 			if (root != null) {
@@ -2064,7 +2072,6 @@ public class MusicXMLParser {
 		}
 	}
 
-	private static final int REST = -2;
 	private static final int UNPITCHED_RHYTHM = -3;
 	private static Note parseNote(Node node, int verse, Key currKey) {
 		int pitch = -1;
@@ -2112,7 +2119,7 @@ public class MusicXMLParser {
 				// do nothing (we only have one instrument)
 				instruments.add(child.getAttributes().getNamedItem("id").getTextContent());
 			} else if (childName.equals("rest")) {
-				pitch = REST;
+				pitch = Note.REST;
 			} else if (childName.equals("time-modification")) {
 				timeModification = parseNoteTimeModification(child);
 			} else if (childName.equals("chord")) {
@@ -2120,7 +2127,7 @@ public class MusicXMLParser {
 			} else if (childName.equals("grace")) {
 				isGrace = true;
 			} else if (childName.equals("cue")) {
-				pitch = REST;
+				pitch = Note.REST;
 			} else if (childName.equals("notehead")) {
 				String text = child.getTextContent();
 				if (text.equals("x") || text.equals("slash") || text.equals("triangle")) {

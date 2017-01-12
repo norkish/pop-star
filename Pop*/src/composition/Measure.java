@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import constraint.Constraint;
+import data.MusicXMLParser.Bass;
 import data.MusicXMLParser.Harmony;
 import data.MusicXMLParser.Key;
 import data.MusicXMLParser.KeyMode;
@@ -94,7 +95,7 @@ public class Measure {
 		// do all notes
 		for (Note note : notes.values()) {
 			// this assumes note durations are sufficient to calculate note onsets (no gaps)
-			str.append(note.toXML(indentationLevel));
+			str.append(note.toXML(indentationLevel, true));
 		}
 		// TODO: constraints
 		
@@ -109,7 +110,7 @@ public class Measure {
 		// do chords, assigning to staves 
 		for (Entry<Double, List<Note>> offsetHarmony : partNotes.entrySet()) {
 			for (Note note : offsetHarmony.getValue()) {
-				str.append(note.toXML(indentationLevel));
+				str.append(note.toXML(indentationLevel, false));
 			}
 		}
 		
@@ -185,7 +186,8 @@ public class Measure {
 			bassOrchestration.put(currPos, bassOrchestrationNotes);
 		}
 		
-		int rootPitch = harmonyAtCurrPos.root.rootStep + 33;
+		final Bass bass = harmonyAtCurrPos.bass;
+		int rootPitch = (bass == null ? harmonyAtCurrPos.root.rootStep : bass.bassStep) + 33;
 		int durationInDivs = (int) (durationsInBeats * (4.0 / this.time.beatType) * this.divisionsPerQuarterNote);
 		final List<Note> chordBassWithTies = MelodyEngineer.createTiedNoteWithDuration(durationInDivs, rootPitch, this.divisionsPerQuarterNote);
 		assert chordBassWithTies.size() == 1: "Chord Bass note requested that requires tied notes to accomplish desired duration";

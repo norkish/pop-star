@@ -45,6 +45,7 @@ public class Score {
 		Key currKey = null;
 		Time currTime = null;
 		SegmentType type = null;
+		final int measuresPerPage = systemsPerPage*measuresPerSystem;
 		
 		for (int i = 0; i < measures.size(); i++) {
 			final Measure measure = measures.get(i);
@@ -53,7 +54,8 @@ public class Score {
 			
 			if (part == 'l' && i % measuresPerSystem == 0) {
 				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
-				str.append("<print").append(i==0?"":" new-" + (i%(systemsPerPage*measuresPerSystem)==0?"page":"system") + "=\"yes\"").append(">\n");
+				boolean newPage = (i == measuresPerPage) || (i > 2*measuresPerPage && (i - measuresPerPage) % (systemsPerPage+1) == 0);
+				str.append("<print").append(i==0?"":" new-" + (newPage?"page":"system") + "=\"yes\"").append(">\n");
 				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
 				str.append("<system-layout>\n");
 				for (int j = 0; j <= indentationLevel+2; j++) str.append("    "); 
@@ -65,10 +67,10 @@ public class Score {
 				for (int j = 0; j <= indentationLevel+2; j++) str.append("    "); 
 				str.append("</system-margins>\n");
 				for (int j = 0; j <= indentationLevel+2; j++) str.append("    "); 
-				if (i==0) {
-					str.append("<top-system-distance>300</top-system-distance>\n");
+				if (i==0 || newPage) {
+					str.append("<top-system-distance>").append(i==0?400:100).append("</top-system-distance>\n");
 				} else {
-					str.append("<system-distance>200</system-distance>\n");
+					str.append("<system-distance>").append(hasOrchestration()?200:170).append("</system-distance>\n");
 				}
 				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
 				str.append("</system-layout>\n");
@@ -147,7 +149,7 @@ public class Score {
 					for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
 					str.append("<direction-type>\n");
 					for (int j = 0; j <= indentationLevel+2; j++) str.append("    "); 
-					str.append("<words default-y=\"110\" font-size=\"16\" font-weight=\"bold\" color=\"red\" font-style=\"italic\">").append(StringUtils.capitalize(type.toString().toLowerCase())).append("</words>\n");
+					str.append("<words default-y=\"50\" font-size=\"16\" font-weight=\"bold\" color=\"red\" font-style=\"italic\">").append(StringUtils.capitalize(type.toString().toLowerCase())).append("</words>\n");
 					for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
 					str.append("</direction-type>\n");
 					for (int j = 0; j <= indentationLevel; j++) str.append("    "); 

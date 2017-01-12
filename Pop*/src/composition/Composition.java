@@ -23,7 +23,7 @@ import segmentstructure.SegmentStructureEngineer;
 
 public class Composition {
 
-	private String title = "BSSF";
+	private String title = "BSSF (Best Song So Far)";
 	private String composer = "Pop*";
 	private Inspiration inspiration;
 	private GlobalStructure globalStructure;
@@ -95,7 +95,7 @@ public class Composition {
 		xml = xml.replaceFirst("TITLE-PLACEHOLDER", title);
 		xml = xml.replaceFirst("COMPOSER-PLACEHOLDER", composer);
 		xml = xml.replaceFirst("LYRICIST-PLACEHOLDER", StringUtils.capitalize(inspiration.getMaxEmotion()));
-		int systemsPerPage = score.hasOrchestration() ? 3 : 6;
+		int systemsPerPage = score.hasOrchestration() ? 3 : 7;
 		xml = xml.replaceFirst("PART1-PLACEHOLDER\n", score.partToXML(2, 'l', systemsPerPage));
 		
 		if (score.hasOrchestration()) {

@@ -145,7 +145,7 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 			// length varies, probably easiest that way rather than adapting
 			// existing seq
 			if (length != Integer.MAX_VALUE) {
-				length = 16;
+				length = 200;
 				List<Integer> melodySeq = model.sampleMelodySequenceOfLength(length, type, null);
 				addMelodyBySegmentType(score, melodySeq, type);
 			}
@@ -153,7 +153,8 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 
 	}
 
-	private void addMelodyBySegmentType(Score score, List<Integer> melodySeq, SegmentType type) {
+	private void addMelodyBySegmentType(Score score, List<Integer> melodySeqPitches, SegmentType type) {
+		List<Integer> melodySeqDurations = new ArrayList<Integer>();
 		SegmentType prevType = null;
 		int counter = -1;
 		for (Measure measure : score.getMeasures()) {
@@ -174,16 +175,21 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 				final int totalMeasureDivisions = (int) (currTime.beats * divsPerQuarter * (4.0/currTime.beatType));
 				
 				while (accumulativeDivisions < totalMeasureDivisions) {
-					int pitch = melodySeq.get(counter);
-					if (pitch == 56) pitch = -1; // rest
-					int divisionsToAdd =  rand .nextInt(totalMeasureDivisions-accumulativeDivisions) + 1;
+					int pitch = melodySeqPitches.get(counter);
+					int divisionsToAdd;
+					if (counter < melodySeqDurations.size()) {
+						divisionsToAdd = melodySeqDurations.get(counter);
+					} else {
+						divisionsToAdd = rand.nextInt(totalMeasureDivisions-accumulativeDivisions) + 1;
+					 	melodySeqDurations.add(divisionsToAdd);
+					}
 					List<Note> notesToAdd = createTiedNoteWithDuration(divisionsToAdd, pitch, divsPerQuarter);
 					for (Note note : notesToAdd) {
 						measure.addNote(((double)accumulativeDivisions)/divsPerQuarter, note);
 						accumulativeDivisions += note.duration;
 					}
+					counter++;
 				}
-				counter++;
 			}
 		}
 	}

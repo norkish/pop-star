@@ -118,6 +118,7 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 				
 				if (chorusMeasureCounter != -1) {
 					// we're on a repeat of the chorus, need to go back and copy previous chorus lyrics
+					// TODO: this assumes that exact same notes exist between choruses, what if they change? this isn't robust
 					TreeMap<Double, Note> otherNotes = measures.get(chorusStartMeasure+chorusMeasureCounter).getNotes();
 					TreeMap<Double, Note> notes = measure.getNotes();
 					for (Double offset: otherNotes.keySet()) {
@@ -137,7 +138,7 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 			if (generateLyrics) {
 				TreeMap<Double, Note> notes = measure.getNotes();
 				for (Note note : notes.values()) {
-					if (note.pitch != -1 && note.tie != NoteTie.STOP) {
+					if (note.pitch != Note.REST && note.tie != NoteTie.STOP) {
 						note.lyric = lyrics.get(lyrIdx++);
 						if (lyrIdx == lyrics.size()) return;
 					}

@@ -14,8 +14,6 @@
     </identification>
     <defaults>
         <page-layout>
-            <page-height>1401.667</page-height>
-            <page-width>991.667</page-width>
             <page-margins type="both">
                 <left-margin>75</left-margin>
                 <right-margin>50</right-margin>

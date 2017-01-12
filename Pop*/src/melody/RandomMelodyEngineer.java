@@ -8,8 +8,6 @@ import composition.Measure;
 import composition.Score;
 import data.MusicXMLParser.Key;
 import data.MusicXMLParser.Note;
-import data.MusicXMLParser.NoteLyric;
-import data.MusicXMLParser.NoteTie;
 import data.MusicXMLParser.Time;
 import globalstructure.SegmentType;
 import inspiration.Inspiration;
@@ -103,7 +101,7 @@ public class RandomMelodyEngineer extends MelodyEngineer {
 				
 				while (accumulativeDivisions < totalMeasureDivisions) {
 					int pitch = rand.nextInt(17) + 56;
-					if (pitch == 56) pitch = -1; // rest
+					if (pitch == 56) pitch = Note.REST; // rest
 					int divisionsToAdd =  rand.nextInt(totalMeasureDivisions-accumulativeDivisions) + 1;
 					List<Note> notesToAdd = createTiedNoteWithDuration(divisionsToAdd, pitch, divsPerQuarter);
 					for (Note note : notesToAdd) {
