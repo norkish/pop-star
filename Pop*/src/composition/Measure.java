@@ -16,6 +16,7 @@ import data.MusicXMLParser.Quality;
 import data.MusicXMLParser.Time;
 import globalstructure.SegmentType;
 import melody.MelodyEngineer;
+import utils.Utils;
 
 public class Measure {
 
@@ -138,7 +139,7 @@ public class Measure {
 	}
 
 	public void addChordForHarmonyAt(double currPos, double durationsInBeats) {
-		Harmony harmonyAtCurrPos = tokenAtPos(currPos, harmonies);
+		Harmony harmonyAtCurrPos = Utils.valueForKeyBeforeOrEqualTo(currPos, harmonies);
 		if (harmonyAtCurrPos == null) return;
 		
 		List<Note> orchestrationNotes = orchestration.get(currPos);
@@ -159,25 +160,14 @@ public class Measure {
 			boolean intervalOn = pitches[i];
 			if (intervalOn) {
 				Note newNote = new Note(rootPitch + Quality.HARMONY_CONSTANT_INTERVALS[i], 
-						chordRoot.duration, chordRoot.type, null, chordRoot.dots, chordRoot.tie, null, orchestrationNotes.size()>0);
+						chordRoot.duration, chordRoot.type, null, chordRoot.dots, chordRoot.tie, chordRoot.slur, null, orchestrationNotes.size()>0);
 				orchestrationNotes.add(newNote);
 			}
 		}
 	}
 
-	private <T> T tokenAtPos(double currPos, TreeMap<Double, T> tokens) {
-		T currToken = null;
-		for (Double pos : tokens.keySet()) {
-			if (pos > currPos) {
-				return currToken;
-			}
-			currToken = tokens.get(pos);
-		}
-		return currToken;
-	}
-
 	public void addBassNoteForHarmony(double currPos, double durationsInBeats) {
-		Harmony harmonyAtCurrPos = tokenAtPos(currPos, harmonies);
+		Harmony harmonyAtCurrPos = Utils.valueForKeyBeforeOrEqualTo(currPos, harmonies);
 		if (harmonyAtCurrPos == null) return;
 		
 		List<Note> bassOrchestrationNotes = bassOrchestration.get(currPos);

@@ -25,15 +25,15 @@ public abstract class MelodyEngineer {
 
 	public abstract void addMelody(Inspiration inspiration, Score score);
 	
-	public static List<Note> createTiedNoteWithDuration(int duration, int pitch, int divsPerQuarter) {
+	public static List<Note> createTiedNoteWithDuration(int durationInDivisions, int pitch, int divsPerQuarter) {
 		List<Note> tiedNotes = new ArrayList<Note>();
-		int divsLeftToAdd = duration;
+		int divsLeftToAdd = durationInDivisions;
 		while (divsLeftToAdd > 0) {
 			Triple<Integer,Integer,Integer> biggestUntiedNote = getLongestIntegralNoteWithDurationLessThan(divsLeftToAdd,divsPerQuarter);
 			int divsForNote = biggestUntiedNote.getFirst();
 			int noteType = biggestUntiedNote.getSecond();
 			int dots = biggestUntiedNote.getThird(); 
-			Note newNote = new Note(pitch, divsForNote, noteType, null, dots, NoteTie.NONE, null, false);
+			Note newNote = new Note(pitch, divsForNote, noteType, null, dots, NoteTie.NONE, NoteTie.NONE, null, false);
 			tiedNotes.add(newNote);
 			divsLeftToAdd -= divsForNote;
 		}

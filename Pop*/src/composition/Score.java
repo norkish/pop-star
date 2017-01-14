@@ -1,7 +1,9 @@
 package composition;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -208,5 +210,17 @@ public class Score {
 		}
 		
 		return segmentsLengths;
+	}
+
+	public Map<SegmentType, Time> getSegmentTimeSignatures() {
+		Map<SegmentType, Time> segmentTimeSigs = new HashMap<SegmentType, Time>();
+		
+		for (Measure measure : measures) {
+			if (!segmentTimeSigs.containsKey(measure.segmentType)) {
+				segmentTimeSigs.put(measure.segmentType, measure.time);
+			}
+		}
+		
+		return segmentTimeSigs;
 	}	
 }

@@ -13,10 +13,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import constraint.ConstraintBlock;
-import data.MusicXMLParser.Harmony;
-import lyrics.Lyric;
+import java.util.SortedMap;
 
 public class Utils {
 
@@ -138,4 +135,16 @@ public class Utils {
 			map1d.put(key2, count == null ? 1 : count + 1);
 		}		
 	}
+
+	public static <S extends Comparable<S>, T> T valueForKeyBeforeOrEqualTo(S currPos, SortedMap<S, T> tokens) {
+		T currToken = null;
+		for (S pos : tokens.keySet()) {
+			if (pos.compareTo(currPos) > 0) {
+				return currToken;
+			}
+			currToken = tokens.get(pos);
+		}
+		return currToken;
+	}
+
 }

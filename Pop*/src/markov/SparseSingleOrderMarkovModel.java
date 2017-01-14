@@ -148,7 +148,7 @@ public class SparseSingleOrderMarkovModel<T> extends AbstractMarkovModel<T>{
 			}
 			else
 			{
-				nextStateIdx = sampleNextState(prevStateIdx);
+				nextStateIdx = sampleNextStateIdx(prevStateIdx);
 			}
 			
 			if(nextStateIdx == -1)
@@ -163,7 +163,7 @@ public class SparseSingleOrderMarkovModel<T> extends AbstractMarkovModel<T>{
 		return newSeq;
 	}
 	
-	private int sampleNextState(int prevStateIdx) {
+	private int sampleNextStateIdx(int prevStateIdx) {
 		double randomDouble = rand.nextDouble();
 		
 		double accumulativeProbability = 0.;
@@ -196,5 +196,18 @@ public class SparseSingleOrderMarkovModel<T> extends AbstractMarkovModel<T>{
 		}
 		
 		return -1;
+	}
+	
+	public T sampleStartState() {
+		int startStateIdx = sampleStartStateIdx();
+		return states[startStateIdx];
+	}
+
+	public T sampleNextState(T prevState) {
+		if (!stateIndex.containsKey(prevState))
+			throw new RuntimeException("Model does not contain prefix: " + prevState);
+		int prevStateIdx = stateIndex.get(prevState);
+		int nextStateIdx = sampleNextStateIdx(prevStateIdx);
+		return states[nextStateIdx];
 	}
 }
