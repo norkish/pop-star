@@ -26,11 +26,15 @@ Iteration 5\
 \
 melody duration is learned from data, is dependent on both position and on the previous duration. This may not be robust. Have to see\'85\
 \
+Iteration 6\
+\
+The melody durations being learned from data turn out to be robust. I\'92d thought that for some reason it wouldn\'92t be but it is. It\'92s sort of like HMMs, but I think it\'92s somehow different. All the ties are showing up and durations that cross measure boundaries. Durations are sampled from a distribution that is conditioned on the measure position (and by extension also the time signature) and the previous note duration. This gives pretty reasonable note durations.\
+\
 Next iterations:\
 Have melody pitch dependent on the harmony\
 Have all models segment dependent\
-Why no ties? What about generating cross measure durations?\
 Improved lyrical template selection\
+Pick a better voice\
 \
 To come:\
 Have harmony not just at beginning of each measure\

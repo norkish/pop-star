@@ -102,9 +102,9 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 						if (currNoteTime.equals(Time.TWO_TWO)) {
 							currNoteTime = Time.FOUR_FOUR;
 						}
-						currNoteDivsPerQuarter = Utils.valueForKeyBeforeOrEqualTo(measure, divsPerQuarterByMeasure);
+						currNoteDivsPerQuarter = Utils.valueForKeyBeforeOrEqualTo(currNoteMeasure, divsPerQuarterByMeasure);
 
-						if (currNote.isChordWithPrevious || currNote.pitch != note.pitch) {
+						if (currNote.isChordWithPrevious || currNote.pitch != note.pitch || (currNote.lyric != null && !currNote.lyric.text.isEmpty())) {
 							break;
 						}
 						
@@ -116,17 +116,17 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 					}
 					
 					// if we found the end of the tie, add all the notes
-					if (note.tie == NoteTie.START && currNote.tie == NoteTie.STOP || note.slur == NoteTie.START && currNote.slur == NoteTie.STOP) {
+//					if (note.tie == NoteTie.START && currNote.tie == NoteTie.STOP || note.slur == NoteTie.START && currNote.slur == NoteTie.STOP) {
 						for (Double duration : noteDurationInBeatsToTie) {
 							noteDurationInBeats += duration;
 							notesToAdvanceForTies++;
 						}
-					} else { // otherwise, just add one note
-						if (!noteDurationInBeatsToTie.isEmpty()) {
-							noteDurationInBeats += noteDurationInBeatsToTie.get(0);
-							notesToAdvanceForTies++;
-						}
-					}
+//					} else { // otherwise, just add one note
+//						if (!noteDurationInBeatsToTie.isEmpty()) {
+//							noteDurationInBeats += noteDurationInBeatsToTie.get(0);
+//							notesToAdvanceForTies++;
+//						}
+//					}
 				}
 
 				Integer notePitchIdx = pitchStatesByIndex.get(note.pitch);
@@ -438,7 +438,7 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 						if (i == measures.size()-1 || measures.get(i+1).segmentType != measure.segmentType) {// can't carry over if last measure or if carrying over into different segment
 							durationInBeatsToCarryOverToNextMeasure = 0.0;
 						} else {
-							durationInBeatsToCarryOverToNextMeasure = (divisionsToCarryOverToNextMeasure / divisionsPerQuarterNote) * (currTime.beatType/4.0);
+							durationInBeatsToCarryOverToNextMeasure = (divisionsToCarryOverToNextMeasure / (double) divisionsPerQuarterNote) * (currTime.beatType/4.0);
 						}
 						divisionsToAdd = totalMeasureDivisions - accumulativeDivisions;
 					}
