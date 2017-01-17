@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.Stack;
 import java.util.TreeMap;
 import java.util.zip.ZipException;
@@ -28,6 +29,7 @@ import org.xml.sax.SAXException;
 import data.MusicXMLParser.Barline.RepeatDirection;
 import data.MusicXMLParser.Note;
 import data.MusicXMLParser.NoteLyric;
+import data.MusicXMLParser.Time;
 import pitch.Pitch;
 import syllabify.Syllabifier;
 import tabcomplete.rhyme.Phonetecizer;
@@ -257,16 +259,18 @@ public class MusicXMLParser {
 		public NoteLyric lyric;
 		public int dots;
 		public NoteTie tie;
+		public NoteTie slur;
 		public NoteTimeModification timeModification;
 		public boolean isChordWithPrevious;
 		
-		public Note(int pitch, int duration, int type, NoteLyric lyric, int dots, NoteTie tie, NoteTimeModification timeModification, boolean isChordWithPreviousNote) {
+		public Note(int pitch, int duration, int type, NoteLyric lyric, int dots, NoteTie tie, NoteTie slur, NoteTimeModification timeModification, boolean isChordWithPreviousNote) {
 			this.pitch = pitch;
 			this.duration = duration;
 			this.type = type;
 			this.lyric = lyric;
 			this.dots = dots;
 			this.tie = tie;
+			this.slur = slur;
 			this.timeModification = timeModification;
 			this.isChordWithPrevious = isChordWithPreviousNote;
 		}
@@ -278,36 +282,18 @@ public class MusicXMLParser {
 			this.lyric = other.lyric;
 			this.dots = other.dots;
 			this.tie = other.tie;
+			this.slur = other.slur;
 			this.timeModification = other.timeModification;
 			this.isChordWithPrevious = other.isChordWithPrevious;
 		}
 
+		@Override
 		public String toString() {
-			StringBuilder str = new StringBuilder();
-			
-			str.append(pitch == REST? "$" : Pitch.getPitchName((pitch+3)%12));
-			str.append(" ");
-			for (int i = 0; i < dots; i++) {
-				str.append('•');	
-			}
-			str.append(type);
-			if (timeModification != null) {
-				str.append("*");
-			}
-			str.append(' ');
-			if (lyric == null) {
-				str.append("\t");
-			} else {
-				str.append('\"');
-				str.append(lyric.text);
-				str.append('\"');
-				if (lyric.syllabic == Syllabic.BEGIN || lyric.syllabic == Syllabic.MIDDLE)
-					str.append('-');
-				str.append(' ');
-				str.append(lyric.syllableStress);
-			}
-			
-			return str.toString();
+			return "Note [p=" + pitch + ", dur=" + duration + ", " + type + ", "
+					+ (lyric != null ? "lyric=" + lyric + ", " : "") + "dots=" + dots + ", "
+					+ (tie != null ? "tie=" + tie + ", " : "") + (slur != null ? "slur=" + slur + ", " : "")
+					+ (timeModification != null ? "timeModification=" + timeModification + ", " : "")
+					+ "isChordWithPrevious=" + isChordWithPrevious + "]";
 		}
 
 		public String toXML(int indentationLevel, boolean allowDownStem) {
@@ -1192,6 +1178,10 @@ public class MusicXMLParser {
 	}
 
 	public static class Time {
+		
+		public static final Time FOUR_FOUR = new Time(4,4);
+		public static final Time TWO_TWO = new Time(2,2);
+		
 		public int beats;
 		public int beatType;
 		public Time(int beats, int beatType) {
@@ -1254,7 +1244,7 @@ public class MusicXMLParser {
 		List<Node> measures = MusicXMLSummaryGenerator.getMeasuresForPart(this,0);
 
 		// Harmony indexed by measure and by the offset (in divisions) from the beginning of the measure
-		Map<Integer, Map<Integer, List<Harmony>>> harmonyByMeasure = new TreeMap<Integer, Map<Integer,List<Harmony>>>();
+		SortedMap<Integer, Map<Integer, List<Harmony>>> harmonyByMeasure = new TreeMap<Integer, Map<Integer,List<Harmony>>>();
 		// notes indexed by measure and by the offset (in divisions) from the beginning of the measure
 		// this data structure represents order as regards repeats, but has no (simple) way of looking at how many times a note has been repeated or what the lyric for the last repetition was
 		List<Triple<Integer, Integer, Note>> notesByMeasure = new ArrayList<Triple<Integer, Integer, Note>>();
@@ -1263,11 +1253,11 @@ public class MusicXMLParser {
 		Map<Integer, Map<Integer, Pair<Integer, NoteLyric>>> measureOffsetInfo = new TreeMap<Integer, Map<Integer, Pair<Integer, NoteLyric>>>();
 		
 		instruments = new HashSet<String>();
-		Map<Integer,Time> timeByMeasure = new TreeMap<Integer,Time>(); 
+		SortedMap<Integer,Time> timeByMeasure = new TreeMap<Integer,Time>(); 
 		Time currTime = null;
-		Map<Integer,Key> keyByMeasure = new TreeMap<Integer,Key>(); 
+		SortedMap<Integer,Key> keyByMeasure = new TreeMap<Integer,Key>(); 
 		Key currKey = null;
-		Map<Integer,Integer> divsByMeasure = new TreeMap<Integer,Integer>(); 
+		SortedMap<Integer,Integer> divsPerQuarterByMeasure = new TreeMap<Integer,Integer>(); 
 		int currDivisionsPerQuarterNote = -1;
 		Stack<Integer> forwardRepeatMeasures = new Stack<Integer>();
 		int smallestNoteType = 0;
@@ -1396,7 +1386,7 @@ public class MusicXMLParser {
 							String gNodeName = mGrandchild.getNodeName();
 							if (gNodeName.equals("divisions")) {
 								currDivisionsPerQuarterNote = Integer.parseInt(mGrandchild.getTextContent());
-								divsByMeasure.put(i, currDivisionsPerQuarterNote);
+								divsPerQuarterByMeasure.put(i, currDivisionsPerQuarterNote);
 								System.err.println("Divs per quarter note:" +currDivisionsPerQuarterNote);
 							} else if (gNodeName.equals("key")) {
 								currKey = parseKey(mGrandchild);
@@ -1551,7 +1541,7 @@ public class MusicXMLParser {
 						}
 					} else if (nodeName.equals("forward")) {
 						int duration = Integer.parseInt(((Element)mChild).getElementsByTagName("duration").item(0).getTextContent());
-						Note note = new Note(-1,duration,-1,null,0,NoteTie.NONE,null,false);
+						Note note = new Note(-1,duration,-1,null,0,NoteTie.NONE,NoteTie.NONE,null,false);
 						currMeasurePositionInDivisions += note.duration;
 						if (currMeasurePositionInDivisions == calculateTotalDivisionsInMeasure(currTime, currDivisionsPerQuarterNote)) {
 							break;
@@ -1594,7 +1584,7 @@ public class MusicXMLParser {
 		}
 		
 		//Resolve co-occuring harmonies
-		Map<Integer, Map<Integer, Harmony>> unoverlappingHarmonyByMeasure = resolveOverlappingHarmonies(harmonyByMeasure, measureOffsetInfo, timeByMeasure, divsByMeasure, musicXML);
+		SortedMap<Integer, Map<Integer, Harmony>> unoverlappingHarmonyByMeasure = resolveOverlappingHarmonies(harmonyByMeasure, measureOffsetInfo, timeByMeasure, divsPerQuarterByMeasure, musicXML);
 		
 		// ADD SYLLABLE STRESS
 		addStressToSyllables(notesByMeasure, musicXML);
@@ -1603,6 +1593,7 @@ public class MusicXMLParser {
 		musicXML.keyByMeasure = keyByMeasure;
 		musicXML.notesByMeasure = notesByMeasure;
 		musicXML.unoverlappingHarmonyByMeasure = unoverlappingHarmonyByMeasure;
+		musicXML.divsPerQuarterByMeasure = divsPerQuarterByMeasure;
 		
 		return musicXML;
 	}
@@ -1867,9 +1858,9 @@ public class MusicXMLParser {
 		}
 	}
 
-	private static Map<Integer, Map<Integer, Harmony>> resolveOverlappingHarmonies(Map<Integer, Map<Integer, List<Harmony>>> harmonyByMeasure, 
+	private static SortedMap<Integer, Map<Integer, Harmony>> resolveOverlappingHarmonies(SortedMap<Integer, Map<Integer, List<Harmony>>> harmonyByMeasure, 
 			Map<Integer, Map<Integer, Pair<Integer, NoteLyric>>> measureOffsetInfo, Map<Integer,Time> timeByMeasure, Map<Integer, Integer> divsByMeasure, ParsedMusicXMLObject musicXML) {
-		Map<Integer, Map<Integer, Harmony>> unoverlappingHarmonyByMeasure = new TreeMap<Integer, Map<Integer, Harmony>>(); 
+		SortedMap<Integer, Map<Integer, Harmony>> unoverlappingHarmonyByMeasure = new TreeMap<Integer, Map<Integer, Harmony>>(); 
 		// If there are multiple chords, they must all occur before the next note occurs after the first chord,
 		// otherwise they'd have marked the chord later.
 		
@@ -2080,6 +2071,7 @@ public class MusicXMLParser {
 		NoteLyric lyric = null;
 		int dots = 0;
 		NoteTie tie = NoteTie.NONE;
+		NoteTie slur = NoteTie.NONE;
 		NoteTimeModification timeModification = null;
 		boolean isChordWithPreviousNote = false;
 		boolean isGrace = false;
@@ -2110,9 +2102,33 @@ public class MusicXMLParser {
 			} else if (childName.equals("dot")) {
 				dots++;
 			} else if (childName.equals("tie")) {
-				tie = NoteTie.parse(child.getAttributes().getNamedItem("type").getTextContent());
+				NoteTie tie2 = NoteTie.parse(child.getAttributes().getNamedItem("type").getTextContent());
+				if (tie != NoteTie.NONE && tie2 != tie)
+					throw new RuntimeException("Two note tie instructrutions");
+				tie = tie2;
 			} else if (childName.equals("notations")) {
-				// do nothing (this is for visualizing music)
+				NodeList grandchildren = child.getChildNodes();
+				for (int j = 0; j < grandchildren.getLength(); j++) {
+					Node grandchild = grandchildren.item(j);
+					if (grandchild instanceof Text) continue;
+					String grandchildName = grandchild.getNodeName();
+					if (grandchildName.equals("slur")) {
+						NoteTie slur2 = NoteTie.parse(grandchild.getAttributes().getNamedItem("type").getTextContent());
+						if (slur != NoteTie.NONE && slur2 != slur)
+							throw new RuntimeException("Two note slur instructrutions");
+						slur = slur2;
+					} else if (grandchildName.equals("tied")) {
+						NoteTie tie2 = NoteTie.parse(grandchild.getAttributes().getNamedItem("type").getTextContent());
+						if (tie != NoteTie.NONE && tie2 != tie)
+							throw new RuntimeException("Two note tie instructrutions");
+						tie = tie2;
+					} else if (grandchildName.equals("fermata")) {
+						// do nothing
+					} else {
+						MusicXMLSummaryGenerator.printNode(child, System.err);
+						throw new RuntimeException("Unknown child of node notations:" + grandchildName);
+					}
+				}
 			} else if (childName.equals("staff")) {
 				// do nothing (this is for visualizing music)
 			} else if (childName.equals("instrument")) {
@@ -2150,7 +2166,7 @@ public class MusicXMLParser {
 			throw new RuntimeException("Note missing pitch or duration or type");
 		}
 		
-		return new Note(normalizePitch(pitch, currKey), duration, type, lyric, dots, tie, timeModification, isChordWithPreviousNote); 
+		return new Note(normalizePitch(pitch, currKey), duration, type, lyric, dots, tie, slur, timeModification, isChordWithPreviousNote); 
 	}
 	
 	private static NoteTimeModification parseNoteTimeModification(Node node) {

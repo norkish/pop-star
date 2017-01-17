@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 
 import data.MusicXMLParser.Harmony;
 import data.MusicXMLParser.Key;
@@ -25,8 +26,8 @@ public class ParsedMusicXMLObject {
 
 	// this represents the total number of notes that had text associated with them which could be associated with an entry in the cmu english dict
 	public int totalSyllablesWithStressFromEnglishDictionary;
-	public Map<Integer, Time> timeByMeasure;
-	public Map<Integer, Key> keyByMeasure;
+	public SortedMap<Integer, Time> timeByMeasure;
+	public SortedMap<Integer, Key> keyByMeasure;
 	
 	//measure, offset in divs, note
 	public List<Triple<Integer, Integer, Note>> notesByMeasure;
@@ -36,8 +37,9 @@ public class ParsedMusicXMLObject {
 		= new ArrayList<Pair<List<NoteLyric>, List<Triple<String, StressedPhone[], Integer>>>>();
 	public int harmonyCount = 0;
 	//measure, offset in divs, 
-	public Map<Integer, Map<Integer, Harmony>> unoverlappingHarmonyByMeasure;
+	public SortedMap<Integer, Map<Integer, Harmony>> unoverlappingHarmonyByMeasure;
 	public int noteCount = -1; // needs to be set
+	public SortedMap<Integer, Integer> divsPerQuarterByMeasure;
 
 	public ParsedMusicXMLObject(boolean followRepeats) {
 		this.followRepeats = followRepeats;
