@@ -1,0 +1,90 @@
+% This file is iccc.tex.  It contains the formatting instructions for and acts as a template for submissions to ICCC.  It borrows liberally from the AAAI and IJCAI formats and instructions.  It uses the files iccc.sty, iccc.bst and iccc.bib, the first two of which also borrow liberally from the same sources.
+
+
+\documentclass[letterpaper]{article}
+\usepackage{iccc}
+
+
+\usepackage{times}
+\usepackage{helvet}
+\usepackage{courier}
+\pdfinfo{
+/Title (Catchy Title)
+/Subject (Proceedings of ICCC)
+/Author (Paul Bodily)}
+% The file iccc.sty is the style file for ICCC proceedings.
+%
+\title{Pop*}
+\author{Paul Bodily and Dan Ventura\\
+Computer Science Department\\
+Brigham Young University\\
+Provo, UT 84602  USA\\
+ventura@cs.byu.edu\\
+}
+\setcounter{secnumdepth}{0}
+
+\begin{document} 
+\maketitle
+\begin{abstract}
+\begin{quote}
+Abstract
+\end{quote}
+\end{abstract}
+
+\section{Introduction}
+
+Brief!!!!! Others have created systems that independently generate melody, harmony, lyrics, or some combination of these. A few systems exist which attempt to combine all of them. Magenta, others.
+
+Concept-learning approach.
+
+Take-homes: data-driven, uses Pachet's constrained markov model, learns constraints from data, modular, composition and concept-learning.
+
+\section{Methods}
+
+How we are modeling the distribution over compositions. 
+
+\subsection{Inspiration}
+
+\subsection{Intention}
+
+\subsection{Global Structure}
+
+\subsubsection{Segment detection}
+
+\subsection{Segment Structure}
+
+\section{Results}
+
+\section{Conclusion}
+
+\section{Acknowledgments}
+
+The preparation of these instructions and the \LaTeX{} and Word files was 
+facilitated by borrowing from similar documents used for AAAI and IJCAI proceedings.
+
+
+%\appendix{\LaTeX{} and Word Style Files}\label{stylefiles}
+
+%The \LaTeX{} and Word style files are available on the ICCC-13
+%website, {\tt http://computationalcreativity.net/iccc2013/}.
+%These style files implement the formatting instructions in this
+%document.
+
+%The \LaTeX{} files are {\tt iccc.sty} and {\tt iccc.tex}, and
+%the Bib\TeX{} files are {\tt iccc.bst} and {\tt iccc.bib}. The
+%\LaTeX{} style file is for version 2e of \LaTeX{}, and the Bib\TeX{}
+%style file is for version 0.99c of Bib\TeX{} ({\em not} version
+%0.98i).
+
+%The Microsoft Word style file consists of a single template file, {\tt
+%iccc.dot}. 
+
+%These Microsoft Word and \LaTeX{} files contain the source of the
+%present document and may serve as a formatting sample.  
+
+
+\bibliographystyle{iccc}
+\bibliography{iccc}
+
+
+\end{document}
