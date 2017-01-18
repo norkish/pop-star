@@ -33,55 +33,111 @@ Abstract
 
 \section{Introduction}
 
-Brief!!!!! Others have created systems that independently generate melody, harmony, lyrics, or some combination of these. A few systems exist which attempt to combine all of them. Magenta, others.
+Children possess the amazing ability to use concepts they already know to understand and even create new concepts. Models of this \textit{human-level concept learning} have proven to be extremely effective (better even than deep-learning algorithms) in one-shot classification, parsing, and generation of hand-written characters \cite{lake2015human}.
 
-Concept-learning approach.
+Concept learning works by factoring the joint distribution over hand-written characters into a product of conditional distributions over \textit{subconcepts} (e.g., number of strokes per character, stroke starting position, number of sub-strokes per stroke, substroke shape), which themselves can be further factored. This decomposition allows the system to effectively learn subconcepts from data in order to easily learn and generate new characters.
 
-Take-homes: data-driven, uses Pachet's constrained markov model, learns constraints from data, modular, composition and concept-learning.
+In this paper we investigate the strengths and weaknesses of human-level concept learning as a tool for creating computationally creative systems. In particular we find that concept learning provides a powerful framework for producing novel, typical, artefacts that invariably include elements of surprise by virtue of its wide range of expression.
+
+We focus on the domain of lyrical pop music composition; however the principles are readily applicable in other domains. Lyrical pop music is an ideal subject insofar as it naturally decomposes into multiple sub-problems, each of which can then be further factored. The system we describe, which we call \textit{Pop*}, demonstrates how existing computational creative solutions can be readily incorporated in defining subconcept distributions, using the specific example of Pachet's constrained Markov model.
+
+Despite its worldwide popularity for generations, lyrical pop music generation has been limitedly researched from a computational perspective. Magenta, JukeBox, ...
 
 \section{Methods}
 
-How we are modeling the distribution over compositions. 
+One of the challenges of this is deciding how and how far to factor the joint distribution. Bayes' theorem suggest that the factoring is irrelevant: any factoring should reproduce the joint when the terms are multiplied:
+
+(SHOW DIFFERENT FACTORINGS AND BAYES RULE)
+
+However, in practice we quickly find the need to approximate distributions, which in turn will affect the joint distribution that is modeled.
+
+ In music, it's somewhat akin to asking a composer, ``do you compose the melody first? Or the lyrics first?" Responses will vary. 
+
+One of the challenges is that it's really hard to learn the distribution for each subconcept. The space of possible of songs is essentially infinite. But often an approximation is sufficient. This use of an approximate distribution motivated implementing a modular framework for a few reasons. First, it affords the metacreator the opportunity to improve upon or substitute an alternative approximation function for any of the subcomponents. Second, multiple approximations can be combined to create an approximation function with a wider range of outputs.
+
+For our purposes we have chosen the following factorization of the joint distribution over lyrical pop music compositions:
+
+P(x)...
+
+We trained submodels using lyrical pop composition data from the Wikifonia dataset which contains 6,673 compositions in MusicXML format. Depending on the submodel, the dataset was appropriately filtered (e.g., harmony model only trained on compositions with harmonies). All songs were normalized to the same starting key.
 
 \subsection{Inspiration}
 
+There is some benefit to the vagary of factorization: we can condition on any variable that could be argued to influence the song's composition. Despite the a long-standing tradition in CC that (inspiration) is essential to creativity, there have been many arguably-creative systems described elsewhere in the literature where inspiration effectively gets ``lost in the wash''. With the concept learning framework, we can model this attribute explicitly.
+
+In our system we distinguish between inspiration and intention. \textit{Inspiration} represents an environmental impetus that serves to shape the intention (e.g., ``my horse died''). \textit{Intention} (discussed below) represents what/how we want to communicate thematically, structurally, or culturally (e.g., ``sadness'' and ``country vernacular'').
+
 \subsection{Intention}
+
+In Pop* we use Bay et al.'s notion of intention to define the thematic, stylistic, and cultural objectives that should influence the composition.
 
 \subsection{Global Structure}
 
-\subsubsection{Segment detection}
+NEED SOME MATH HERE
+
+Many creative artefacts have some form of global structure, defining the boundary and relationships between subparts of an artefact. An example in literature might be the structure of the story line (e.g., "hero cycle"). In lyrical pop music, these subparts are readily apparent in the sequence of verses (V) and choruses (C) (defining large-scale repetitions in one or more musical viewpoints) and intros (I), outros (O), and bridges (B) (generally not wholly repeated). We refer to these subparts in our model as \textit{segments} and its value (e.g., "verse") as its \textit{segment type}.
+
+There are several ways to approximate a distribution for global structure. We first implemented a severely limited approximation: a \textbf{fixed} structure (e.g., I,V,C,V,C,B,C,O). Despite the range of possible compositions that are uncomputable by this approximation, this limitation would likely be overlooked if enough variation exists in other subcomponent models.
+
+We improved upon this approximation with a \textbf{distributional model} which creates a probability density function of possible structures as learned from a database of composition artefacts (see Figure of pdf!!!). While making possible a wider range of plausible structures, distributional models learned from data carry significant AI challenges. Consider, for example, that most compositions do not label the segments, and therefore they must somehow be inferred.
+
+To infer segments we used a Needleman-Wunsch alignment over multiple viewpoints to find regions of an input composition where harmony, melody, and lyrics all matched (i.e., chorus) and where only harmony and melody matched (i.e., verse). All other segments (demarcated by the inferred verse/chorus segments) were labeled as intro, outro, interlude, or bridge according to their position in the composition and whether or not they contained lyrics.
 
 \subsection{Segment Structure}
 
+The subparts defined by global structure often represent subconcepts that require further factorization or definition. For example, segments in a composition exhibit \textit{segment structure} in the number of measures; the number of syllables or notes; which lyrics rhyme; and how harmonic progressions or melodic sequences repeat. 
+
+Besides implementing a \textbf{fixed} structure, we also tried learning a probability distribution of structure from existing compositions. 
+
+Counting syllables, counting variation in syllable count over segments of the same type
+
+Counting measures
+
+Aligning melody
+
+Aligning harmony
+
+Aligning normalized melody
+
+Aligning phonemes
+
+\subsection{Harmony}
+
+Having sampled an abstract representation of the song, the system proceeds to construct the physical representation of the artefact, conditioned on the constraints imposed by the global or subglobal structure. In lyrical pop music composition, we summarize the physical representation in terms of harmony, melody, and lyrics, generated in that order. Each is conditioned on the structure and elements that have been previously sampled.
+
+Our most basic implementation of an approximation for a model of harmonic sequences is the \textbf{monochord generator} which generates a single chord lasting the entire composition. Though a few monochord pop songs have been successful, the vast majority depend on more complex harmonic progressions. 
+
+Though many grammar-based approaches exist for generating harmonic progression (e.g., \cite{steedman1984generative}), we opted to see how much could be learned using a strictly data-driven model. The \textit{distributional harmony} model is further factored into two independent submodels: the \textbf{distributional harmony duration} model and the \textit{distributional harmony chord} model
+
+The decision to assume that duration and chord are independent, though potentially erroneous, was deliberate. This was based on the reasoning that the strength of a probabilistic model depends on the number of instances used to train the model. Each time a distribution adds a conditional variable, the strength of the model is drastically reduced (this also explains why I'm unimpressed when obscure sports records are broken and announced by sportscasters). We felt that the duration and chord are sufficiently independent to where the model strength recovered by assuming independence outweighed the cost of ignoring any relation between them. (Can we show this somehow?)
+
+The distributional harmony duration and chord models were implemented as a constrained single-order Markov model \cite{pachet2001finite}. Each was additionally conditioned on time signature, measure position, and segment type. Our intuition was that conditioning on segment type would allow a chorus (which may perhaps have more powerful progressions or stronger resolutions) to distinguish itself harmonically from a bridge (which tends towards less resolution).
+
+Markov models with constraints don't work for lengths that aren't in terms of tokens. How to deal with length? Perhaps have each token represent a specific duration?
+
+\subsection{Melody}
+
+
+
+\subsection{Lyrics}
+
+High-level Lyrist summary
+
+\subsection{Voicing}
+
+This is where we choose the key.
+
+Not the focus...
+
+MusicXML, Harmony Assistant
+
 \section{Results}
 
+\section{Discussion}
+
+There is much that can be drawn from the parallel between concept learning in children and concept learning in computers. One common criticism of probabilistic models is that they require too much hand-holding and manual construction. While the criticism is accurate?defining the submodels requires both domain knowledge and is time-intensive?it is a mistake to assume that any system possessing these attributes is inherently worse than a system requiring no domain knowledge or customized implementation. As a simple example, one need only consider how much ``hand-holding'' is required to teach a child to read. The Direct Instruction System for Teaching Arithmetic and Reading (DISTAR) method, which uses a rule-learning approach very similar to the human-level concept learning we've described, has been touted as one of the most effective for teaching children to read and do math. There are a lot of parallels here: metacreator = parent (both prone to biases), concepts have to be taught one-by-one (not sufficient to just give the kid a bunch of books and say ``practice reading''), kid eventually learns this skill.
+
 \section{Conclusion}
-
-\section{Acknowledgments}
-
-The preparation of these instructions and the \LaTeX{} and Word files was 
-facilitated by borrowing from similar documents used for AAAI and IJCAI proceedings.
-
-
-%\appendix{\LaTeX{} and Word Style Files}\label{stylefiles}
-
-%The \LaTeX{} and Word style files are available on the ICCC-13
-%website, {\tt http://computationalcreativity.net/iccc2013/}.
-%These style files implement the formatting instructions in this
-%document.
-
-%The \LaTeX{} files are {\tt iccc.sty} and {\tt iccc.tex}, and
-%the Bib\TeX{} files are {\tt iccc.bst} and {\tt iccc.bib}. The
-%\LaTeX{} style file is for version 2e of \LaTeX{}, and the Bib\TeX{}
-%style file is for version 0.99c of Bib\TeX{} ({\em not} version
-%0.98i).
-
-%The Microsoft Word style file consists of a single template file, {\tt
-%iccc.dot}. 
-
-%These Microsoft Word and \LaTeX{} files contain the source of the
-%present document and may serve as a formatting sample.  
-
 
 \bibliographystyle{iccc}
 \bibliography{iccc}
