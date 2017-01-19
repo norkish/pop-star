@@ -35,13 +35,27 @@ Abstract
 
 Children possess the amazing ability to use concepts they already know to understand and even create new concepts. Models of this \textit{human-level concept learning} have proven to be extremely effective (better even than deep-learning algorithms) in one-shot classification, parsing, and generation of hand-written characters \cite{lake2015human}.
 
-Concept learning works by factoring the joint distribution over hand-written characters into a product of conditional distributions over \textit{subconcepts} (e.g., number of strokes per character, stroke starting position, number of sub-strokes per stroke, substroke shape), which themselves can be further factored. This decomposition allows the system to effectively learn subconcepts from data in order to easily learn and generate new characters.
+Concept learning works by factoring the joint distribution over hand-written character types into a product of conditional distributions,
+
+\[ P(\psi) = P(\kappa) \prod_{i=1}^{\kappa} P(n_i|\kappa)P(S_i|i,n_i)P(R_i|S_1, ..., S_{i-1}), \]
+
+\noindent where each conditional distribution is a model of a \textit{subconcept}: \( P(\kappa) \) models the number of strokes per character; \( P(n_i|\kappa) \) models the \# of substrokes for the $i$th stroke for a character with $\kappa$ strokes; \( P(S_i|i,n_i) \) models the $i$th stroke with $n_i$ substrokes; and \( P(R_i|S_1, ..., S_{i-1}) \) models the relation of the $i$th stroke to the previous strokes. Each of these models can be further decomposed. This process of decomposition allows the system to effectively learn subconcepts from empirical data in order to easily learn and generate new character types.
 
 In this paper we investigate the strengths and weaknesses of human-level concept learning as a tool for creating computationally creative systems. In particular we find that concept learning provides a powerful framework for producing novel, typical, artefacts that invariably include elements of surprise by virtue of its wide range of expression.
 
 We focus on the domain of lyrical pop music composition; however the principles are readily applicable in other domains. Lyrical pop music is an ideal subject insofar as it naturally decomposes into multiple sub-problems, each of which can then be further factored. The system we describe, which we call \textit{Pop*}, demonstrates how existing computational creative solutions can be readily incorporated in defining subconcept distributions, using the specific example of Pachet's constrained Markov model.
 
-Despite its worldwide popularity for generations, lyrical pop music generation has been limitedly researched from a computational perspective. Magenta, JukeBox, ...
+\section{Related Works}
+
+Despite its worldwide popularity for generations, lyrical pop music generation has received limited attention from the computational research community. Magenta, JukeBox, ...
+
+THIS DISCUSSION BELONGS SOMEWHERE, PERHAPS EXPANDED IN ITS OWN PAPER. We pause briefly to consider and address a few of the reasons for which pop music may have yet to garner significant interest within the research community. First, there is still a strong stigma against pop music as being inherently less musically sophisticated and therefore less musicologically valuable to humanity. Second, the term pop music (deriving from popular music) describes an eclectic variety of subgenres, depriving the term of any easily definable characteristics. Lastly, much of what lies within the domain of pop music remains highly proprietary, making it difficult for researchers to obtain access to sufficient data to train machine learning models.
+
+To dismiss what is currently popular as being less sophisticated or less valuable than the stuff of yore is a cycle which has repeated itself as far back as Mozart and as recently as with Jazz music. We stand to gain new insights into human and computer creativity as we acknowledge and overcome our biases towards certain creative expressions (especially those with as much cultural and psychological influence as pop music).
+
+Secondly, the vagary inherent in the definition of pop music provides an essential challenge to machine learning algorithms, which traditionally target and cater to problems with well-defined boundaries and examples. Models that generalize well in vast domains with relatively few training examples are essential to truly creative computational systems. As pop music has been popularly used to include genres as diverse as rap, indie, big band, broadway, and rock 'n' roll, the attempt to characterize models of popular music forces us to consider more generalized models of creativity, which have increased potential of having more cross-domain application and of discovering yet undiscovered subgenres of creativity (e.g., new pop music subgenres).
+
+Finally, the challenge of accessing high-quality pop music datasets (whether acoustic or symbolic) is significant. There is a dearth of well-annotated resources for those interested in studying any or all of the aspects of pop music composition. Besides being highly proprietary, artefacts in music generally require relatively complex representations and relatively few possess the domain knowledge required to generate or transcribe the needed data. There is, however, much we can do to improve the situation that lies within our power. First, we need to make resources that \textit{are} available more accessible (guitar tabs, lyrics sites, beatles, wikifonia). Second, we need to establish a better case for how society and industries stand to benefit from computational pop music research in order to generate a productive dialogue for the support and collaboration of those in possession of large pop music datasets (sheet music sites, spotify, etc., asking for APIs, etc). Note that this is different than asking them to simply give us their proprietary data. Third, we need to recognize contributions of novel datasets. 
 
 \section{Methods}
 
@@ -55,17 +69,17 @@ However, in practice we quickly find the need to approximate distributions, whic
 
 One of the challenges is that it's really hard to learn the distribution for each subconcept. The space of possible of songs is essentially infinite. But often an approximation is sufficient. This use of an approximate distribution motivated implementing a modular framework for a few reasons. First, it affords the metacreator the opportunity to improve upon or substitute an alternative approximation function for any of the subcomponents. Second, multiple approximations can be combined to create an approximation function with a wider range of outputs.
 
-For our purposes we have chosen the following factorization of the joint distribution over lyrical pop music compositions:
+We define the joint probability distribution on inspirations $\iota$, compositions $\gamma$, and voicings $\phi^{(m)}$ as follows,
 
-P(x)...
+\[ P(\iota,\gamma,\phi^{(1)}, ..., \phi^{(m)}) = P(\iota)P(\gamma|\iota) \prod_{m=1}^{M} P(\phi^{(m)}|\iota,\gamma). \]
+
+Pop* is primarily designed as a definition of $P(\gamma|\iota)$, and we devote the bulk of this section to its description. We then briefly describe $P(\phi^{(m)}|\iota,\gamma)$ and how it is defined in our system. $P(\iota)$ is the focus of ongoing research and is discussed in the Discussion section.
+
+For our purposes we have chosen the following factorization of the joint distribution over lyrical pop music compositions (note that we repurpose variables from the opening example):
+
+\[ P(\psi) = P(\kappa) \prod_{i=1}^{\kappa} P(n_i|\kappa)P(S_i|i,n_i)P(R_i|S_1, ..., S_{i-1}), \]
 
 We trained submodels using lyrical pop composition data from the Wikifonia dataset which contains 6,673 compositions in MusicXML format. Depending on the submodel, the dataset was appropriately filtered (e.g., harmony model only trained on compositions with harmonies). All songs were normalized to the same starting key.
-
-\subsection{Inspiration}
-
-There is some benefit to the vagary of factorization: we can condition on any variable that could be argued to influence the song's composition. Despite the a long-standing tradition in CC that (inspiration) is essential to creativity, there have been many arguably-creative systems described elsewhere in the literature where inspiration effectively gets ``lost in the wash''. With the concept learning framework, we can model this attribute explicitly.
-
-In our system we distinguish between inspiration and intention. \textit{Inspiration} represents an environmental impetus that serves to shape the intention (e.g., ``my horse died''). \textit{Intention} (discussed below) represents what/how we want to communicate thematically, structurally, or culturally (e.g., ``sadness'' and ``country vernacular'').
 
 \subsection{Intention}
 
@@ -123,6 +137,8 @@ Markov models with constraints don't work for lengths that aren't in terms of to
 
 High-level Lyrist summary
 
+
+
 \subsection{Voicing}
 
 This is where we choose the key.
@@ -136,6 +152,18 @@ MusicXML, Harmony Assistant
 \section{Discussion}
 
 There is much that can be drawn from the parallel between concept learning in children and concept learning in computers. One common criticism of probabilistic models is that they require too much hand-holding and manual construction. While the criticism is accurate?defining the submodels requires both domain knowledge and is time-intensive?it is a mistake to assume that any system possessing these attributes is inherently worse than a system requiring no domain knowledge or customized implementation. As a simple example, one need only consider how much ``hand-holding'' is required to teach a child to read. The Direct Instruction System for Teaching Arithmetic and Reading (DISTAR) method, which uses a rule-learning approach very similar to the human-level concept learning we've described, has been touted as one of the most effective for teaching children to read and do math. There are a lot of parallels here: metacreator = parent (both prone to biases), concepts have to be taught one-by-one (not sufficient to just give the kid a bunch of books and say ``practice reading''), kid eventually learns this skill.
+
+\subsection{Inspiration}
+
+In the joint probability distribution on inspirations $\iota$, compositions $\gamma$, and voicings $\phi^{(m)}$, we define $P(\iota)$ not as the prior on intentions, but as the prior on the inspiring source for the intention. In other words, not ``what was the artefact intended to communicate?'', but ``what was the inspiring source for what the artefact intended to communicate?''
+
+This represents an addition to the model originally presented by \cite{Lake et all}: not only are we modeling \textit{which} artefacts can be generated, but also \textit{why} they are generated. 
+
+There is some benefit to the vagary of factorization: we can condition on any variable that could be argued to influence the song's composition. Despite the a long-standing tradition in CC that (inspiration) is essential to creativity, there have been many arguably-creative systems described elsewhere in the literature where inspiration effectively gets ``lost in the wash''. With the concept learning framework, we can model this attribute explicitly.
+
+In our system we distinguish between inspiration and intention. \textit{Inspiration} represents an environmental impetus that serves to shape the intention (e.g., ``my horse died''). \textit{Intention} (discussed below) represents what/how we want to communicate thematically, structurally, or culturally (e.g., ``sadness'' and ``country vernacular'').
+
+Many creative systems do not explicitly model inspiration, but rather use a model that randomly selects an intention or which defers to the user to select an intention. Here may be where a great deal more effort could be devoted to defining the ``creative spark'' that determines an artefact's intention. For example, observers often perceive greater creativity in artefacts which in some way relate to them or to their culture \cite{colton}. Therefore using an observer's environment or culture as an inspiring source is one possible way to model inspiration \cite{paper dad sent about brain waves}. This is also akin to the inspiring source for much of human creativity.
 
 \section{Conclusion}
 
