@@ -41,7 +41,7 @@ import utils.Triple;
 public class MusicXMLParser {
 
 	public enum DirectionType {
-		DS_AL_CODA1, DS_AL_CODA2, SEGNO, IGNORE, CODA1, CODA2, DS_AL_FINE, FINE, DC_AL_FINE, DC_AL_CODA;
+		DS_AL_CODA1, AL_CODA1, CODA1, DS_AL_CODA2, AL_CODA2, CODA2, SEGNO, IGNORE, DS_AL_FINE, FINE, DC_AL_FINE, DC_AL_CODA1;
 		
 		public static DirectionType parseDirectionType(Node node) {
 			NodeList children = node.getChildNodes();
@@ -51,29 +51,32 @@ public class MusicXMLParser {
 				String childName = child.getNodeName();
 				if (childName.equals("words")) {
 					String words = child.getTextContent().toLowerCase().replaceAll("[^a-zA-Z0-9]", "").trim();
-					if (words.contains("dsalcoda2")) { 
+					if (words.equals("dsalcoda2")) { 
 						return DirectionType.DS_AL_CODA2;
-					} else if (words.contains("dsalcoda")) {
+					} else if (words.equals("dsalcoda") || words.equals("dsalcoda1") || words.equals("dsacoda")) {
 						return DirectionType.DS_AL_CODA1;
-					} else if (words.contains("dsalfine")) { 
+					} else if (words.equals("dsalfine") || words.equals("solosonfbluesaftersolosdsalfine")) { 
 						return DirectionType.DS_AL_FINE;
-					} else if (words.contains("dcalfine") || words.contains("dcaalfine")) { 
+					} else if (words.equals("dcalfine") || words.equals("dcaalfine") || words.equals("dcalfinenorepeat")) { 
 						return DirectionType.DC_AL_FINE;
-					} else if (words.contains("dcalcoda")) { 
-						return DirectionType.DC_AL_CODA;
-					} else if (words.contains("coda") || words.contains("tocoda")) {
-						return DirectionType.CODA1;
-					} else if (words.contains("coda2") || words.contains("tocoda2")) {
-						return DirectionType.CODA2;
-					} else if (words.contains("fine") || words.contains("alfine")) {
+					} else if (words.equals("dcalcoda")) { 
+						return DirectionType.DC_AL_CODA1;
+					} else if (words.equals("alcoda2") || words.equals("tocoda2")) {
+						return DirectionType.AL_CODA2;
+					} else if (words.equals("alcoda") || words.equals("tocoda") || 
+							words.equals("alcoda1") || words.equals("tocoda1") || words.equals("zurcoda")) {
+						return DirectionType.AL_CODA1;
+					} else if (words.equals("fine") || words.equals("alfine")) {
 						return DirectionType.FINE;
-					} else if (words.contains("voicetacet")) {
+					} else if (words.equals("coda")) {
+						return DirectionType.CODA1;
+					} else if (words.equals("voicetacet")) {
 						return DirectionType.IGNORE;
-					} else if (words.contains("rubato")) { 
+					} else if (words.equals("rubato")) { 
 						return DirectionType.IGNORE;
-					} else if (words.contains("dcalcoda") || words.contains("fine") && 
+					} else if (words.contains("coda") || words.contains("fine") && 
 							!words.equals("repeat4timesthendsalfine") && !words.equals("4xfine")) { 
-						throw new RuntimeException("dcalcoda:" + words);
+						throw new RuntimeException("catchall:" + words);
 					} else {
 						System.err.println("Unknown text content of words node in direction:" + words);
 					}
@@ -1267,16 +1270,16 @@ public class MusicXMLParser {
 		int coda1 = findDirectionTypeStartingFrom(measures, DirectionType.CODA1, measures.size());
 		int coda2 = (coda1 == -1? -1 : findDirectionTypeStartingFrom(measures, DirectionType.CODA1, coda1));
 		int dsalcoda = findDirectionTypeStartingFrom(measures, DirectionType.DS_AL_CODA1, measures.size());
-		int dcalcoda = findDirectionTypeStartingFrom(measures, DirectionType.DC_AL_CODA, measures.size());
+		int dcalcoda = findDirectionTypeStartingFrom(measures, DirectionType.DC_AL_CODA1, measures.size());
 		if (coda1 != -1 && dsalcoda == -1 && dcalcoda == -1) {
-			System.err.println("Found coda at measure " + coda1 + ", but no D.S. al Coda. Assuming it directly precedes coda");
+			System.err.println("Found coda at measure " + coda1 + ", but no D.S. or D.C. al Coda. Assuming it directly precedes coda");
 			dsalcoda = coda1 - 1;
 			return null; // not gonna deal with it.
 		}
 		if (coda1 == -1 && (dsalcoda != -1 || dcalcoda != -1)) {
 			System.err.println("Found ds or dc at measure " + (dsalcoda == -1 ? dcalcoda : dsalcoda) + ", but no coda. Assuming it directly follows ds");
 			coda1 = (dsalcoda == -1 ? dcalcoda : dsalcoda) + 1;
-//			return null; // not gonna deal with it.
+			return null; // not gonna deal with it.
 		}
 		if (coda1 != -1 && (dsalcoda != -1 || dcalcoda != -1) && coda1 <= (dsalcoda == -1 ? dcalcoda : dsalcoda)) {
 			return null;
@@ -1453,7 +1456,7 @@ public class MusicXMLParser {
 									nextMeasure = 0;
 									System.err.println("Found D.C. al Fine — skipping back to measure " + nextMeasure);
 									endAtFine = true;
-								}  else if (type == DirectionType.DC_AL_CODA) {
+								}  else if (type == DirectionType.DC_AL_CODA1) {
 									if (followCoda) {
 										System.err.println("Detected loop (found D.C. twice without coda");
 										return null;
@@ -1604,7 +1607,6 @@ public class MusicXMLParser {
 		int totalSyllables = 0;
 		List<StressedPhone[]> phones;
 		for (Triple<Integer,Integer,Note> triple : notesByMeasure) {
-			System.out.println(triple);
 			final Note note = triple.getThird();
 			if ( note == null ) {
 				continue;
@@ -1728,7 +1730,7 @@ public class MusicXMLParser {
 	}
 
 	private static Harmony normalizeHarmony(Harmony currHarmony, Key currKey) {
-		if (currHarmony == null || currHarmony.root == null || currHarmony.root.rootStep == Pitch.NO_KEY || currKey.fifths == 0) return currHarmony;
+		if (currHarmony == null || currHarmony.root == null || currHarmony.root.rootStep == Pitch.NO_KEY || currKey == null || currKey.fifths == 0) return currHarmony;
 		int newRootStep = normalizePitch(currHarmony.root.rootStep, currKey);
 		if (newRootStep < 0) {
 			newRootStep += 12;
@@ -1756,7 +1758,7 @@ public class MusicXMLParser {
 	}
 
 	private static int normalizePitch(int pitch, Key currKey) {
-		if (pitch < 0) return pitch;
+		if (pitch < 0 || currKey == null) return pitch;
 		
 		int modification = (7*currKey.fifths + 144) % 12;
 		if (modification > 6) {
@@ -1781,10 +1783,16 @@ public class MusicXMLParser {
 						if (mGrandchild instanceof Text) continue;
 						String gNodeName = mGrandchild.getNodeName();
 						if (gNodeName.equals("direction-type")) {
-							DirectionType type = DirectionType.parseDirectionType(mGrandchild);
-							if (type == directionType) { 
-								return i;
-							} 
+							try {
+								DirectionType type = DirectionType.parseDirectionType(mGrandchild);
+								if (type == directionType) { 
+									return i;
+								} 
+							} catch (Exception e) {
+								MusicXMLSummaryGenerator.printNode(measure, System.out);
+								System.err.println("In measure number " + i);
+								throw e;
+							}
 						} 
 					}
 				} 
@@ -2104,8 +2112,9 @@ public class MusicXMLParser {
 			} else if (childName.equals("tie")) {
 				NoteTie tie2 = NoteTie.parse(child.getAttributes().getNamedItem("type").getTextContent());
 				if (tie != NoteTie.NONE && tie2 != tie)
-					throw new RuntimeException("Two note tie instructrutions");
-				tie = tie2;
+					tie = NoteTie.NONE;
+				else
+					tie = tie2;
 			} else if (childName.equals("notations")) {
 				NodeList grandchildren = child.getChildNodes();
 				for (int j = 0; j < grandchildren.getLength(); j++) {
@@ -2115,14 +2124,18 @@ public class MusicXMLParser {
 					if (grandchildName.equals("slur")) {
 						NoteTie slur2 = NoteTie.parse(grandchild.getAttributes().getNamedItem("type").getTextContent());
 						if (slur != NoteTie.NONE && slur2 != slur)
-							throw new RuntimeException("Two note slur instructrutions");
-						slur = slur2;
+							slur = NoteTie.NONE;
+						else 
+							slur = slur2;
 					} else if (grandchildName.equals("tied")) {
 						NoteTie tie2 = NoteTie.parse(grandchild.getAttributes().getNamedItem("type").getTextContent());
 						if (tie != NoteTie.NONE && tie2 != tie)
-							throw new RuntimeException("Two note tie instructrutions");
-						tie = tie2;
-					} else if (grandchildName.equals("fermata")) {
+							tie = NoteTie.NONE;
+						else
+							tie = tie2;
+					} else if (grandchildName.equals("fermata") || grandchildName.equals("tuplet") 
+							|| grandchildName.equals("articulations") || grandchildName.equals("technical")
+							|| grandchildName.equals("glissando") || grandchildName.equals("ornaments")) {
 						// do nothing
 					} else {
 						MusicXMLSummaryGenerator.printNode(child, System.err);
@@ -2459,13 +2472,9 @@ public class MusicXMLParser {
 	}
 
 	
-	static PrintWriter tmpDataWriter = null;
-	static PrintWriter tmp2DataWriter = null;
 	public static void main(String[] args) throws ZipException, IOException, ParserConfigurationException, SAXException, TransformerException {
 		int unrecoverableXML = 0;
-		tmpDataWriter = new PrintWriter("/Users/norkish/Archive/2016_BYU/501R_Deep_Learning/final/pitch_data.txt");
-		tmp2DataWriter = new PrintWriter("/Users/norkish/Archive/2016_BYU/501R_Deep_Learning/final/harmony_data.txt");
-		File[] files = new File("/Users/norkish/Archive/2015_BYU/ComputationalCreativity/data/Wikifonia").listFiles();
+		File[] files = new File("/Users/norkish/Archive/2017_BYU/ComputationalCreativity/data/Wikifonia").listFiles();
 		for (File file : files) {
 //			 if (!file.getName().equals("Billy Joel - Just The Way You Are.mxl"))
 //				 continue;
@@ -2500,8 +2509,6 @@ public class MusicXMLParser {
 		for (Integer i : smallestNoteTypePerSong.keySet()) {
 			System.out.println("\t" + i + ":" + smallestNoteTypePerSong.get(i));
 		}
-		tmpDataWriter.close();
-		tmp2DataWriter.close();
 		System.out.println("Chords removed in resolving overlapping chords:" + removedChordsCount);
 		System.out.println("Songs nixed for unparseable harmony:" + unparseableHarmonies);
 	}

@@ -59,33 +59,61 @@ Finally, the challenge of accessing high-quality pop music datasets (whether aco
 
 \section{Methods}
 
-One of the challenges of this is deciding how and how far to factor the joint distribution. Bayes' theorem suggest that the factoring is irrelevant: any factoring should reproduce the joint when the terms are multiplied:
-
-(SHOW DIFFERENT FACTORINGS AND BAYES RULE)
-
-However, in practice we quickly find the need to approximate distributions, which in turn will affect the joint distribution that is modeled.
-
- In music, it's somewhat akin to asking a composer, ``do you compose the melody first? Or the lyrics first?" Responses will vary. 
-
-One of the challenges is that it's really hard to learn the distribution for each subconcept. The space of possible of songs is essentially infinite. But often an approximation is sufficient. This use of an approximate distribution motivated implementing a modular framework for a few reasons. First, it affords the metacreator the opportunity to improve upon or substitute an alternative approximation function for any of the subcomponents. Second, multiple approximations can be combined to create an approximation function with a wider range of outputs.
-
 We define the joint probability distribution on inspirations $\iota$, compositions $\gamma$, and voicings $\phi^{(m)}$ as follows,
 
 \[ P(\iota,\gamma,\phi^{(1)}, ..., \phi^{(m)}) = P(\iota)P(\gamma|\iota) \prod_{m=1}^{M} P(\phi^{(m)}|\iota,\gamma). \]
 
-Pop* is primarily designed as a definition of $P(\gamma|\iota)$, and we devote the bulk of this section to its description. We then briefly describe $P(\phi^{(m)}|\iota,\gamma)$ and how it is defined in our system. $P(\iota)$ is the focus of ongoing research and is discussed in the Discussion section.
+In essence we are decomposing the model of lyrical song composition to individually model the inspiration for the composition, the symbolic (abstract) representation of the composition, and the concrete rendering of the composition. Pop* is primarily designed as a definition of $P(\gamma|\iota)$, and we devote the bulk of this section to its description. We then briefly describe $P(\phi^{(m)}|\iota,\gamma)$ and how it is defined in our system. $P(\iota)$ is the focus of ongoing research and is discussed in the Discussion section.
 
-For our purposes we have chosen the following factorization of the joint distribution over lyrical pop music compositions (note that we repurpose variables from the opening example):
+One of the challenges of using the HBPL model is deciding how and how far to factor the joint distribution. Bayes' theorem suggests that the factoring is irrelevant: any factoring should reproduce the joint when the terms are multiplied:
 
-\[ P(\psi) = P(\kappa) \prod_{i=1}^{\kappa} P(n_i|\kappa)P(S_i|i,n_i)P(R_i|S_1, ..., S_{i-1}), \]
+\[ P(A,B) = P(A|B)P(B) = P(B|A)P(A). \]
+
+However, in practice we quickly find the need to approximate distributions. Furthermore we at times make independence assumptions to increase the power of our models (as discussed below). The factorization will therefore only leave negligible ``fingerprints'' on the artefacts it can produce to the extent that each of the factors is accurately modeled.
+
+ In music, this is somewhat akin to asking a composer, ``do you compose the melody first? Or the lyrics first?" Responses will vary; but it is (theoretically) possible that a given composition could be composed via differing methodologies.
+
+Given that the space of possible of songs is essentially infinite, it can be challenging to accurately model the distribution for each subconcept with the relatively few songs that have actually been written. But often an approximation is sufficient to get a reasonable, working model. This use of an approximate distribution motivated implementing a modular framework for a few reasons. First, it affords the metacreator the opportunity to improve upon or substitute an alternative approximation function for any of the subcomponents. Second, multiple approximations can be combined to create an approximation function with a wider range of outputs.
+
+\subsubsection{Data}
 
 We trained submodels using lyrical pop composition data from the Wikifonia dataset which contains 6,673 compositions in MusicXML format. Depending on the submodel, the dataset was appropriately filtered (e.g., harmony model only trained on compositions with harmonies). All songs were normalized to the same starting key.
 
-\subsection{Intention}
+\subsection{Composition, $P(\gamma|\iota)$}
 
-In Pop* we use Bay et al.'s notion of intention to define the thematic, stylistic, and cultural objectives that should influence the composition.
+The conditional distribution on compositions $\gamma$, given an inspiration $\iota$, is defined as follows,
 
-\subsection{Global Structure}
+\[ P(\gamma|\iota) = P(\nu|\iota)P(\tau|\nu)P(\eta|\nu,\tau)P(\mu|\nu,\tau,\eta)P(\lambda|\nu,\tau,\mu), \] 
+
+\noindent with the following variable definitions:
+
+\(P(\nu|\iota):=\) prior over intentions $\nu$ given $\iota$,
+
+\(P(\tau|\nu):=\) prior over structure $\tau$ given $\nu$,
+
+\(P(\eta|\nu,\tau):=\) prior over harmony $\eta$ given $\nu$ and $\tau$,
+
+\(P(\mu|\nu,\tau,\eta):=\) prior over melody $\mu$ given $\nu$, $\tau$, and $\eta$, and
+
+\(P(\lambda|\nu,\tau,\mu):=\) prior over lyrics $\lambda$ given $\nu$, $\tau$, and $\mu$.
+
+We further factor our model of structure $\tau$ as
+
+\[ P(\tau|\nu) = P(\zeta|\nu)P(\sigma|\nu,\zeta) \]
+
+\noindent where 
+
+\(P(\zeta|\nu):=\) prior over global structure $\zeta$ given $\nu$ and
+
+\(P(\sigma|\nu,\zeta):=\) prior over segment structure $\sigma$ given $\nu$ and $\zeta$.
+
+This factorization of the prior on compositions makes several independence assumptions which will be discussed in the subsections that follow. Although this factorization is highly dependent on the domain of lyrical composition, there are strong cross-domain parallels for many of the factors which we will also examine.
+
+\subsubsection{Intention, $P(\nu|\iota)$}
+
+In Pop* we use \cite{bay:inpress-a}'s notion of intention to define the thematic, stylistic, and cultural objectives that should influence the composition.
+
+\subsubsection{Global Structure, $P(\zeta|\nu)$}
 
 NEED SOME MATH HERE
 
@@ -97,7 +125,7 @@ We improved upon this approximation with a \textbf{distributional model} which c
 
 To infer segments we used a Needleman-Wunsch alignment over multiple viewpoints to find regions of an input composition where harmony, melody, and lyrics all matched (i.e., chorus) and where only harmony and melody matched (i.e., verse). All other segments (demarcated by the inferred verse/chorus segments) were labeled as intro, outro, interlude, or bridge according to their position in the composition and whether or not they contained lyrics.
 
-\subsection{Segment Structure}
+\subsubsection{Segment Structure, $P(\sigma|\nu,\zeta)$}
 
 The subparts defined by global structure often represent subconcepts that require further factorization or definition. For example, segments in a composition exhibit \textit{segment structure} in the number of measures; the number of syllables or notes; which lyrics rhyme; and how harmonic progressions or melodic sequences repeat. 
 
@@ -115,7 +143,7 @@ Aligning normalized melody
 
 Aligning phonemes
 
-\subsection{Harmony}
+\subsubsection{Harmony, $P(\eta|\nu,\tau)$}
 
 Having sampled an abstract representation of the song, the system proceeds to construct the physical representation of the artefact, conditioned on the constraints imposed by the global or subglobal structure. In lyrical pop music composition, we summarize the physical representation in terms of harmony, melody, and lyrics, generated in that order. Each is conditioned on the structure and elements that have been previously sampled.
 
@@ -129,23 +157,27 @@ The distributional harmony duration and chord models were implemented as a const
 
 Markov models with constraints don't work for lengths that aren't in terms of tokens. How to deal with length? Perhaps have each token represent a specific duration?
 
-\subsection{Melody}
+\subsubsection{Melody, $P(\mu|\nu,\tau,\eta)$}
 
 
 
-\subsection{Lyrics}
+\subsubsection{Lyrics, $P(\lambda|\nu,\tau,\mu)$}
 
-High-level Lyrist summary
+Several models of natural language generation and in particular NLG in poetry and music have been published. As these models continue to improve, so will their application in lyrical composition. This demonstrates the relative robustness of the HBPL framework: as improved models are conceived and implemented, the joint model is also improved.
 
+To approximate a distribution for $P(\lambda|\nu,\tau,\mu)$ we developed an independent module called Lyrist \cite{bay:inpress-a}. Lyrist uses existing lyric segments as templates for the creation of novel lyric segments according to $\tau$. Templates are selected as a function of the length (in note count) of $\mu$. Lyrist intelligently chooses which words to replace by finding those words which... Given an original word $l$ uses the word embedding $W(l)$ to intelligently choose a replacement word $l'$. Lyrist uses the cultural intention of $\nu$ in selecting the training corpus for the word embedding model and the thematic intention of $\nu$ as a seed for finding a set of candidates for $l'$. These candidates are then filtered according to constraints imposed by the structural intention of $\nu$ and the morphosyntactic POS tag of $l$ \cite{bay:inpress-a}.
 
+The advantage of using a template-based approach to lyrics generation is that it does well at maintaining syntactical coherence. The primary shortcomings are that resulting lyrics provide minimal syntactic novelty from the training data and make no inherent effort at providing global semantic cohesion.
 
-\subsection{Voicing}
+Other things we hope to try include...
 
-This is where we choose the key.
+  (ALGORITHM POPOUT BOX)
 
-Not the focus...
+\subsection{Voicing, $P(\phi^{(m)}|\iota,\gamma)$}
 
-MusicXML, Harmony Assistant
+The goal of Pop* was to develop a model of lyrical compositions $\gamma$ (i.e., a leadsheet). However, evaluating such an artifact inevitably requires a concrete rendering of the artefact, whose distribution can we have modeled according to the term $P(\phi^{(m)}|\iota,\gamma)$. We chose a simple voicing module which comps piano chords containing notes defined by the harmony in a middle keyboard range together with a comping bass line (also determined by the harmony). The key for the voiced composition was sampled from the empirical frequency of keys in the training set. 
+
+The artefact is rendered both as leadsheet and a full score (i.e., with piano and bass notes played) in MusicXML format. An MP3 audio featuring computer-sung lyrics recording is then produced using Harmony Assistant (v9.7.0f) and Virtual Singer (v3.2).
 
 \section{Results}
 
@@ -157,13 +189,17 @@ There is much that can be drawn from the parallel between concept learning in ch
 
 In the joint probability distribution on inspirations $\iota$, compositions $\gamma$, and voicings $\phi^{(m)}$, we define $P(\iota)$ not as the prior on intentions, but as the prior on the inspiring source for the intention. In other words, not ``what was the artefact intended to communicate?'', but ``what was the inspiring source for what the artefact intended to communicate?''
 
-This represents an addition to the model originally presented by \cite{Lake et all}: not only are we modeling \textit{which} artefacts can be generated, but also \textit{why} they are generated. 
+This represents an addition to the model originally presented by \cite{lake2015human}: not only are we modeling \textit{which} artefacts can be generated, but also \textit{why} they are generated. 
 
 There is some benefit to the vagary of factorization: we can condition on any variable that could be argued to influence the song's composition. Despite the a long-standing tradition in CC that (inspiration) is essential to creativity, there have been many arguably-creative systems described elsewhere in the literature where inspiration effectively gets ``lost in the wash''. With the concept learning framework, we can model this attribute explicitly.
 
 In our system we distinguish between inspiration and intention. \textit{Inspiration} represents an environmental impetus that serves to shape the intention (e.g., ``my horse died''). \textit{Intention} (discussed below) represents what/how we want to communicate thematically, structurally, or culturally (e.g., ``sadness'' and ``country vernacular'').
 
-Many creative systems do not explicitly model inspiration, but rather use a model that randomly selects an intention or which defers to the user to select an intention. Here may be where a great deal more effort could be devoted to defining the ``creative spark'' that determines an artefact's intention. For example, observers often perceive greater creativity in artefacts which in some way relate to them or to their culture \cite{colton}. Therefore using an observer's environment or culture as an inspiring source is one possible way to model inspiration \cite{paper dad sent about brain waves}. This is also akin to the inspiring source for much of human creativity.
+Many creative systems do not explicitly model inspiration, but rather use a model that randomly selects an intention or which defers to the user to select an intention. Here may be where a great deal more effort could be devoted to defining the ``creative spark'' that determines an artefact's intention. For example, observers often perceive greater creativity in artefacts which in some way relate to them or to their culture \cite{colton2008creativity}. Therefore using an observer's environment or culture as an inspiring source is one possible way to model inspiration. Recent research in Electroencephalogram (EEG)-based affective computing (i.e., reading brain waves) suggests that computers may soon be endowed with perceptive capabilities of an observers emotional state beyond those of their human counterparts \cite{volioti2016mapping}.
+
+\subsection{Big (Need for) Data}
+
+As mentioned above, each of the empirically-driven models requires training on a dataset representative of the artefact domain. Even if we had digital access to all of the compositions ever written, it would represent an infinitesimal portion of the songs that could be written. This is a challenge in many machine learning domains. Unique to the pop music domain, however, is that data is highly proprietary. What \textit{is} available is extremely limited and of relatively poor quality. Compared to natural language, the language of music is notationally more complex and less commonly used or understood. Among those who \textit{do} understand and use it, music formatting can vary wildly and inexactly---creating additional challenges for a by-the-bit computer parser. Computers will only learn to speak music as quickly as we either formalize and ubiquitize the language of music \textit{or} endow computers with AI tools (e.g., ears to listen) to fill in the gaps on their own.
 
 \section{Conclusion}
 
