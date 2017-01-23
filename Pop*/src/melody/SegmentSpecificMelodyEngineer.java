@@ -83,7 +83,7 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 				}
 				
 				durationMarkovModelsByOffsetByTime.remove(currTime);
-				double divsPerQuarter = Utils.valueForKeyBeforeOrEqualTo(measure, divsPerQuarterByMeasure);
+				double divsPerQuarter = (double) Utils.valueForKeyBeforeOrEqualTo(measure, divsPerQuarterByMeasure);
 				double beatsOffset = (divsOffset/divsPerQuarter) * (currTime.beatType/4.0);
 
 				double noteDurationInBeats = (note.duration/divsPerQuarter) * (currTime.beatType/4.0);
@@ -102,7 +102,7 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 						if (currNoteTime.equals(Time.TWO_TWO)) {
 							currNoteTime = Time.FOUR_FOUR;
 						}
-						currNoteDivsPerQuarter = Utils.valueForKeyBeforeOrEqualTo(currNoteMeasure, divsPerQuarterByMeasure);
+						currNoteDivsPerQuarter = (double) Utils.valueForKeyBeforeOrEqualTo(currNoteMeasure, divsPerQuarterByMeasure);
 
 						if (currNote.isChordWithPrevious || currNote.pitch != note.pitch || (currNote.lyric != null && !currNote.lyric.text.isEmpty())) {
 							break;

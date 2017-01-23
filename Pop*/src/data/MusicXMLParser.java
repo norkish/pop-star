@@ -2,7 +2,6 @@ package data;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -27,14 +26,10 @@ import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
 import data.MusicXMLParser.Barline.RepeatDirection;
-import data.MusicXMLParser.Note;
-import data.MusicXMLParser.NoteLyric;
-import data.MusicXMLParser.Time;
 import pitch.Pitch;
 import syllabify.Syllabifier;
 import tabcomplete.rhyme.Phonetecizer;
 import tabcomplete.rhyme.StressedPhone;
-import tabcomplete.utils.Utils;
 import utils.Pair;
 import utils.Triple;
 
@@ -2484,9 +2479,9 @@ public class MusicXMLParser {
 			 System.out.println(file.getName());
 			 MusicXMLParser musicXML = new MusicXMLParser(MusicXMLSummaryGenerator.mxlToXML(file));
 			 MusicXMLSummaryGenerator.printDocument(musicXML.xml, System.out);
-			 String melogenString;
+			 ParsedMusicXMLObject parsedObject;
 			 try {
-				 melogenString = musicXML.toMelogenString();
+				 parsedObject = musicXML.parse(true);
 			 } catch (AssertionError e) {
 				 System.err.println(file.getName());
 				 throw e;
@@ -2494,9 +2489,9 @@ public class MusicXMLParser {
 				 System.err.println(file.getName());
 				 throw e;
 			 }
-			 if (melogenString == null)
+			 if (parsedObject == null)
 				 unrecoverableXML++;
-			 System.out.println(melogenString);
+			 System.out.println(parsedObject);
 		}
 		
 		System.out.println("badXMLs:" + unrecoverableXML);
