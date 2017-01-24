@@ -16,7 +16,7 @@ import data.MusicXMLParser.DirectionType;
 public class WikifoniaCorrection {
 
 	public enum CorrectionType {
-		REPLACE_DIRECTION, REMOVE_DIRECTION
+		REPLACE, REMOVE, ADD
 
 	}
 
@@ -24,26 +24,98 @@ public class WikifoniaCorrection {
 	static {
 		Map<String, List<WikifoniaCorrection>> acorrections = new HashMap<String, List<WikifoniaCorrection>>();
 		
-		addCorrection(acorrections, "Allee Willis, Jon Lind - Boogie Wonderland.mxl", 11,
-				CorrectionType.REPLACE_DIRECTION, DirectionType.CODA1, DirectionType.AL_CODA1); // coda -> al coda
-
-		addCorrection(acorrections, "Amador  Perez Dimas - Nereidas.mxl", 81,
-				CorrectionType.REPLACE_DIRECTION, DirectionType.CODA1, DirectionType.AL_CODA1); // coda -> al coda
-
-		addCorrection(acorrections, "Andre Moss - My Spanish Rose.mxl", 37,
-				CorrectionType.REMOVE_DIRECTION, DirectionType.SEGNO, null); // take off segno
-
-		addCorrection(acorrections, "A.S.Sullivan, W.S.Gilbert - With Cat-like Tread.mxl", 7,
-				CorrectionType.REPLACE_DIRECTION, DirectionType.CODA1, DirectionType.AL_CODA1); // coda -> al coda
 		
-		addCorrection(acorrections, "Billie Joe Armstrong - Wake Me Up When September Ends.mxl", 58, 
-				CorrectionType.REPLACE_DIRECTION, DirectionType.CODA1, DirectionType.AL_CODA1); // coda -> al coda
+		addCorrection(acorrections, "A.B. Quintanilla III, Pete Astudillo - Baila Esta Cumbia.mxl", 61, CorrectionType.ADD, null, DirectionType.CODA1); // add coda
 		
-		addCorrection(acorrections, "Billy Joel - Just The Way You Are.mxl", 99, 
-				CorrectionType.REPLACE_DIRECTION, DirectionType.CODA1, DirectionType.AL_CODA1); // coda -> al coda
+		addCorrection(acorrections, "A.B. Quintanilla III, Pete Astudillo - Baila Esta Cumbia.mxl", 47, CorrectionType.ADD, null, DirectionType.AL_CODA1); // add coda
 		
-		addCorrection(acorrections, "Bob Davie, Marvin Moore - The Green Door.mxl", 10,
-				CorrectionType.REPLACE_DIRECTION, DirectionType.CODA1, DirectionType.AL_CODA1); // coda -> al coda
+		addCorrection(acorrections, "A.Preud'homme - Op de Purperen Hei.mxl", 32, CorrectionType.ADD, null, DirectionType.CODA1); // add coda
+
+		addCorrection(acorrections, "A.S.Sullivan, W.S.Gilbert - With Cat-like Tread.mxl", 7, CorrectionType.REPLACE, DirectionType.CODA1, DirectionType.AL_CODA1); // coda -> al coda
+		
+		addCorrection(acorrections, "A.W. LeRoy, A. Hazes - De Vlieger.mxl", 33, CorrectionType.REMOVE, DirectionType.CODA1, null); // remove coda
+		addCorrection(acorrections, "A.W. LeRoy, A. Hazes - De Vlieger.mxl", 33, CorrectionType.REMOVE, DirectionType.CODA1, null); // remove coda
+		addCorrection(acorrections, "A.W. LeRoy, A. Hazes - De Vlieger.mxl", 31, CorrectionType.REMOVE, DirectionType.CODA1, null); 
+
+		addCorrection(acorrections, "Adam Fine - Laplace.mxl", 22, CorrectionType.REPLACE, DirectionType.CODA1, DirectionType.AL_CODA1);
+		addCorrection(acorrections, "Adam Fine - Laplace.mxl", 23, CorrectionType.ADD, null, DirectionType.DC_AL_CODA1); // add coda
+		
+		addCorrection(acorrections, "Adam Levine, James Valentine - She Will Be Loved.mxl", 34, CorrectionType.REPLACE, DirectionType.CODA1, DirectionType.AL_CODA1); 
+		addCorrection(acorrections, "Adam Levine, James Valentine - She Will Be Loved.mxl", 48, CorrectionType.ADD, null, DirectionType.CODA1); 
+
+		addCorrection(acorrections, "Adrienne Anderson, Barry Manilow - Could It Be Magic.mxl", 38, CorrectionType.ADD, null, DirectionType.DS_AL_CODA1);
+		addCorrection(acorrections, "Adrienne Anderson, Barry Manilow - Could It Be Magic.mxl", 36, CorrectionType.REPLACE, DirectionType.CODA1, DirectionType.AL_CODA1);
+
+		addCorrection(acorrections, "Agustin Lara - Solamente una Vez.mxl", 32, CorrectionType.ADD, null, DirectionType.DC_AL_CODA1);
+		addCorrection(acorrections, "Agustin Lara - Solamente una Vez.mxl", 28, CorrectionType.REPLACE, DirectionType.CODA1, DirectionType.AL_CODA1);
+		
+		addCorrection(acorrections, "Alanis Morissette, Glen Ballard - Ironic.mxl", 31, CorrectionType.REMOVE, DirectionType.CODA1, null);
+		addCorrection(acorrections, "Alanis Morissette, Glen Ballard - Ironic.mxl", 10, CorrectionType.REMOVE, DirectionType.CODA1, null);
+		addCorrection(acorrections, "Alanis Morissette, Glen Ballard - Ironic.mxl", 32, CorrectionType.ADD, null, DirectionType.CODA1);
+		
+		addCorrection(acorrections, "Albert Hammond, Mike Hazlewood - Little Arrows.mxl", 48, CorrectionType.ADD, null, DirectionType.CODA1);
+		
+		addCorrection(acorrections, "Albert Parlow - Aambeeld-Polka.mxl", 92, CorrectionType.REPLACE, DirectionType.SEGNO, DirectionType.DS_AL_CODA1);
+		addCorrection(acorrections, "Albert Parlow - Aambeeld-Polka.mxl", 32, CorrectionType.REPLACE, DirectionType.CODA1, DirectionType.AL_CODA1);
+		
+		addCorrection(acorrections, "Alicia Keys, George Harry, Kerry Brothers Jr. - No One.mxl", 39, CorrectionType.REPLACE, DirectionType.SEGNO, DirectionType.DS_AL_CODA1);
+		addCorrection(acorrections, "Alicia Keys, George Harry, Kerry Brothers Jr. - No One.mxl", 23, CorrectionType.REPLACE, DirectionType.CODA1, DirectionType.AL_CODA1);
+
+		addCorrection(acorrections, "Alicia Keys, George Harry, Kerry Brothers Jr. - No One.mxl.1", 39, CorrectionType.REPLACE, DirectionType.SEGNO, DirectionType.DS_AL_CODA1);
+		addCorrection(acorrections, "Alicia Keys, George Harry, Kerry Brothers Jr. - No One.mxl.1", 23, CorrectionType.REPLACE, DirectionType.CODA1, DirectionType.AL_CODA1);
+		
+		addCorrection(acorrections, "Allee Willis, Jon Lind - Boogie Wonderland.mxl", 11, CorrectionType.REPLACE, DirectionType.CODA1, DirectionType.AL_CODA1); // coda -> al coda
+		
+		addCorrection(acorrections, "Amador  Perez Dimas - Nereidas.mxl", 81, CorrectionType.REPLACE, DirectionType.CODA1, DirectionType.AL_CODA1); // coda -> al coda
+		
+		addCorrection(acorrections, "Andre Moss - My Spanish Rose.mxl", 37, CorrectionType.REMOVE, DirectionType.SEGNO, null); // take off segno
+		
+		addCorrection(acorrections, "Annibale E I Cantori Moderni - Titoli (Triniti).mxl", 9, CorrectionType.REMOVE, DirectionType.CODA1, null);
+		addCorrection(acorrections, "Annibale E I Cantori Moderni - Titoli (Triniti).mxl", 20, CorrectionType.REMOVE, DirectionType.CODA1, null);
+		
+		addCorrection(acorrections, "Anthony Newley, Leslie Bricusse - The Candy Man.mxl", 23, CorrectionType.ADD, null, DirectionType.DS_AL_CODA1);
+		
+		addCorrection(acorrections, "Antonio Carlos Jobim, Vinicius de Moraes - A Felicidade.mxl", 48, CorrectionType.ADD, null, DirectionType.DC_AL_CODA1);
+		
+		addCorrection(acorrections, "Arr. H. Laukens - IK HEB UNNE SPIJKER IN MUNNE KOP.mxl", 56, CorrectionType.REPLACE, DirectionType.SEGNO, DirectionType.DS_AL_CODA1);
+		addCorrection(acorrections, "Arr. H. Laukens - IK HEB UNNE SPIJKER IN MUNNE KOP.mxl", 36, CorrectionType.REPLACE, DirectionType.CODA1, DirectionType.AL_CODA1);
+		
+		addCorrection(acorrections, "Arr. H. Laukens - IK HOU DR ZO VAN.mxl", 35, CorrectionType.REMOVE, DirectionType.CODA1, null);
+		addCorrection(acorrections, "Arr. H. Laukens - IK HOU DR ZO VAN.mxl", 69, CorrectionType.REMOVE, DirectionType.CODA1, null);
+		
+		addCorrection(acorrections, "Art Noel - If You Ever Go To Ireland.mxl", 4, CorrectionType.REPLACE, DirectionType.CODA1, DirectionType.AL_CODA1);
+		addCorrection(acorrections, "Art Noel - If You Ever Go To Ireland.mxl", 20, CorrectionType.REMOVE, DirectionType.CODA1, null);
+		addCorrection(acorrections, "Art Noel - If You Ever Go To Ireland.mxl", 20, CorrectionType.REPLACE, DirectionType.SEGNO, DirectionType.DS_AL_CODA1);
+		
+		addCorrection(acorrections, "Arthur Terker, Harry Pyle, J. Russel Robinson - Meet Me In No Special Place.mxl", 33, CorrectionType.ADD, null, DirectionType.DC_AL_CODA1);
+		addCorrection(acorrections, "Arthur Terker, Harry Pyle, J. Russel Robinson - Meet Me In No Special Place.mxl", 33, CorrectionType.ADD, null, DirectionType.AL_CODA1);
+		
+		addCorrection(acorrections, "Astor Piazzolla - Oblivion.mxl", 20, CorrectionType.REPLACE, DirectionType.CODA1, DirectionType.AL_CODA1);
+		addCorrection(acorrections, "Astor Piazzolla - Oblivion.mxl", 49, CorrectionType.REPLACE, DirectionType.SEGNO, DirectionType.DS_AL_CODA1);
+		
+		addCorrection(acorrections, "B Goodman, C Christian - Air Mail Special.mxl", 32, CorrectionType.REMOVE, DirectionType.CODA1, null);
+		addCorrection(acorrections, "B Goodman, C Christian - Air Mail Special.mxl", 33, CorrectionType.REMOVE, DirectionType.CODA1, null);
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		addCorrection(acorrections, "Billie Joe Armstrong - Wake Me Up When September Ends.mxl", 58, CorrectionType.REPLACE, DirectionType.CODA1, DirectionType.AL_CODA1); // coda -> al coda
+		
+		addCorrection(acorrections, "Billy Joel - Just The Way You Are.mxl", 99, CorrectionType.REPLACE, DirectionType.CODA1, DirectionType.AL_CODA1); // coda -> al coda
+		
+		addCorrection(acorrections, "Bob Davie, Marvin Moore - The Green Door.mxl", 10, CorrectionType.REPLACE, DirectionType.CODA1, DirectionType.AL_CODA1); // coda -> al coda
 		
 		
 		corrections = Collections.unmodifiableMap(acorrections);
@@ -98,11 +170,14 @@ public class WikifoniaCorrection {
 		List<Node> measures = MusicXMLSummaryGenerator.getMeasuresForPart(musicXML,0);
 		Node measure = measures.get(measureNumber);
 		switch (corrType) {
-		case REPLACE_DIRECTION:
+		case REPLACE:
 			replaceDirection(measure,oldDirection,newDirection);
 			break;
-		case REMOVE_DIRECTION:
+		case REMOVE:
 			removeDirection(measure,oldDirection);
+			break;
+		case ADD:
+			addDirection(measure,newDirection);
 			break;
 		}
 	}
@@ -111,6 +186,25 @@ public class WikifoniaCorrection {
 		Node directionTypeNode = getMatchingDirectionTypeNode(measure, oldDirection);
 		Node directionNode = directionTypeNode.getParentNode();
 		directionNode.getParentNode().removeChild(directionNode);
+	}
+
+	private static void addDirection(Node measure, DirectionType newDirection) {
+		Document doc = measure.getOwnerDocument();
+		Node directionNode = doc.createElement("direction");
+		Node directionTypeNode = directionNode.appendChild(doc.createElement("direction-type"));
+		
+		Node firstChild = null;
+		NodeList mChildren = measure.getChildNodes();
+		for (int j = 0; j < mChildren.getLength(); j++) {
+			Node mChild = mChildren.item(j);
+			if (!(mChild instanceof Text)) {
+				firstChild = mChild;
+				break;
+			}
+		}
+		measure.insertBefore(directionNode, firstChild);
+
+		addDirectionType(directionTypeNode, newDirection);// add new direction type
 	}
 
 	private static void replaceDirection(Node measure, DirectionType oldDirection, DirectionType newDirection) {
@@ -142,6 +236,10 @@ public class WikifoniaCorrection {
 				}
 			} 
 		}
+		
+		System.err.println("Couldn't find direction-type ("+oldDirection+")node in measure:");
+		MusicXMLSummaryGenerator.printNode(measure, System.err);
+		
 		return null;
 	}
 

@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.w3c.dom.Document;
 
+import globalstructure.GlobalStructureExtractor;
 import harmony.SegmentSpecificHarmonyEngineer;
 import harmony.SegmentSpecificHarmonyEngineer.SegmentSpecificHarmonyEngineerMusicXMLModel;
 import lyrics.LyricTemplateEngineer;
@@ -59,6 +60,8 @@ public class MusicXMLModelLearner {
 			}
 			ParsedMusicXMLObject musicXML = musicXMLParser.parse(true);
 			System.out.println(musicXML);
+			
+			GlobalStructureExtractor.annotateGlobalStructure(musicXML);
 
 			for (MusicXMLModel musicXMLModel: models) {
 				musicXMLModel.trainOnExample(musicXML);

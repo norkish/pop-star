@@ -1270,17 +1270,20 @@ public class MusicXMLParser {
 		int dsalcoda = findDirectionTypeStartingFrom(measures, DirectionType.DS_AL_CODA1, measures.size());
 		int dcalcoda = findDirectionTypeStartingFrom(measures, DirectionType.DC_AL_CODA1, measures.size());
 		if (coda1 != -1 && dsalcoda == -1 && dcalcoda == -1) {
-			System.err.println("Found coda at measure " + coda1 + ", but no D.S. or D.C. al Coda. Assuming it directly precedes coda");
-			dsalcoda = coda1 - 1;
-			return null; // not gonna deal with it.
+			throw new RuntimeException("Found coda at measure " + coda1 + ", but no D.S. or D.C. al Coda");
+//			System.err.println("Found coda at measure " + coda1 + ", but no D.S. or D.C. al Coda. Assuming it directly precedes coda");
+//			dsalcoda = coda1 - 1;
+//			return null; // not gonna deal with it.
 		}
 		if (coda1 == -1 && (dsalcoda != -1 || dcalcoda != -1)) {
-			System.err.println("Found ds or dc at measure " + (dsalcoda == -1 ? dcalcoda : dsalcoda) + ", but no coda. Assuming it directly follows ds");
-			coda1 = (dsalcoda == -1 ? dcalcoda : dsalcoda) + 1;
-			return null; // not gonna deal with it.
+			throw new RuntimeException("Found ds or dc at measure " + (dsalcoda == -1 ? dcalcoda : dsalcoda) + ", but no coda");
+//			System.err.println("Found ds or dc at measure " + (dsalcoda == -1 ? dcalcoda : dsalcoda) + ", but no coda. Assuming it directly follows ds");
+//			coda1 = (dsalcoda == -1 ? dcalcoda : dsalcoda) + 1;
+//			return null; // not gonna deal with it.
 		}
 		if (coda1 != -1 && (dsalcoda != -1 || dcalcoda != -1) && coda1 <= (dsalcoda == -1 ? dcalcoda : dsalcoda)) {
-			return null;
+			throw new RuntimeException("coda ("+coda1+") precedes " + (dsalcoda == -1 ? "dcalcoda" : "dsalcoda") + "(" + (dsalcoda == -1 ? dcalcoda : dsalcoda) + ")");
+//			return null;
 		}
 		int maxMeasure = -1;
 		boolean followCoda1 = false;
@@ -1427,7 +1430,7 @@ public class MusicXMLParser {
 								DirectionType type = DirectionType.parseDirectionType(mGrandchild);
 								if (type == DirectionType.DS_AL_CODA1) {
 									if (followCoda1) {
-										throw new RuntimeException("Detected loop (found D.S. twice without coda");
+										throw new RuntimeException("Detected loop (found D.S. twice without al coda");
 									}
 									nextMeasure = (segno == -1 ? 0 : segno);
 									System.err.println("Found D.S. al Coda — skipping back to measure " + nextMeasure + " (coda=" + coda1 + ")");
@@ -1477,7 +1480,7 @@ public class MusicXMLParser {
 								} else if (type == DirectionType.CODA1) { 
 									// at coda
 									if (followCoda1 || followCoda2) {
-										throw new RuntimeException("Missing Al coda; found coda instead");
+										throw new RuntimeException("Missing Al coda; found coda instead at " + i);
 									}
 									System.err.println("Entered coda 1 at measure " + i);
 								} else if (type == DirectionType.AL_CODA2) { 
@@ -2485,12 +2488,12 @@ public class MusicXMLParser {
 		int unrecoverableXML = 0;
 		File[] files = new File("/Users/norkish/Archive/2017_BYU/ComputationalCreativity/data/Wikifonia").listFiles();
 		for (File file : files) {
-//			 if (!file.getName().equals("Billy Joel - Just The Way You Are.mxl"))
-//				 continue;
+			 if (!file.getName().equals("Billy Joel - Just The Way You Are.mxl"))
+				 continue;
 //			if (file.getName().charAt(0) < 'T') {
 //				continue;
 //			}
-//			if (file.getName().compareTo("Billy Joel - Just The Way You Are.mxl") < 0) {
+//			if (file.getName().compareTo("Astor Piazzolla - Oblivion.mxl") < 0) {
 //				continue;
 //			}
 			 System.out.println(file.getName());

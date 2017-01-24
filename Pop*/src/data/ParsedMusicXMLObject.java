@@ -6,12 +6,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.TreeMap;
 
 import data.MusicXMLParser.Harmony;
 import data.MusicXMLParser.Key;
 import data.MusicXMLParser.Note;
 import data.MusicXMLParser.NoteLyric;
 import data.MusicXMLParser.Time;
+import globalstructure.SegmentType;
 import tabcomplete.rhyme.StressedPhone;
 import utils.Pair;
 import utils.Triple;
@@ -40,6 +42,7 @@ public class ParsedMusicXMLObject {
 	public SortedMap<Integer, Map<Integer, Harmony>> unoverlappingHarmonyByMeasure;
 	public int noteCount = -1; // needs to be set
 	public SortedMap<Integer, Integer> divsPerQuarterByMeasure;
+	public TreeMap<Integer, SegmentType> globalStructure;
 
 	public ParsedMusicXMLObject(boolean followRepeats) {
 		this.followRepeats = followRepeats;

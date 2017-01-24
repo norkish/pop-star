@@ -201,6 +201,10 @@ Many creative systems do not explicitly model inspiration, but rather use a mode
 
 As mentioned above, each of the empirically-driven models requires training on a dataset representative of the artefact domain. Even if we had digital access to all of the compositions ever written, it would represent an infinitesimal portion of the songs that could be written. This is a challenge in many machine learning domains. Unique to the pop music domain, however, is that data is highly proprietary. What \textit{is} available is extremely limited and of relatively poor quality. Compared to natural language, the language of music is notationally more complex and less commonly used or understood. Among those who \textit{do} understand and use it, music formatting can vary wildly and inexactly---creating additional challenges for a by-the-bit computer parser. Computers will only learn to speak music as quickly as we either formalize and ubiquitize the language of music \textit{or} endow computers with AI tools (e.g., ears to listen) to fill in the gaps on their own.
 
+\subsection{Implications for Recommendation Systems}
+
+Having a symbolic high-resolution representation of compositions makes it easier to group songs by more musically-related criteria rather than simply manually-annotated human labels. For example, it may be that the listener is in the mood to hear songs in specific keys or with a specific chord progression or melodic interval. Most manual-annotated human labeling will be insufficient to recognize these patterns, but a system utilizing the HBPL model defined in this paper is capable of calculating distances between songs for each defining composition attribute.
+
 \section{Conclusion}
 
 \bibliographystyle{iccc}
