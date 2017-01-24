@@ -25,7 +25,9 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
+import data.MusicXMLParser.DirectionType;
 import data.MusicXMLParser.Barline.RepeatDirection;
+import data.WikifoniaCorrection.CorrectionType;
 import pitch.Pitch;
 import syllabify.Syllabifier;
 import tabcomplete.rhyme.Phonetecizer;
@@ -48,13 +50,14 @@ public class MusicXMLParser {
 					String words = child.getTextContent().toLowerCase().replaceAll("[^a-zA-Z0-9]", "").trim();
 					if (words.equals("dsalcoda2")) { 
 						return DirectionType.DS_AL_CODA2;
-					} else if (words.equals("dsalcoda") || words.equals("dsalcoda1") || words.equals("dsacoda")) {
+					} else if (words.equals("dsalcoda") || words.equals("dsalcoda1") || words.equals("dsacoda") 
+							|| words.equals("solosaabcaftersolosdsalcoda")) {
 						return DirectionType.DS_AL_CODA1;
 					} else if (words.equals("dsalfine") || words.equals("solosonfbluesaftersolosdsalfine")) { 
 						return DirectionType.DS_AL_FINE;
 					} else if (words.equals("dcalfine") || words.equals("dcaalfine") || words.equals("dcalfinenorepeat")) { 
 						return DirectionType.DC_AL_FINE;
-					} else if (words.equals("dcalcoda")) { 
+					} else if (words.equals("dcalcoda") || words.equals("dcalcodawrepeat") ) { 
 						return DirectionType.DC_AL_CODA1;
 					} else if (words.equals("alcoda2") || words.equals("tocoda2")) {
 						return DirectionType.AL_CODA2;
@@ -69,8 +72,8 @@ public class MusicXMLParser {
 						return DirectionType.IGNORE;
 					} else if (words.equals("rubato")) { 
 						return DirectionType.IGNORE;
-					} else if (words.contains("coda") || words.contains("fine") && 
-							!words.equals("repeat4timesthendsalfine") && !words.equals("4xfine")) { 
+					} else if ((words.contains("coda") || words.contains("fine")) && 
+							!words.equals("repeat4timesthendsalfine") && !words.equals("4xfine") && !words.equals("lasttimetocoda")) { 
 						throw new RuntimeException("catchall:" + words);
 					} else {
 						System.err.println("Unknown text content of words node in direction:" + words);
@@ -1280,13 +1283,14 @@ public class MusicXMLParser {
 			return null;
 		}
 		int maxMeasure = -1;
-		boolean followCoda = false;
+		boolean followCoda1 = false;
 		boolean followCoda2 = false;
 		boolean endAtFine = false;
 		boolean skippingEnding = false;
 		int loops = 0;
 		boolean barMarkedBeforeNotes = false;
 		for (int i = 0; i < measures.size(); i = (nextMeasure != -1 ? nextMeasure : i + 1)) {
+//			System.err.println("Now parsing measure " + i);
 			loops++;
 			if (loops > 1000) {
 				throw new RuntimeException("Excessive loops");
@@ -1303,6 +1307,7 @@ public class MusicXMLParser {
 					Node mChild = mChildren.item(j);
 					if (mChild instanceof Text) continue;
 					String nodeName = mChild.getNodeName();
+//					System.err.println("Now parsing child " + j + ": " + nodeName);
 					NodeList mGrandchildren = mChild.getChildNodes();
 					if (nodeName.equals("barline") || skippingEnding) {
 						if (!nodeName.equals("barline")) {
@@ -1417,69 +1422,77 @@ public class MusicXMLParser {
 							Node mGrandchild = mGrandchildren.item(k);
 							if (mGrandchild instanceof Text) continue;
 							String gNodeName = mGrandchild.getNodeName();
+//							System.err.println("Now parsing grandchild " + k + ": " + gNodeName);
 							if (gNodeName.equals("direction-type")) {
 								DirectionType type = DirectionType.parseDirectionType(mGrandchild);
 								if (type == DirectionType.DS_AL_CODA1) {
-									if (followCoda) {
-										System.err.println("Detected loop (found D.S. twice without coda");
-										return null; // malformatted, already looking for coda and didn't find it.
+									if (followCoda1) {
+										throw new RuntimeException("Detected loop (found D.S. twice without coda");
 									}
 									nextMeasure = (segno == -1 ? 0 : segno);
 									System.err.println("Found D.S. al Coda — skipping back to measure " + nextMeasure + " (coda=" + coda1 + ")");
-									followCoda = true;
+									followCoda1 = true;
 								} else if (type == DirectionType.DS_AL_CODA2) {
 									if (followCoda2) {
-										System.err.println("Detected loop (found D.S. twice without coda");
-										return null;
+										throw new RuntimeException("Detected loop (found D.S. al Coda 2 twice without al coda");
 									}
 									nextMeasure = (segno == -1 ? 0 : segno);
 									System.err.println("Found D.S. al Coda 2 — skipping back to measure " + nextMeasure);
 									followCoda2 = true;
 								} else if (type == DirectionType.DS_AL_FINE) {
 									if (endAtFine) {
-										System.err.println("Detected loop (found D.S. twice without coda");
-										return null;
+										throw new RuntimeException("Detected loop (found D.S. twice without al coda");
 									}
 									nextMeasure = (segno == -1 ? 0 : segno);
 									System.err.println("Found D.S. al Fine — skipping back to measure " + nextMeasure);
 									endAtFine = true;
 								} else if (type == DirectionType.DC_AL_FINE) {
 									if (endAtFine) {
-										System.err.println("Detected loop (found D.C. twice without coda");
-										return null;
+										throw new RuntimeException("Detected loop (found D.C. twice without al coda");
 									}
 									nextMeasure = 0;
 									System.err.println("Found D.C. al Fine — skipping back to measure " + nextMeasure);
 									endAtFine = true;
 								}  else if (type == DirectionType.DC_AL_CODA1) {
-									if (followCoda) {
-										System.err.println("Detected loop (found D.C. twice without coda");
-										return null;
+									if (followCoda1) {
+										throw new RuntimeException("Detected loop (found D.C. twice without al coda");
 									}
 									if (nextMeasure == -1) {
 										nextMeasure = 0;
 										System.err.println("Found D.C. al Coda in measure " + i + " — skipping back to measure " + nextMeasure);
-										followCoda = true;
+										followCoda1 = true;
 									}
 								} else if (type == DirectionType.SEGNO) {
 									segno = i;
 									System.err.println("Found segno at measure " + segno);
 								} else if (type == DirectionType.IGNORE) { 
 									// do nothing
-								} else if (type == DirectionType.CODA1) { 
+								} else if (type == DirectionType.AL_CODA1) { 
 									// skip to coda
-									if (followCoda) {
+									if (followCoda1) {
 										nextMeasure = coda1;
 										System.err.println("Found coda at measure " + i + ", skipping to " + nextMeasure);
-										followCoda = false;
+										followCoda1 = false;
 									}
-								} else if (type == DirectionType.CODA2) { 
+								} else if (type == DirectionType.CODA1) { 
+									// at coda
+									if (followCoda1 || followCoda2) {
+										throw new RuntimeException("Missing Al coda; found coda instead");
+									}
+									System.err.println("Entered coda 1 at measure " + i);
+								} else if (type == DirectionType.AL_CODA2) { 
 									// skip to coda
 									if (followCoda2) {
 										nextMeasure = coda2;
 										System.err.println("Found coda 2 at measure " + i + ", skipping to " + nextMeasure);
-										followCoda = false;
+										followCoda1 = false;
 									}
+								} else if (type == DirectionType.CODA2) { 
+									// at coda2
+									if (followCoda1 || followCoda2) {
+										throw new RuntimeException("Missing al coda 2; found coda 2 instead");
+									}
+									System.err.println("Entered coda 2 at measure " + i);
 								} else if (type == DirectionType.FINE) { 
 									// skip to coda
 									if (endAtFine) {
@@ -1570,7 +1583,7 @@ public class MusicXMLParser {
 			if (!skippingEnding && i == dsalcoda) {
 				nextMeasure = (segno == -1 ? 0 : segno);
 				System.err.println("Found D.S. al Coda in measure " + i + " — skipping back to measure " + nextMeasure);
-				followCoda = true;
+				followCoda1 = true;
 			}
 		}
 		
@@ -2130,7 +2143,8 @@ public class MusicXMLParser {
 							tie = tie2;
 					} else if (grandchildName.equals("fermata") || grandchildName.equals("tuplet") 
 							|| grandchildName.equals("articulations") || grandchildName.equals("technical")
-							|| grandchildName.equals("glissando") || grandchildName.equals("ornaments")) {
+							|| grandchildName.equals("glissando") || grandchildName.equals("ornaments") 
+							|| grandchildName.equals("arpeggiate")) {
 						// do nothing
 					} else {
 						MusicXMLSummaryGenerator.printNode(child, System.err);
@@ -2476,9 +2490,13 @@ public class MusicXMLParser {
 //			if (file.getName().charAt(0) < 'T') {
 //				continue;
 //			}
+//			if (file.getName().compareTo("Billy Joel - Just The Way You Are.mxl") < 0) {
+//				continue;
+//			}
 			 System.out.println(file.getName());
 			 MusicXMLParser musicXML = new MusicXMLParser(MusicXMLSummaryGenerator.mxlToXML(file));
-			 MusicXMLSummaryGenerator.printDocument(musicXML.xml, System.out);
+			 WikifoniaCorrection.applyManualCorrections(musicXML, file.getName());
+//			 MusicXMLSummaryGenerator.printDocument(musicXML.xml, System.out);
 			 ParsedMusicXMLObject parsedObject;
 			 try {
 				 parsedObject = musicXML.parse(true);
