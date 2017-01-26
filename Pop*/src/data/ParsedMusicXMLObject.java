@@ -33,17 +33,20 @@ public class ParsedMusicXMLObject {
 	
 	//measure, offset in divs, note
 	public List<Triple<Integer, Integer, Note>> notesByMeasure;
+	
+	// these are just for the purposes of error-reporting
 	public List<String> lyricsWithoutStress = new ArrayList<String>();
 	public List<NoteLyric> syllablesNotLookedUp = new ArrayList<NoteLyric>();
 	public List<Pair<List<NoteLyric>, List<Triple<String, StressedPhone[], Integer>>>> lyricsWithDifferentSyllableCountThanAssociatedNotes 
 		= new ArrayList<Pair<List<NoteLyric>, List<Triple<String, StressedPhone[], Integer>>>>();
+	
 	public int harmonyCount = 0;
 	//measure, offset in divs, 
-	public SortedMap<Integer, Map<Integer, Harmony>> unoverlappingHarmonyByMeasure;
+	public SortedMap<Integer, SortedMap<Integer, Harmony>> unoverlappingHarmonyByMeasure;
 	public int noteCount = -1; // needs to be set
 	public SortedMap<Integer, Integer> divsPerQuarterByMeasure;
 	public TreeMap<Integer, SegmentType> globalStructure;
-
+	
 	public ParsedMusicXMLObject(boolean followRepeats) {
 		this.followRepeats = followRepeats;
 	}
@@ -82,5 +85,22 @@ public class ParsedMusicXMLObject {
 		}
 		builder.append("]");
 		return builder.toString();
+	}
+
+	private int measureCount = 0; 
+	public int getMeasureCount() {
+		if (measureCount == 0) {
+			recalculateMeasureCount();
+		}
+		return measureCount;
+	}
+
+	private void recalculateMeasureCount() {
+		if (!notesByMeasure.isEmpty()) {
+			measureCount = Math.max(measureCount, notesByMeasure.get(notesByMeasure.size()-1).getFirst());
+		}
+		if (!unoverlappingHarmonyByMeasure.isEmpty()) {
+			measureCount = Math.max(measureCount, unoverlappingHarmonyByMeasure.lastKey());
+		}
 	}
 }

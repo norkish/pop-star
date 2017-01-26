@@ -189,13 +189,15 @@ public class SegmentStructureAnalyzer {
 	}
 
 	/**
-	 * @param words
-	 * @param structure
-	 * @param firstLyricLine
-	 * @param lastLyricLine
+	 * Finds chorus by aligning lyric lines to find lines with highest similarity 
+	 * @param words a list of Strings, each of which represents a line of lyrics
+	 * @param structure a list of chars representing the segment type of each line (partly filled, to be modified) 
+	 * @param firstLyricLine index of first line to be considered
+	 * @param lastLyricLine indx of last line to be considered (inclusive)
 	 */
 	private static void extractChorusViaBinaryAlnAndCandidateScoring(List<String> words, char[] structure, int firstLyricLine,
 			int lastLyricLine) {
+		// we score all lines aligned with all other lines (triangle matrix)
 		int [][] binary_matrix = new int[(lastLyricLine+1-firstLyricLine-MIN_DIST_BETWEEN_CHORUSES)][]; 
 		if (binary_matrix.length == 0) return;
 		int [] currentRow;
@@ -207,10 +209,13 @@ public class SegmentStructureAnalyzer {
 
 		SequencePair.setCosts(1, -1, -1, 0);
 
+		// for each line
 		for (int offset = 0; offset < binary_matrix.length; offset++) {
+			// this is what makes it a triangle matrix
 			currentRow = new int[(lastLyricLine+1-firstLyricLine-MIN_DIST_BETWEEN_CHORUSES) - offset];
 			binary_matrix[offset] = currentRow;
 
+			// for every other line (that hasn't already been paired with it)
 			for (int idx = 0; idx < currentRow.length; idx++) {
 				line_i_idx = idx + firstLyricLine; // we're not aligning intro or outro lines so we have to account for the offset due to the intro
 				line_j_idx = line_i_idx + offset + MIN_DIST_BETWEEN_CHORUSES;

@@ -1245,7 +1245,7 @@ public class MusicXMLParser {
 		List<Node> measures = MusicXMLSummaryGenerator.getMeasuresForPart(this,0);
 
 		// Harmony indexed by measure and by the offset (in divisions) from the beginning of the measure
-		SortedMap<Integer, Map<Integer, List<Harmony>>> harmonyByMeasure = new TreeMap<Integer, Map<Integer,List<Harmony>>>();
+		SortedMap<Integer, SortedMap<Integer, List<Harmony>>> harmonyByMeasure = new TreeMap<Integer, SortedMap<Integer,List<Harmony>>>();
 		// notes indexed by measure and by the offset (in divisions) from the beginning of the measure
 		// this data structure represents order as regards repeats, but has no (simple) way of looking at how many times a note has been repeated or what the lyric for the last repetition was
 		List<Triple<Integer, Integer, Note>> notesByMeasure = new ArrayList<Triple<Integer, Integer, Note>>();
@@ -1598,7 +1598,7 @@ public class MusicXMLParser {
 		}
 		
 		//Resolve co-occuring harmonies
-		SortedMap<Integer, Map<Integer, Harmony>> unoverlappingHarmonyByMeasure = resolveOverlappingHarmonies(harmonyByMeasure, measureOffsetInfo, timeByMeasure, divsPerQuarterByMeasure, musicXML);
+		SortedMap<Integer, SortedMap<Integer, Harmony>> unoverlappingHarmonyByMeasure = resolveOverlappingHarmonies(harmonyByMeasure, measureOffsetInfo, timeByMeasure, divsPerQuarterByMeasure, musicXML);
 		
 		// ADD SYLLABLE STRESS
 		addStressToSyllables(notesByMeasure, musicXML);
@@ -1877,15 +1877,15 @@ public class MusicXMLParser {
 		}
 	}
 
-	private static SortedMap<Integer, Map<Integer, Harmony>> resolveOverlappingHarmonies(SortedMap<Integer, Map<Integer, List<Harmony>>> harmonyByMeasure, 
+	private static SortedMap<Integer, SortedMap<Integer, Harmony>> resolveOverlappingHarmonies(SortedMap<Integer, SortedMap<Integer, List<Harmony>>> harmonyByMeasure, 
 			Map<Integer, Map<Integer, Pair<Integer, NoteLyric>>> measureOffsetInfo, Map<Integer,Time> timeByMeasure, Map<Integer, Integer> divsByMeasure, ParsedMusicXMLObject musicXML) {
-		SortedMap<Integer, Map<Integer, Harmony>> unoverlappingHarmonyByMeasure = new TreeMap<Integer, Map<Integer, Harmony>>(); 
+		SortedMap<Integer, SortedMap<Integer, Harmony>> unoverlappingHarmonyByMeasure = new TreeMap<Integer, SortedMap<Integer, Harmony>>(); 
 		// If there are multiple chords, they must all occur before the next note occurs after the first chord,
 		// otherwise they'd have marked the chord later.
 		
 		for (Integer measure : harmonyByMeasure.keySet()) {
-			Map<Integer, List<Harmony>> harmoniesByOffset = harmonyByMeasure.get(measure);
-			Map<Integer, Harmony> harmonyByOffset = new TreeMap<Integer, Harmony>();
+			SortedMap<Integer, List<Harmony>> harmoniesByOffset = harmonyByMeasure.get(measure);
+			SortedMap<Integer, Harmony> harmonyByOffset = new TreeMap<Integer, Harmony>();
 			unoverlappingHarmonyByMeasure.put(measure, harmonyByOffset);
 			for (Integer offset : harmoniesByOffset.keySet()) {
 				List<Harmony> harmonies = harmoniesByOffset.get(offset);
@@ -2038,8 +2038,8 @@ public class MusicXMLParser {
 		}
 	}
 
-	private static void addHarmonyToMeasure(int measureNumber, Integer offset, Harmony harmony, Map<Integer, Map<Integer, List<Harmony>>> harmonyByMeasure) {
-		Map<Integer, List<Harmony>> harmonyByOffset = harmonyByMeasure.get(measureNumber);
+	private static void addHarmonyToMeasure(int measureNumber, Integer offset, Harmony harmony, SortedMap<Integer, SortedMap<Integer, List<Harmony>>> harmonyByMeasure) {
+		SortedMap<Integer, List<Harmony>> harmonyByOffset = harmonyByMeasure.get(measureNumber);
 		if (harmonyByOffset == null) {
 			harmonyByOffset = new TreeMap<Integer, List<Harmony>>();
 			harmonyByMeasure.put(measureNumber, harmonyByOffset);

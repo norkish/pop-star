@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.SortedMap;
 
 import composition.Measure;
 import composition.Score;
@@ -45,7 +46,7 @@ public class SegmentSpecificHarmonyEngineer extends HarmonyEngineer {
 			Integer prevHarmIdx = -1;
 			
 			// TODO: condition on duration, change to roman numeral chord names, condition on segment type
-			for (Entry<Integer, Map<Integer, Harmony>> measureEntry : musicXML.unoverlappingHarmonyByMeasure.entrySet()){
+			for (Entry<Integer, SortedMap<Integer, Harmony>> measureEntry : musicXML.unoverlappingHarmonyByMeasure.entrySet()){
 //				int measure = measureEntry.getKey();
 				for (Entry<Integer, Harmony> offsetHarmony : measureEntry.getValue().entrySet()) {
 //					int offset = offsetHarmony.getKey();
