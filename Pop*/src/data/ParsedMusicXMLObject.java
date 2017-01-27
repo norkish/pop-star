@@ -29,7 +29,7 @@ public class ParsedMusicXMLObject {
 	// this represents the total number of notes that had text associated with them which could be associated with an entry in the cmu english dict
 	public int totalSyllablesWithStressFromEnglishDictionary;
 	public SortedMap<Integer, Time> timeByMeasure;
-	public SortedMap<Integer, Key> keyByMeasure;
+	public SortedMap<Integer, Key> normalizedKeyByMeasure;
 	
 	//measure, offset in divs, note
 	public List<Triple<Integer, Integer, Note>> notesByMeasure;
@@ -45,7 +45,7 @@ public class ParsedMusicXMLObject {
 	public SortedMap<Integer, SortedMap<Integer, Harmony>> unoverlappingHarmonyByMeasure;
 	public int noteCount = -1; // needs to be set
 	public SortedMap<Integer, Integer> divsPerQuarterByMeasure;
-	public TreeMap<Integer, SegmentType> globalStructure;
+	public SortedMap<Integer, SegmentType> globalStructure;
 	
 	public ParsedMusicXMLObject(boolean followRepeats) {
 		this.followRepeats = followRepeats;
@@ -61,7 +61,7 @@ public class ParsedMusicXMLObject {
 				.append(totalSyllablesWithStressFromEnglishDictionary).append(",\n timeByMeasure=")
 				.append(timeByMeasure != null ? toString(timeByMeasure.entrySet(), maxLen) : null)
 				.append(",\n keyByMeasure=")
-				.append(keyByMeasure != null ? toString(keyByMeasure.entrySet(), maxLen) : null)
+				.append(normalizedKeyByMeasure != null ? toString(normalizedKeyByMeasure.entrySet(), maxLen) : null)
 				.append(",\n notesByMeasure=").append(notesByMeasure != null ? toString(notesByMeasure, maxLen) : null)
 				.append(",\n lyricsWithoutStress=")
 				.append(lyricsWithoutStress != null ? toString(lyricsWithoutStress, maxLen) : null)
@@ -96,11 +96,12 @@ public class ParsedMusicXMLObject {
 	}
 
 	private void recalculateMeasureCount() {
+		measureCount = 0;
 		if (!notesByMeasure.isEmpty()) {
-			measureCount = Math.max(measureCount, notesByMeasure.get(notesByMeasure.size()-1).getFirst());
+			measureCount = notesByMeasure.get(notesByMeasure.size()-1).getFirst() + 1;
 		}
 		if (!unoverlappingHarmonyByMeasure.isEmpty()) {
-			measureCount = Math.max(measureCount, unoverlappingHarmonyByMeasure.lastKey());
+			measureCount = Math.max(measureCount, unoverlappingHarmonyByMeasure.lastKey() + 1);
 		}
 	}
 }

@@ -1604,12 +1604,31 @@ public class MusicXMLParser {
 		addStressToSyllables(notesByMeasure, musicXML);
 		
 		musicXML.timeByMeasure = timeByMeasure;
-		musicXML.keyByMeasure = keyByMeasure;
+		normalizeKeysByOriginalKey(keyByMeasure);
+		musicXML.normalizedKeyByMeasure = keyByMeasure;
 		musicXML.notesByMeasure = notesByMeasure;
 		musicXML.unoverlappingHarmonyByMeasure = unoverlappingHarmonyByMeasure;
 		musicXML.divsPerQuarterByMeasure = divsPerQuarterByMeasure;
 		
 		return musicXML;
+	}
+
+	/** 
+	 * all songs should start in C (or Am), therefore all keys in the song should be transposed accordingly
+	 * @param keyByMeasure
+	 */
+	private void normalizeKeysByOriginalKey(SortedMap<Integer, Key> keyByMeasure) {
+		
+		Key originalKey = keyByMeasure.get(keyByMeasure.firstKey());
+		
+		for (Integer msr : keyByMeasure.keySet()) {
+			normalizeKeyByOriginalKey(originalKey, keyByMeasure.get(msr));
+		}
+		
+	}
+
+	private void normalizeKeyByOriginalKey(Key normalizingKey, Key keyToNormalize) {
+		keyToNormalize.fifths -= normalizingKey.fifths;
 	}
 
 	private static void addStressToSyllables(List<Triple<Integer, Integer, Note>> notesByMeasure, ParsedMusicXMLObject musicXML) {
@@ -1740,7 +1759,7 @@ public class MusicXMLParser {
 		return true;
 	}
 
-	private static Harmony normalizeHarmony(Harmony currHarmony, Key currKey) {
+	public static Harmony normalizeHarmony(Harmony currHarmony, Key currKey) {
 		if (currHarmony == null || currHarmony.root == null || currHarmony.root.rootStep == Pitch.NO_KEY || currKey == null || currKey.fifths == 0) return currHarmony;
 		int newRootStep = normalizePitch(currHarmony.root.rootStep, currKey);
 		if (newRootStep < 0) {
@@ -1768,7 +1787,7 @@ public class MusicXMLParser {
 		return new Harmony(newRoot,currHarmony.quality,newBass);
 	}
 
-	private static int normalizePitch(int pitch, Key currKey) {
+	public static int normalizePitch(int pitch, Key currKey) {
 		if (pitch < 0 || currKey == null) return pitch;
 		
 		int modification = (7*currKey.fifths + 144) % 12;
@@ -2497,12 +2516,12 @@ public class MusicXMLParser {
 //				continue;
 //			}
 			 System.out.println(file.getName());
-			 MusicXMLParser musicXML = new MusicXMLParser(MusicXMLSummaryGenerator.mxlToXML(file));
-			 WikifoniaCorrection.applyManualCorrections(musicXML, file.getName());
+			 MusicXMLParser musicXMLParser = new MusicXMLParser(MusicXMLSummaryGenerator.mxlToXML(file));
+			 WikifoniaCorrection.applyManualCorrections(musicXMLParser, file.getName());
 //			 MusicXMLSummaryGenerator.printDocument(musicXML.xml, System.out);
 			 ParsedMusicXMLObject parsedObject;
 			 try {
-				 parsedObject = musicXML.parse(true);
+				 parsedObject = musicXMLParser.parse(true);
 			 } catch (AssertionError e) {
 				 System.err.println(file.getName());
 				 throw e;

@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 
+import data.MusicXMLParser.Harmony;
+
 public class Utils {
 
 	/*
@@ -145,6 +147,26 @@ public class Utils {
 			currToken = tokens.get(pos);
 		}
 		return currToken;
+	}
+
+	public static <S extends Comparable<S>, T> T valueForKeyBeforeOrEqualTo(Integer outerKey, S innerKey, SortedMap<Integer, SortedMap<S, T>> tokens) {
+		if (tokens.containsKey(outerKey)) {
+			return valueForKeyBeforeOrEqualTo(innerKey, tokens.get(outerKey));
+		} else {
+			outerKey--;
+			while (!tokens.containsKey(outerKey) && outerKey >= 0) {
+				outerKey--;
+			}
+			
+			SortedMap<S, T> innerMap = tokens.get(outerKey);
+			
+			if (innerMap == null) {
+				return null;
+			} else {
+				return innerMap.get(innerMap.lastKey());
+			}
+			
+		}
 	}
 
 }
