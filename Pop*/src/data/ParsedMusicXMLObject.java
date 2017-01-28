@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.SortedSet;
 
 import data.MusicXMLParser.Harmony;
 import data.MusicXMLParser.Key;
@@ -23,16 +23,22 @@ public class ParsedMusicXMLObject {
 	public boolean followRepeats;
 	public int lyricCount;
 
+	// this is a list of the measure numbers in the order they are played, thus if there are repeats, sequences of measure numbers will be reinserted
+	public List<Integer> playedToAbsoluteMeasureNumberMap = new ArrayList<Integer>();
+	public List<SortedSet<Integer>> absoluteToPlayedMeasureNumbersMap = new ArrayList<SortedSet<Integer>>();
+	
 	// this represents the total number of notes that had text associated with them
 	public int totalSyllables;
 
 	// this represents the total number of notes that had text associated with them which could be associated with an entry in the cmu english dict
 	public int totalSyllablesWithStressFromEnglishDictionary;
-	public SortedMap<Integer, Time> timeByMeasure;
-	public SortedMap<Integer, Key> normalizedKeyByMeasure;
+	public SortedMap<Integer, Time> timeByAbsoluteMeasure;
+	public SortedMap<Integer, Key> normalizedKeyByAbsoluteMeasure;
 	
 	//measure, offset in divs, note
-	public List<Triple<Integer, Integer, Note>> notesByMeasure;
+	public List<Triple<Integer, Integer, Note>> notesByPlayedMeasure;
+	//measure, offset in divs, 
+	public List<Triple<Integer, Integer, Harmony>> unoverlappingHarmonyByPlayedMeasure;
 	
 	// these are just for the purposes of error-reporting
 	public List<String> lyricsWithoutStress = new ArrayList<String>();
@@ -40,11 +46,8 @@ public class ParsedMusicXMLObject {
 	public List<Pair<List<NoteLyric>, List<Triple<String, StressedPhone[], Integer>>>> lyricsWithDifferentSyllableCountThanAssociatedNotes 
 		= new ArrayList<Pair<List<NoteLyric>, List<Triple<String, StressedPhone[], Integer>>>>();
 	
-	public int harmonyCount = 0;
-	//measure, offset in divs, 
-	public SortedMap<Integer, SortedMap<Integer, Harmony>> unoverlappingHarmonyByMeasure;
 	public int noteCount = -1; // needs to be set
-	public SortedMap<Integer, Integer> divsPerQuarterByMeasure;
+	public SortedMap<Integer, Integer> divsPerQuarterByAbsoluteMeasure;
 	public SortedMap<Integer, SegmentType> globalStructure;
 	
 	public ParsedMusicXMLObject(boolean followRepeats) {
@@ -59,10 +62,10 @@ public class ParsedMusicXMLObject {
 				.append(lyricCount).append(",\n totalSyllables=").append(totalSyllables)
 				.append(",\n totalSyllablesWithStressFromEnglishDictionary=")
 				.append(totalSyllablesWithStressFromEnglishDictionary).append(",\n timeByMeasure=")
-				.append(timeByMeasure != null ? toString(timeByMeasure.entrySet(), maxLen) : null)
+				.append(timeByAbsoluteMeasure != null ? toString(timeByAbsoluteMeasure.entrySet(), maxLen) : null)
 				.append(",\n keyByMeasure=")
-				.append(normalizedKeyByMeasure != null ? toString(normalizedKeyByMeasure.entrySet(), maxLen) : null)
-				.append(",\n notesByMeasure=").append(notesByMeasure != null ? toString(notesByMeasure, maxLen) : null)
+				.append(normalizedKeyByAbsoluteMeasure != null ? toString(normalizedKeyByAbsoluteMeasure.entrySet(), maxLen) : null)
+				.append(",\n notesByMeasure=").append(notesByPlayedMeasure != null ? toString(notesByPlayedMeasure, maxLen) : null)
 				.append(",\n lyricsWithoutStress=")
 				.append(lyricsWithoutStress != null ? toString(lyricsWithoutStress, maxLen) : null)
 				.append(",\n syllablesNotLookedUp=")
@@ -97,11 +100,11 @@ public class ParsedMusicXMLObject {
 
 	private void recalculateMeasureCount() {
 		measureCount = 0;
-		if (!notesByMeasure.isEmpty()) {
-			measureCount = notesByMeasure.get(notesByMeasure.size()-1).getFirst() + 1;
+		if (!notesByPlayedMeasure.isEmpty()) {
+			measureCount = notesByPlayedMeasure.get(notesByPlayedMeasure.size()-1).getFirst() + 1;
 		}
-		if (!unoverlappingHarmonyByMeasure.isEmpty()) {
-			measureCount = Math.max(measureCount, unoverlappingHarmonyByMeasure.lastKey() + 1);
+		if (!unoverlappingHarmonyByPlayedMeasure.isEmpty()) {
+			measureCount = Math.max(measureCount, unoverlappingHarmonyByPlayedMeasure.get(unoverlappingHarmonyByPlayedMeasure.size()-1).getFirst() + 1);
 		}
 	}
 }

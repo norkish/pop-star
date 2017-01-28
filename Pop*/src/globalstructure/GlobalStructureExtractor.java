@@ -13,7 +13,7 @@ public class GlobalStructureExtractor {
 
 	public static void annotateGlobalStructure(ParsedMusicXMLObject musicXML) {
 		
-		if (musicXML.unoverlappingHarmonyByMeasure.isEmpty() || musicXML.notesByMeasure.isEmpty()) {
+		if (musicXML.unoverlappingHarmonyByPlayedMeasure.isEmpty() || musicXML.notesByPlayedMeasure.isEmpty()) {
 			musicXML.globalStructure = null;
 			return;
 		}

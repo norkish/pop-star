@@ -19,6 +19,7 @@ import inspiration.Inspiration;
 import markov.SparseNHMM;
 import markov.SparseSingleOrderMarkovModel;
 import utils.Pair;
+import utils.Triple;
 import utils.Utils;
 
 public class SegmentSpecificHarmonyEngineer extends HarmonyEngineer {
@@ -36,7 +37,7 @@ public class SegmentSpecificHarmonyEngineer extends HarmonyEngineer {
 		 */
 		public void trainOnExample(ParsedMusicXMLObject musicXML) {
 			// if doesn't have harmony, return
-			if (musicXML.harmonyCount == 0) {
+			if (musicXML.unoverlappingHarmonyByPlayedMeasure.isEmpty()) {
 				return;
 			}
 
@@ -46,28 +47,24 @@ public class SegmentSpecificHarmonyEngineer extends HarmonyEngineer {
 			Integer prevHarmIdx = -1;
 			
 			// TODO: condition on duration, change to roman numeral chord names, condition on segment type
-			for (Entry<Integer, SortedMap<Integer, Harmony>> measureEntry : musicXML.unoverlappingHarmonyByMeasure.entrySet()){
-//				int measure = measureEntry.getKey();
-				for (Entry<Integer, Harmony> offsetHarmony : measureEntry.getValue().entrySet()) {
-//					int offset = offsetHarmony.getKey();
-					Harmony harmony = offsetHarmony.getValue();
-					if (harmony == null)
-						continue;
-					
-					Integer harmIdx = statesByIndex.get(harmony);
-					if (harmIdx == null) {
-						harmIdx = statesByIndex.size();
-						statesByIndex.put(harmony, harmIdx);
-					}
-					
-					if (prevHarmIdx == -1) {
-						Utils.incrementValueForKey(priorCounts, harmIdx);
-					} else {
-						Utils.incrementValueForKeys(transitionCounts, prevHarmIdx, harmIdx);
-					}
-					
-					prevHarmIdx = harmIdx;
+			for (Triple<Integer, Integer, Harmony> triple : musicXML.unoverlappingHarmonyByPlayedMeasure){
+				Harmony harmony = triple.getThird();
+				if (harmony == null)
+					continue;
+				
+				Integer harmIdx = statesByIndex.get(harmony);
+				if (harmIdx == null) {
+					harmIdx = statesByIndex.size();
+					statesByIndex.put(harmony, harmIdx);
 				}
+				
+				if (prevHarmIdx == -1) {
+					Utils.incrementValueForKey(priorCounts, harmIdx);
+				} else {
+					Utils.incrementValueForKeys(transitionCounts, prevHarmIdx, harmIdx);
+				}
+				
+				prevHarmIdx = harmIdx;
 			}
 			
 		}

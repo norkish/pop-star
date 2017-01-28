@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -11,8 +12,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.zip.ZipException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -1245,20 +1248,20 @@ public class MusicXMLParser {
 		List<Node> measures = MusicXMLSummaryGenerator.getMeasuresForPart(this,0);
 
 		// Harmony indexed by measure and by the offset (in divisions) from the beginning of the measure
-		SortedMap<Integer, SortedMap<Integer, List<Harmony>>> harmonyByMeasure = new TreeMap<Integer, SortedMap<Integer,List<Harmony>>>();
+		List<Triple<Integer,Integer, List<Harmony>>> harmonyByPlayedMeasure = new ArrayList<Triple<Integer,Integer,List<Harmony>>>();
 		// notes indexed by measure and by the offset (in divisions) from the beginning of the measure
 		// this data structure represents order as regards repeats, but has no (simple) way of looking at how many times a note has been repeated or what the lyric for the last repetition was
-		List<Triple<Integer, Integer, Note>> notesByMeasure = new ArrayList<Triple<Integer, Integer, Note>>();
+		List<Triple<Integer, Integer, Note>> notesByPlayedMeasure = new ArrayList<Triple<Integer, Integer, Note>>();
 		// For each offset in each measure, we keep track of how many times we've visited a note at that offset in that measure and what the previous notelyric was for the note
 		// note that this data structure has no sense of order as regards repeats, but can easily check the number of times it has been repeated and the previous notelyric
 		Map<Integer, Map<Integer, Pair<Integer, NoteLyric>>> measureOffsetInfo = new TreeMap<Integer, Map<Integer, Pair<Integer, NoteLyric>>>();
 		
 		instruments = new HashSet<String>();
-		SortedMap<Integer,Time> timeByMeasure = new TreeMap<Integer,Time>(); 
+		SortedMap<Integer,Time> timeByAbsoluteMeasure = new TreeMap<Integer,Time>(); 
 		Time currTime = null;
-		SortedMap<Integer,Key> keyByMeasure = new TreeMap<Integer,Key>(); 
+		SortedMap<Integer,Key> keyByAbsoluteMeasure = new TreeMap<Integer,Key>(); 
 		Key currKey = null;
-		SortedMap<Integer,Integer> divsPerQuarterByMeasure = new TreeMap<Integer,Integer>(); 
+		SortedMap<Integer,Integer> divsPerQuarterByAbsoluteMeasure = new TreeMap<Integer,Integer>(); 
 		int currDivisionsPerQuarterNote = -1;
 		Stack<Integer> forwardRepeatMeasures = new Stack<Integer>();
 		int smallestNoteType = 0;
@@ -1285,25 +1288,22 @@ public class MusicXMLParser {
 			throw new RuntimeException("coda ("+coda1+") precedes " + (dsalcoda == -1 ? "dcalcoda" : "dsalcoda") + "(" + (dsalcoda == -1 ? dcalcoda : dsalcoda) + ")");
 //			return null;
 		}
-		int maxMeasure = -1;
 		boolean followCoda1 = false;
 		boolean followCoda2 = false;
 		boolean endAtFine = false;
 		boolean skippingEnding = false;
 		int loops = 0;
 		boolean barMarkedBeforeNotes = false;
-		for (int i = 0; i < measures.size(); i = (nextMeasure != -1 ? nextMeasure : i + 1)) {
+		int playedMeasureIdx = 0;
+		for (int absoluteMeasureIdx = 0; absoluteMeasureIdx < measures.size(); absoluteMeasureIdx = (nextMeasure != -1 ? nextMeasure : absoluteMeasureIdx + 1)) {
 //			System.err.println("Now parsing measure " + i);
 			loops++;
 			if (loops > 1000) {
 				throw new RuntimeException("Excessive loops");
 			}
-			if (i > maxMeasure) {
-				maxMeasure = i;
-			}
 			nextMeasure = -1;
 			int currMeasurePositionInDivisions = 0; // in divisions
-			Node measure = measures.get(i);
+			Node measure = measures.get(absoluteMeasureIdx);
 			try {
 				NodeList mChildren = measure.getChildNodes();
 				for (int j = 0; j < mChildren.getLength(); j++) {
@@ -1325,23 +1325,23 @@ public class MusicXMLParser {
 						RepeatDirection direction = barline.getRepeatDirection();
 						int[] numbers = barline.getNumbers();
 						if (direction == RepeatDirection.FORWARD) {
-							if (!measureOffsetInfo.containsKey(i))
-								forwardRepeatMeasures.push(i);
+							if (!measureOffsetInfo.containsKey(absoluteMeasureIdx))
+								forwardRepeatMeasures.push(absoluteMeasureIdx);
 						} else if (direction == RepeatDirection.BACKWARD) {
 							int takeRepeat = 0;
 							final int LAST_TIME = 2;
 							if (skippingEnding) { 
 								takeRepeat = 0;
 							} else if (numbers == null) {
-								if (!measureOffsetInfo.containsKey(i)) {
+								if (!measureOffsetInfo.containsKey(absoluteMeasureIdx)) {
 									takeRepeat = LAST_TIME;
 									barMarkedBeforeNotes = true;
 								} else  if (barMarkedBeforeNotes){
 									takeRepeat = 0;
 								} else {
-									takeRepeat = measureOffsetInfo.get(i).get(0).getFirst() == 1 ? LAST_TIME : 0;
+									takeRepeat = measureOffsetInfo.get(absoluteMeasureIdx).get(0).getFirst() == 1 ? LAST_TIME : 0;
 								}
-								if (takeRepeat > 0) System.err.println("Repeating at measure " + i);
+								if (takeRepeat > 0) System.err.println("Repeating at measure " + absoluteMeasureIdx);
 							} else {
 								int ending = measureOffsetInfo.get(prevPlayedMeasure).get(0).getFirst();
 								System.err.println("Seen prev measure (" + prevPlayedMeasure + ") " + ending + " times");
@@ -1364,7 +1364,7 @@ public class MusicXMLParser {
 							}
 						} else if (direction == RepeatDirection.NO_REPEAT) {
 							if (numbers != null) { // ending
-								System.err.println("Encountered endings " + Arrays.toString(numbers) + " in measure " + i);
+								System.err.println("Encountered endings " + Arrays.toString(numbers) + " in measure " + absoluteMeasureIdx);
 								int ending = measureOffsetInfo.get(prevPlayedMeasure).get(0).getFirst();
 								System.err.println("Seen prev measure (" + prevPlayedMeasure + ") " + ending + " times");
 								skippingEnding = true;
@@ -1392,18 +1392,18 @@ public class MusicXMLParser {
 							String gNodeName = mGrandchild.getNodeName();
 							if (gNodeName.equals("divisions")) {
 								currDivisionsPerQuarterNote = Integer.parseInt(mGrandchild.getTextContent());
-								divsPerQuarterByMeasure.put(i, currDivisionsPerQuarterNote);
+								divsPerQuarterByAbsoluteMeasure.put(absoluteMeasureIdx, currDivisionsPerQuarterNote);
 								System.err.println("Divs per quarter note:" +currDivisionsPerQuarterNote);
 							} else if (gNodeName.equals("key")) {
 								currKey = parseKey(mGrandchild);
 								if (currKey.mode == null) {
 									songsWithMissingMode.put(MusicXMLSummaryGenerator.getTitle(this),currKey.fifths);
 								}
-								keyByMeasure.put(i, currKey);
+								keyByAbsoluteMeasure.put(absoluteMeasureIdx, currKey);
 							} else if (gNodeName.equals("time")) {
 								currTime = parseTime(mGrandchild);
 								System.err.println("Current time sig:" +currTime);
-								timeByMeasure.put(i, currTime);
+								timeByAbsoluteMeasure.put(absoluteMeasureIdx, currTime);
 							} else if (gNodeName.equals("clef")) {
 								// do nothing
 							} else if (gNodeName.equals("staff-details")) {
@@ -1462,11 +1462,11 @@ public class MusicXMLParser {
 									}
 									if (nextMeasure == -1) {
 										nextMeasure = 0;
-										System.err.println("Found D.C. al Coda in measure " + i + " — skipping back to measure " + nextMeasure);
+										System.err.println("Found D.C. al Coda in measure " + absoluteMeasureIdx + " — skipping back to measure " + nextMeasure);
 										followCoda1 = true;
 									}
 								} else if (type == DirectionType.SEGNO) {
-									segno = i;
+									segno = absoluteMeasureIdx;
 									System.err.println("Found segno at measure " + segno);
 								} else if (type == DirectionType.IGNORE) { 
 									// do nothing
@@ -1474,20 +1474,20 @@ public class MusicXMLParser {
 									// skip to coda
 									if (followCoda1) {
 										nextMeasure = coda1;
-										System.err.println("Found coda at measure " + i + ", skipping to " + nextMeasure);
+										System.err.println("Found coda at measure " + absoluteMeasureIdx + ", skipping to " + nextMeasure);
 										followCoda1 = false;
 									}
 								} else if (type == DirectionType.CODA1) { 
 									// at coda
 									if (followCoda1 || followCoda2) {
-										throw new RuntimeException("Missing Al coda; found coda instead at " + i);
+										throw new RuntimeException("Missing Al coda; found coda instead at " + absoluteMeasureIdx);
 									}
-									System.err.println("Entered coda 1 at measure " + i);
+									System.err.println("Entered coda 1 at measure " + absoluteMeasureIdx);
 								} else if (type == DirectionType.AL_CODA2) { 
 									// skip to coda
 									if (followCoda2) {
 										nextMeasure = coda2;
-										System.err.println("Found coda 2 at measure " + i + ", skipping to " + nextMeasure);
+										System.err.println("Found coda 2 at measure " + absoluteMeasureIdx + ", skipping to " + nextMeasure);
 										followCoda1 = false;
 									}
 								} else if (type == DirectionType.CODA2) { 
@@ -1495,12 +1495,12 @@ public class MusicXMLParser {
 									if (followCoda1 || followCoda2) {
 										throw new RuntimeException("Missing al coda 2; found coda 2 instead");
 									}
-									System.err.println("Entered coda 2 at measure " + i);
+									System.err.println("Entered coda 2 at absolute measure " + absoluteMeasureIdx);
 								} else if (type == DirectionType.FINE) { 
 									// skip to coda
 									if (endAtFine) {
 										nextMeasure = measures.size();
-										System.err.println("Found fine at measure " + i + ", skipping to " + nextMeasure);
+										System.err.println("Found fine at absolute measure " + absoluteMeasureIdx + ", skipping to " + nextMeasure);
 									}
 								} else {
 									//throw new RuntimeException("Unhandled direction type:" + type);
@@ -1527,9 +1527,9 @@ public class MusicXMLParser {
 							throw new RuntimeException("measurePosition is negative:" + measurePositionInDivisions);
 						}
 						Harmony harmony = offsetHarmony.getSecond();
-						addHarmonyToMeasure(i, measurePositionInDivisions, normalizeHarmony(harmony, currKey), harmonyByMeasure);
+						addHarmonyToMeasure(playedMeasureIdx, measurePositionInDivisions, normalizeHarmony(harmony, currKey), harmonyByPlayedMeasure);
 					} else if (nodeName.equals("note")) {
-						Note note = parseNote(mChild, 1+getRepeatForMeasureOffset(measureOffsetInfo, i, currMeasurePositionInDivisions), currKey);
+						Note note = parseNote(mChild, 1+getRepeatForMeasureOffset(measureOffsetInfo, absoluteMeasureIdx, currMeasurePositionInDivisions), currKey);
 						if (note == null) continue;
 						if (note.type > smallestNoteType) {
 							smallestNoteType = note.type;
@@ -1539,7 +1539,7 @@ public class MusicXMLParser {
 						}
 						
 						if (!note.isChordWithPrevious) {
-							addNoteToMeasure(i, currMeasurePositionInDivisions, note, notesByMeasure, measureOffsetInfo);
+							addNoteToMeasure(playedMeasureIdx, currMeasurePositionInDivisions, note, notesByPlayedMeasure, measureOffsetInfo);
 							currMeasurePositionInDivisions += note.duration;
 						}
 					} else if (nodeName.equals("print")) {
@@ -1570,7 +1570,7 @@ public class MusicXMLParser {
 				}
 				if (instruments.size() > 1) {
 					throw new RuntimeException("measure introduces second instrument");
-				} else if (!skippingEnding && i != 0 && i != measures.size()-1 && currMeasurePositionInDivisions != calculateTotalDivisionsInMeasure(currTime, currDivisionsPerQuarterNote)) {
+				} else if (!skippingEnding && absoluteMeasureIdx != 0 && absoluteMeasureIdx != measures.size()-1 && currMeasurePositionInDivisions != calculateTotalDivisionsInMeasure(currTime, currDivisionsPerQuarterNote)) {
 //					MusicXMLAnalyzer.printNode(measure, System.err);
 //					throw new RuntimeException("events in measure " + i + " fill " + currMeasurePositionInDivisions + " of " + calculateTotalDivisionsInMeasure(currTime, currDivisionsPerQuarterNote) + " divisions");
 //					System.err.println("Current Time Signature = " + currTime);
@@ -1578,14 +1578,24 @@ public class MusicXMLParser {
 				}
 			} catch (RuntimeException e) {
 				MusicXMLSummaryGenerator.printNode(measure, System.out);
-				System.err.println("In measure number " + i);
+				System.err.println("In absolute measure number " + absoluteMeasureIdx);
 				throw e;
 			}
-			if (!skippingEnding)
-				prevPlayedMeasure = i;
-			if (!skippingEnding && i == dsalcoda) {
+			if (!skippingEnding){ // I assume this means that we "played" this measure
+				prevPlayedMeasure = absoluteMeasureIdx;
+				musicXML.playedToAbsoluteMeasureNumberMap.add(absoluteMeasureIdx);
+				if (absoluteMeasureIdx >= musicXML.absoluteToPlayedMeasureNumbersMap.size()) {
+					SortedSet<Integer> newSet = new TreeSet<Integer>();
+					newSet.add(playedMeasureIdx);
+					musicXML.absoluteToPlayedMeasureNumbersMap.add(newSet);
+				} else {
+					musicXML.absoluteToPlayedMeasureNumbersMap.get(absoluteMeasureIdx).add(playedMeasureIdx);
+				}
+				playedMeasureIdx++;
+			}
+			if (!skippingEnding && absoluteMeasureIdx == dsalcoda) {
 				nextMeasure = (segno == -1 ? 0 : segno);
-				System.err.println("Found D.S. al Coda in measure " + i + " — skipping back to measure " + nextMeasure);
+				System.err.println("Found D.S. al Coda in absolute measure " + absoluteMeasureIdx + " — skipping back to measure " + nextMeasure);
 				followCoda1 = true;
 			}
 		}
@@ -1598,17 +1608,17 @@ public class MusicXMLParser {
 		}
 		
 		//Resolve co-occuring harmonies
-		SortedMap<Integer, SortedMap<Integer, Harmony>> unoverlappingHarmonyByMeasure = resolveOverlappingHarmonies(harmonyByMeasure, measureOffsetInfo, timeByMeasure, divsPerQuarterByMeasure, musicXML);
+		List<Triple<Integer,Integer, Harmony>> unoverlappingHarmonyByPlayedMeasure = resolveOverlappingHarmonies(harmonyByPlayedMeasure, measureOffsetInfo, timeByAbsoluteMeasure, divsPerQuarterByAbsoluteMeasure, musicXML);
 		
 		// ADD SYLLABLE STRESS
-		addStressToSyllables(notesByMeasure, musicXML);
+		addStressToSyllables(notesByPlayedMeasure, musicXML);
 		
-		musicXML.timeByMeasure = timeByMeasure;
-		normalizeKeysByOriginalKey(keyByMeasure);
-		musicXML.normalizedKeyByMeasure = keyByMeasure;
-		musicXML.notesByMeasure = notesByMeasure;
-		musicXML.unoverlappingHarmonyByMeasure = unoverlappingHarmonyByMeasure;
-		musicXML.divsPerQuarterByMeasure = divsPerQuarterByMeasure;
+		musicXML.timeByAbsoluteMeasure = timeByAbsoluteMeasure;
+		normalizeKeysByOriginalKey(keyByAbsoluteMeasure);
+		musicXML.normalizedKeyByAbsoluteMeasure = keyByAbsoluteMeasure;
+		musicXML.notesByPlayedMeasure = notesByPlayedMeasure;
+		musicXML.unoverlappingHarmonyByPlayedMeasure = unoverlappingHarmonyByPlayedMeasure;
+		musicXML.divsPerQuarterByAbsoluteMeasure = divsPerQuarterByAbsoluteMeasure;
 		
 		return musicXML;
 	}
@@ -1896,29 +1906,25 @@ public class MusicXMLParser {
 		}
 	}
 
-	private static SortedMap<Integer, SortedMap<Integer, Harmony>> resolveOverlappingHarmonies(SortedMap<Integer, SortedMap<Integer, List<Harmony>>> harmonyByMeasure, 
+	private static List<Triple<Integer, Integer, Harmony>> resolveOverlappingHarmonies(List<Triple<Integer, Integer, List<Harmony>>> harmonyByMeasure, 
 			Map<Integer, Map<Integer, Pair<Integer, NoteLyric>>> measureOffsetInfo, Map<Integer,Time> timeByMeasure, Map<Integer, Integer> divsByMeasure, ParsedMusicXMLObject musicXML) {
-		SortedMap<Integer, SortedMap<Integer, Harmony>> unoverlappingHarmonyByMeasure = new TreeMap<Integer, SortedMap<Integer, Harmony>>(); 
+		List<Triple<Integer, Integer, Harmony>> unoverlappingHarmonyByMeasure = new ArrayList<Triple<Integer, Integer, Harmony>>(); 
 		// If there are multiple chords, they must all occur before the next note occurs after the first chord,
 		// otherwise they'd have marked the chord later.
 		
-		for (Integer measure : harmonyByMeasure.keySet()) {
-			SortedMap<Integer, List<Harmony>> harmoniesByOffset = harmonyByMeasure.get(measure);
-			SortedMap<Integer, Harmony> harmonyByOffset = new TreeMap<Integer, Harmony>();
-			unoverlappingHarmonyByMeasure.put(measure, harmonyByOffset);
-			for (Integer offset : harmoniesByOffset.keySet()) {
-				List<Harmony> harmonies = harmoniesByOffset.get(offset);
-				if (harmonies.size() == 1) {
-					harmonyByOffset.put(offset, harmonies.get(0));
-				} else {
-					Time currTime = timeAtMeasure(timeByMeasure,measure);
-					int totalDivisionsInCurrMeasure = calculateTotalDivisionsInMeasure(currTime,divsAtMeasure(divsByMeasure,measure));
-					Integer offsetLimit = Integer.min(nextOccurringNoteEvent(measureOffsetInfo, measure, offset),
-							totalDivisionsInCurrMeasure);
-					harmonyByOffset.putAll(resolveOverlappingHarmonies(harmonies, offset, offsetLimit, totalDivisionsInCurrMeasure/currTime.beats, currTime));
-				}
+		for (Triple<Integer, Integer, List<Harmony>> triple : harmonyByMeasure) {
+			Integer measure = triple.getFirst();
+			Integer offset = triple.getSecond();
+			List<Harmony> harmonies = triple.getThird();
+			if (harmonies.size() == 1) {
+				unoverlappingHarmonyByMeasure.add(new Triple<Integer, Integer, Harmony>(measure, offset, harmonies.get(0)));
+			} else {
+				Time currTime = timeAtMeasure(timeByMeasure,measure);
+				int totalDivisionsInCurrMeasure = calculateTotalDivisionsInMeasure(currTime,divsAtMeasure(divsByMeasure,measure));
+				Integer offsetLimit = Integer.min(nextOccurringNoteEvent(measureOffsetInfo, measure, offset),
+						totalDivisionsInCurrMeasure);
+				unoverlappingHarmonyByMeasure.addAll(resolveOverlappingHarmonies(harmonies, measure, offset, offsetLimit, totalDivisionsInCurrMeasure/currTime.beats, currTime));
 			}
-			musicXML.harmonyCount += harmonyByOffset.size();
 		}
 		
 		return unoverlappingHarmonyByMeasure;
@@ -1952,9 +1958,10 @@ public class MusicXMLParser {
 
 	static int removedChordsCount = 0;
 	
-	private static Map<Integer, Harmony> resolveOverlappingHarmonies(List<Harmony> harmonies, Integer startOffset, Integer offsetLimit, int divsPerBeat, Time currTime) {
-		Map<Integer, Harmony> harmonyByOffset = new TreeMap<Integer, Harmony>();
-		harmonyByOffset.put(startOffset, harmonies.remove(0));
+	private static Collection<? extends Triple<Integer, Integer, Harmony>> resolveOverlappingHarmonies(List<Harmony> harmonies, Integer nonrepeatedMeasureNumber, Integer startOffset, Integer offsetLimit, int divsPerBeat, Time currTime) {
+		List<Triple<Integer, Integer, Harmony>> resolvedHarmonies = new ArrayList<Triple<Integer, Integer, Harmony>>();
+		
+		resolvedHarmonies.add(new Triple<Integer, Integer, MusicXMLParser.Harmony>(nonrepeatedMeasureNumber, startOffset, harmonies.remove(0)));
 
 		List<Integer> validChordOffsets = null;
 		
@@ -1968,10 +1975,10 @@ public class MusicXMLParser {
 		}
 		
 		for (int i = 1; i < harmonies.size(); i++) {
-			harmonyByOffset.put(validChordOffsets.get(validChordOffsets.size()-i), harmonies.get(harmonies.size()-i));
+			resolvedHarmonies.add(new Triple<Integer, Integer, MusicXMLParser.Harmony>(nonrepeatedMeasureNumber, validChordOffsets.get(validChordOffsets.size()-i), harmonies.get(harmonies.size()-i)));
 		}
 		
-		return harmonyByOffset;
+		return resolvedHarmonies;
 	}
 
 	
@@ -2057,23 +2064,29 @@ public class MusicXMLParser {
 		}
 	}
 
-	private static void addHarmonyToMeasure(int measureNumber, Integer offset, Harmony harmony, SortedMap<Integer, SortedMap<Integer, List<Harmony>>> harmonyByMeasure) {
-		SortedMap<Integer, List<Harmony>> harmonyByOffset = harmonyByMeasure.get(measureNumber);
-		if (harmonyByOffset == null) {
-			harmonyByOffset = new TreeMap<Integer, List<Harmony>>();
-			harmonyByMeasure.put(measureNumber, harmonyByOffset);
+	private static void addHarmonyToMeasure(int nonrepeatedMeasureNumber, Integer offset, Harmony harmony, List<Triple<Integer, Integer, List<Harmony>>> harmonyByMeasure) {
+		Triple<Integer, Integer, List<Harmony>> msrOffset = null;
+		List<Harmony> harmoniesAtMsrOffset;
+		
+		if (!harmonyByMeasure.isEmpty()) {
+			msrOffset = harmonyByMeasure.get(harmonyByMeasure.size()-1);
 		}
+		
+		if (msrOffset == null || msrOffset.getFirst() != nonrepeatedMeasureNumber || msrOffset.getSecond() != offset) {
+			// add a new list
+			harmoniesAtMsrOffset = new ArrayList<Harmony>();
+			harmoniesAtMsrOffset.add(harmony);
+			msrOffset = new Triple<Integer, Integer, List<Harmony>>(nonrepeatedMeasureNumber, offset, harmoniesAtMsrOffset);
+			harmonyByMeasure.add(msrOffset);
+		} else {
+			harmoniesAtMsrOffset = msrOffset.getThird();
+		}
+		
 		// We use a list in case multiple harmonies co-occur; these will be resolved (i.e., evenly distributed) later 
-		List<Harmony> harmonies = harmonyByOffset.get(offset);
-		if (harmonies == null) {
-			harmonies = new ArrayList<Harmony>();
-			harmonyByOffset.put(offset, harmonies);
-		} else { 
-			if (harmonies.get(harmonies.size()-1).equals(harmony)) {
-				return;
-			}
+		if (harmoniesAtMsrOffset.get(harmoniesAtMsrOffset.size()-1).equals(harmony)) {
+			return;
 		}
-		harmonies.add(harmony);
+		harmoniesAtMsrOffset.add(harmony);
 	}
 
 	private static int calculateTotalDivisionsInMeasure(Time currTime, int currDivisionsPerQuarterNote) {

@@ -17,7 +17,7 @@ import melody.SegmentSpecificMelodyEngineer.SegmentSpecificMelodyEngineerMusicXM
 
 public class MusicXMLModelLearner {
 	private static final File[] files = new File(
-			"/Users/norkish/Archive/2017_BYU/ComputationalCreativity/data/Wikifonia").listFiles();
+			"/Users/norkish/Archive/2015_BYU/ComputationalCreativity/data/Wikifonia").listFiles();
 
 	private static Map<Class,MusicXMLModel> trainedModels = null;
 	
