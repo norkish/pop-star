@@ -8,6 +8,8 @@ import java.util.Map;
 import org.w3c.dom.Document;
 
 import globalstructure.GlobalStructureExtractor;
+import globalstructure.DistributionalGlobalStructureEngineer;
+import globalstructure.DistributionalGlobalStructureEngineer.DistributionalGlobalStructureEngineerMusicXMLModel;
 import harmony.SegmentSpecificHarmonyEngineer;
 import harmony.SegmentSpecificHarmonyEngineer.SegmentSpecificHarmonyEngineerMusicXMLModel;
 import lyrics.LyricTemplateEngineer;
@@ -26,6 +28,7 @@ public class MusicXMLModelLearner {
 			Map<Class,MusicXMLModel> models = new HashMap<Class,MusicXMLModel>();
 
 			// populate from configuration
+			models.put(DistributionalGlobalStructureEngineer.class, new DistributionalGlobalStructureEngineerMusicXMLModel());
 			models.put(LyricTemplateEngineer.class, new LyricTemplateEngineerMusicXMLModel());
 			models.put(SegmentSpecificHarmonyEngineer.class, new SegmentSpecificHarmonyEngineerMusicXMLModel());
 			models.put(SegmentSpecificMelodyEngineer.class, new SegmentSpecificMelodyEngineerMusicXMLModel());

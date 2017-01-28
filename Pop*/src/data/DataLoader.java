@@ -386,14 +386,14 @@ public class DataLoader {
 		System.out.println(linesPerSegmentDistribution);
 		
 		for (int i = 0; i < 10; i++) {
-			System.out.println(gStructDist.sampleRandomly());
+			System.out.println(gStructDist.sampleAccordingToDistribution());
 		}
 		for (int i = 0; i < 3; i++) {
-			System.out.println(linesPerSegmentDistribution.get(SegmentType.INTRO).sampleRandomly());
-			System.out.println(linesPerSegmentDistribution.get(SegmentType.CHORUS).sampleRandomly());
-			System.out.println(linesPerSegmentDistribution.get(SegmentType.BRIDGE).sampleRandomly());
-			System.out.println(linesPerSegmentDistribution.get(SegmentType.OUTRO).sampleRandomly());
-			System.out.println(linesPerSegmentDistribution.get(SegmentType.VERSE).sampleRandomly());
+			System.out.println(linesPerSegmentDistribution.get(SegmentType.INTRO).sampleAccordingToDistribution());
+			System.out.println(linesPerSegmentDistribution.get(SegmentType.CHORUS).sampleAccordingToDistribution());
+			System.out.println(linesPerSegmentDistribution.get(SegmentType.BRIDGE).sampleAccordingToDistribution());
+			System.out.println(linesPerSegmentDistribution.get(SegmentType.OUTRO).sampleAccordingToDistribution());
+			System.out.println(linesPerSegmentDistribution.get(SegmentType.VERSE).sampleAccordingToDistribution());
 		}
 	}
 
