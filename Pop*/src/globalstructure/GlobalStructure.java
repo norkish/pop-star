@@ -45,4 +45,26 @@ public class GlobalStructure implements Iterable<SegmentType>{
 		
 		return idx;
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.hashCode(structure);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof GlobalStructure))
+			return false;
+		GlobalStructure other = (GlobalStructure) obj;
+		if (!Arrays.equals(structure, other.structure))
+			return false;
+		return true;
+	}
 }

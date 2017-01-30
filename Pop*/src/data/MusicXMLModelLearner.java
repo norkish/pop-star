@@ -8,16 +8,20 @@ import java.util.Map;
 import org.w3c.dom.Document;
 
 import globalstructure.GlobalStructureExtractor;
+import globalstructure.DistributionalGlobalStructureEngineer;
+import globalstructure.DistributionalGlobalStructureEngineer.DistributionalGlobalStructureEngineerMusicXMLModel;
 import harmony.SegmentSpecificHarmonyEngineer;
 import harmony.SegmentSpecificHarmonyEngineer.SegmentSpecificHarmonyEngineerMusicXMLModel;
 import lyrics.LyricTemplateEngineer;
 import lyrics.LyricTemplateEngineer.LyricTemplateEngineerMusicXMLModel;
 import melody.SegmentSpecificMelodyEngineer;
 import melody.SegmentSpecificMelodyEngineer.SegmentSpecificMelodyEngineerMusicXMLModel;
+import segmentstructure.DistributionalSegmentStructureEngineer;
+import segmentstructure.DistributionalSegmentStructureEngineer.DistributionalSegmentStructureEngineerMusicXMLModel;
 
 public class MusicXMLModelLearner {
 	private static final File[] files = new File(
-			"/Users/norkish/Archive/2017_BYU/ComputationalCreativity/data/Wikifonia").listFiles();
+			"/Users/norkish/Archive/2015_BYU/ComputationalCreativity/data/Wikifonia").listFiles();
 
 	private static Map<Class,MusicXMLModel> trainedModels = null;
 	
@@ -26,6 +30,8 @@ public class MusicXMLModelLearner {
 			Map<Class,MusicXMLModel> models = new HashMap<Class,MusicXMLModel>();
 
 			// populate from configuration
+			models.put(DistributionalGlobalStructureEngineer.class, new DistributionalGlobalStructureEngineerMusicXMLModel());
+			models.put(DistributionalSegmentStructureEngineer.class, new DistributionalSegmentStructureEngineerMusicXMLModel());
 			models.put(LyricTemplateEngineer.class, new LyricTemplateEngineerMusicXMLModel());
 			models.put(SegmentSpecificHarmonyEngineer.class, new SegmentSpecificHarmonyEngineerMusicXMLModel());
 			models.put(SegmentSpecificMelodyEngineer.class, new SegmentSpecificMelodyEngineerMusicXMLModel());

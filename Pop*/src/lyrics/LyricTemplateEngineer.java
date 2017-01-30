@@ -44,7 +44,7 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 			
 			int syllableCount = 0;
 			
-			for (Triple<Integer, Integer, Note> triple : musicXML.notesByMeasure){
+			for (Triple<Integer, Integer, Note> triple : musicXML.notesByPlayedMeasure){
 				Note note = triple.getThird();
 				NoteLyric lyric = note.lyric;
 				if (lyric == null || lyric.text == null)

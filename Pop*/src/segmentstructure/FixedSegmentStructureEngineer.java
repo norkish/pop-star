@@ -28,10 +28,28 @@ public class FixedSegmentStructureEngineer extends SegmentStructureEngineer {
 			return defineOutroSegmentStructure();
 		case VERSE:
 			return defineVerseSegmentStructure();
+		case INTERLUDE:
+			return defineInterludeSegmentStructure();
+		case PRECHORUS:
+			assert false: "didn't define prechorus yet";
+			break;
 		default:
 			break;
 		}
 		return null;
+	}
+
+	private SegmentStructure defineInterludeSegmentStructure() {
+		int measureCount = 4;
+		
+		SegmentStructure segmentStructure = new SegmentStructure(measureCount, SegmentType.INTERLUDE);
+		segmentStructure.addDivisionsPerQuarterNote(0,4);
+		segmentStructure.addKey(0,0,KeyMode.MAJOR);
+		segmentStructure.addTime(0,4,4);
+		
+		segmentStructure.addConstraint(2, Constraint.ALL_POSITIONS, new Constraint<Harmony>(2345, new ExactBinaryMatch<Harmony>(0, Constraint.ALL_POSITIONS), true));
+		
+		return segmentStructure;
 	}
 
 	private SegmentStructure defineVerseSegmentStructure() {

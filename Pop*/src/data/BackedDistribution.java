@@ -17,7 +17,7 @@ public class BackedDistribution<T> {
 		}
 	}
 
-	public T sampleRandomly() {
+	public T sampleAccordingToDistribution() {
 		int target = rand.nextInt(accumulatedCount);
 		int accumulation = 0;
 		for (Map.Entry<T, List<Integer>> entry : distribution.entrySet())

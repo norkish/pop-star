@@ -60,10 +60,10 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 			double prevNoteDurationInBeats = -1.0;
 
 			// TODO: condition on duration, condition on segment type, condition on chord
-			SortedMap<Integer, Time> timeMap = musicXML.timeByMeasure;
+			SortedMap<Integer, Time> timeMap = musicXML.timeByAbsoluteMeasure;
 			
-			SortedMap<Integer, Integer> divsPerQuarterByMeasure = musicXML.divsPerQuarterByMeasure;
-			List<Triple<Integer, Integer, Note>> notesByMeasure = musicXML.notesByMeasure;
+			SortedMap<Integer, Integer> divsPerQuarterByMeasure = musicXML.divsPerQuarterByAbsoluteMeasure;
+			List<Triple<Integer, Integer, Note>> notesByMeasure = musicXML.notesByPlayedMeasure;
 			int notesToAdvanceForTies; 
 			int maxNotesToAdvanceForTies = 5;
 			for (int i = 0; i < notesByMeasure.size(); i += notesToAdvanceForTies) {

@@ -13,36 +13,39 @@ public class GlobalStructureExtractor {
 
 	public static void annotateGlobalStructure(ParsedMusicXMLObject musicXML) {
 		
-		if (musicXML.unoverlappingHarmonyByMeasure.isEmpty() || musicXML.notesByMeasure.isEmpty()) {
+		if (musicXML.unoverlappingHarmonyByPlayedMeasure.isEmpty() || musicXML.notesByPlayedMeasure.isEmpty()) {
 			musicXML.globalStructure = null;
 			return;
 		}
 
 //		TreeMap<Integer, SegmentType> globalStructure = annotateGlobalStructureNaively(musicXML);
 //		TreeMap<Integer, SegmentType> globalStructure = annotateGlobalStructureUsingAlignment(musicXML);
-		SortedMap<Integer, SegmentType> globalStructure = annotateGlobalStructureUsingFixed(musicXML);
+		SortedMap<Integer, SegmentType> globalStructure = annotateGlobalStructureUsingFixed(musicXML); // only works for Just the Way You Are
 		musicXML.globalStructure = globalStructure;		
 	}
 
 	private static SortedMap<Integer, SegmentType> annotateGlobalStructureUsingFixed(ParsedMusicXMLObject musicXML) {
 		SortedMap<Integer, SegmentType> structure = new TreeMap<Integer, SegmentType>();
+//		
+//		int i = 0;
+//		for (Integer msr : musicXML.playedToAbsoluteMeasureNumberMap) {
+//			System.err.println(i++ + "\t" + msr);
+//		}
 		
 		structure.put(0, SegmentType.INTRO);
 		structure.put(4, SegmentType.VERSE);
 		structure.put(32, SegmentType.CHORUS);
-//		structure.put(36, SegmentType.INTERLUDE);
+		structure.put(34, SegmentType.INTERLUDE);
 		structure.put(38, SegmentType.VERSE);
 		structure.put(66, SegmentType.CHORUS);
-//		structure.put(70, SegmentType.INTERLUDE);
+		structure.put(68, SegmentType.INTERLUDE);
 		structure.put(72, SegmentType.BRIDGE);
 		structure.put(88, SegmentType.VERSE);
 		structure.put(100, SegmentType.CHORUS);
-//		structure.put(104, SegmentType.INTERLUDE);
-		structure.put(100, SegmentType.CHORUS);
-		structure.put(100, SegmentType.CHORUS);
-		structure.put(100, SegmentType.CHORUS);
-		structure.put(100, SegmentType.CHORUS);
-		structure.put(100, SegmentType.CHORUS);
+		structure.put(102, SegmentType.INTERLUDE);
+		structure.put(106, SegmentType.VERSE);
+		structure.put(134, SegmentType.CHORUS);
+		structure.put(136, SegmentType.OUTRO);
 		
 		return structure;
 	}

@@ -68,6 +68,7 @@ public class Composition {
 		for (int i = 0; i < globalStructure.size(); i++) {
 			// gather data relevant to instantiation
 			SegmentType segmentType = globalStructure.get(i);
+			assert segmentType != null: "segmentType is null"; 
 			boolean lastSegment = (i == globalStructure.size()-1);
 			boolean lastOfKind = (globalStructure.lastIndexOf(segmentType) == i);
 			

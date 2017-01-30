@@ -78,7 +78,7 @@ public class MusicXMLPair extends SequencePair {
 			double identityWeight, double lyricWeight, double harmonyWeight, double melodyWeight) {
 		
 		this.notesByMeasure1 = new TreeMap<Integer, SortedMap<Integer, Note>>();
-		for (Triple<Integer,Integer,Note> triple : musicXML.notesByMeasure) {
+		for (Triple<Integer,Integer,Note> triple : musicXML.notesByPlayedMeasure) {
 			Integer measure = triple.getFirst();
 			Integer divOffset = triple.getSecond();
 			Note note = triple.getThird();
@@ -96,7 +96,7 @@ public class MusicXMLPair extends SequencePair {
 		}
 
 		this.notesByMeasure2 = new TreeMap<Integer, SortedMap<Integer, Note>>();
-		for (Triple<Integer,Integer,Note> triple : musicXML2.notesByMeasure) {
+		for (Triple<Integer,Integer,Note> triple : musicXML2.notesByPlayedMeasure) {
 			Integer measure = triple.getFirst();
 			Integer divOffset = triple.getSecond();
 			Note note = triple.getThird();
@@ -113,8 +113,36 @@ public class MusicXMLPair extends SequencePair {
 			}
 		}
 		
-		this.harmonyByMeasure1 = musicXML.unoverlappingHarmonyByMeasure;
-		this.harmonyByMeasure2 = musicXML2.unoverlappingHarmonyByMeasure;
+		this.harmonyByMeasure1 = new TreeMap<Integer, SortedMap<Integer, Harmony>>();
+		for (Triple<Integer,Integer,Harmony> triple : musicXML.unoverlappingHarmonyByPlayedMeasure) {
+			Integer measure = triple.getFirst();
+			Integer divOffset = triple.getSecond();
+			Harmony harmony = triple.getThird();
+			SortedMap<Integer, Harmony> harmoniesByOffset = harmonyByMeasure1.get(measure);
+			if (harmoniesByOffset == null) {
+				harmoniesByOffset = new TreeMap<Integer, Harmony>();
+				harmonyByMeasure1.put(measure, harmoniesByOffset);
+			}
+			
+			// should be no overlapping harmonies, already handled in xml parser
+			harmoniesByOffset.put(divOffset, harmony);
+		}
+
+		this.harmonyByMeasure2 = new TreeMap<Integer, SortedMap<Integer, Harmony>>();
+		for (Triple<Integer,Integer,Harmony> triple : musicXML2.unoverlappingHarmonyByPlayedMeasure) {
+			Integer measure = triple.getFirst();
+			Integer divOffset = triple.getSecond();
+			Harmony harmony = triple.getThird();
+			SortedMap<Integer, Harmony> harmoniesByOffset = harmonyByMeasure2.get(measure);
+			if (harmoniesByOffset == null) {
+				harmoniesByOffset = new TreeMap<Integer, Harmony>();
+				harmonyByMeasure2.put(measure, harmoniesByOffset);
+			}
+			
+			// should be no overlapping harmonies, already handled in xml parser
+			harmoniesByOffset.put(divOffset, harmony);
+		}
+		
 		this.identityWeight = identityWeight;
 		this.lyricWeight = lyricWeight;
 		this.harmonyWeight = harmonyWeight;
@@ -150,14 +178,14 @@ public class MusicXMLPair extends SequencePair {
 		SortedMap<Integer, Harmony> harmoniesfor1Measure = harmonyByMeasure1.get(mXML1MsrNo);
 		SortedMap<Integer, Harmony> harmoniesfor2Measure = harmonyByMeasure2.get(mXML2MsrNo);
 
-		Time time1 = Utils.valueForKeyBeforeOrEqualTo(mXML1MsrNo, musicXML1.timeByMeasure);
+		Time time1 = Utils.valueForKeyBeforeOrEqualTo(mXML1MsrNo, musicXML1.timeByAbsoluteMeasure);
 		int beatsIn1Msr = time1.beats;
-		Time time2 = Utils.valueForKeyBeforeOrEqualTo(mXML2MsrNo, musicXML2.timeByMeasure);
+		Time time2 = Utils.valueForKeyBeforeOrEqualTo(mXML2MsrNo, musicXML2.timeByAbsoluteMeasure);
 		int beatsIn2Msr = time2.beats;
 		int comparableBeats = Math.min(beatsIn1Msr, beatsIn2Msr);
 
-		double divsPerBeatIn1Msr = Utils.valueForKeyBeforeOrEqualTo(mXML1MsrNo, musicXML1.divsPerQuarterByMeasure) * (4.0/time1.beatType);
-		double divsPerBeatIn2Msr = Utils.valueForKeyBeforeOrEqualTo(mXML2MsrNo, musicXML2.divsPerQuarterByMeasure) * (4.0/time2.beatType);
+		double divsPerBeatIn1Msr = Utils.valueForKeyBeforeOrEqualTo(mXML1MsrNo, musicXML1.divsPerQuarterByAbsoluteMeasure) * (4.0/time1.beatType);
+		double divsPerBeatIn2Msr = Utils.valueForKeyBeforeOrEqualTo(mXML2MsrNo, musicXML2.divsPerQuarterByAbsoluteMeasure) * (4.0/time2.beatType);
 		// max number of divs we consider is 12
 		double comparableDivs = Math.min(4.0, Math.max(divsPerBeatIn1Msr, divsPerBeatIn2Msr));
 		double divs1PerComparedDiv = divsPerBeatIn1Msr/comparableDivs;
