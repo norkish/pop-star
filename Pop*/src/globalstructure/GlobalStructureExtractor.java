@@ -30,13 +30,19 @@ public class GlobalStructureExtractor {
 		structure.put(0, SegmentType.INTRO);
 		structure.put(4, SegmentType.VERSE);
 		structure.put(32, SegmentType.CHORUS);
-		structure.put(36, SegmentType.INTERLUDE);
+//		structure.put(36, SegmentType.INTERLUDE);
 		structure.put(38, SegmentType.VERSE);
 		structure.put(66, SegmentType.CHORUS);
-		structure.put(70, SegmentType.INTERLUDE);
+//		structure.put(70, SegmentType.INTERLUDE);
 		structure.put(72, SegmentType.BRIDGE);
-		structure.put(0, SegmentType.INTRO);
-		structure.put(0, SegmentType.INTRO);
+		structure.put(88, SegmentType.VERSE);
+		structure.put(100, SegmentType.CHORUS);
+//		structure.put(104, SegmentType.INTERLUDE);
+		structure.put(100, SegmentType.CHORUS);
+		structure.put(100, SegmentType.CHORUS);
+		structure.put(100, SegmentType.CHORUS);
+		structure.put(100, SegmentType.CHORUS);
+		structure.put(100, SegmentType.CHORUS);
 		
 		return structure;
 	}
