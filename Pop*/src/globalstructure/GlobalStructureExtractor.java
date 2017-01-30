@@ -20,7 +20,7 @@ public class GlobalStructureExtractor {
 
 //		TreeMap<Integer, SegmentType> globalStructure = annotateGlobalStructureNaively(musicXML);
 //		TreeMap<Integer, SegmentType> globalStructure = annotateGlobalStructureUsingAlignment(musicXML);
-		SortedMap<Integer, SegmentType> globalStructure = annotateGlobalStructureUsingFixed(musicXML);
+		SortedMap<Integer, SegmentType> globalStructure = annotateGlobalStructureUsingFixed(musicXML); // only works for Just the Way You Are
 		musicXML.globalStructure = globalStructure;		
 	}
 

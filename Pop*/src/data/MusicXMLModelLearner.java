@@ -16,6 +16,8 @@ import lyrics.LyricTemplateEngineer;
 import lyrics.LyricTemplateEngineer.LyricTemplateEngineerMusicXMLModel;
 import melody.SegmentSpecificMelodyEngineer;
 import melody.SegmentSpecificMelodyEngineer.SegmentSpecificMelodyEngineerMusicXMLModel;
+import segmentstructure.DistributionalSegmentStructureEngineer;
+import segmentstructure.DistributionalSegmentStructureEngineer.DistributionalSegmentStructureEngineerMusicXMLModel;
 
 public class MusicXMLModelLearner {
 	private static final File[] files = new File(
@@ -29,6 +31,7 @@ public class MusicXMLModelLearner {
 
 			// populate from configuration
 			models.put(DistributionalGlobalStructureEngineer.class, new DistributionalGlobalStructureEngineerMusicXMLModel());
+			models.put(DistributionalSegmentStructureEngineer.class, new DistributionalSegmentStructureEngineerMusicXMLModel());
 			models.put(LyricTemplateEngineer.class, new LyricTemplateEngineerMusicXMLModel());
 			models.put(SegmentSpecificHarmonyEngineer.class, new SegmentSpecificHarmonyEngineerMusicXMLModel());
 			models.put(SegmentSpecificMelodyEngineer.class, new SegmentSpecificMelodyEngineerMusicXMLModel());
