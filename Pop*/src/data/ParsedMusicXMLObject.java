@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeMap;
 
 import data.MusicXMLParser.Harmony;
 import data.MusicXMLParser.Key;
@@ -17,9 +18,11 @@ import globalstructure.SegmentType;
 import tabcomplete.rhyme.StressedPhone;
 import utils.Pair;
 import utils.Triple;
+import utils.Utils;
 
 public class ParsedMusicXMLObject {
 
+	public String filename; 
 	public boolean followRepeats;
 	public int lyricCount;
 
@@ -50,7 +53,8 @@ public class ParsedMusicXMLObject {
 	public SortedMap<Integer, Integer> divsPerQuarterByAbsoluteMeasure;
 	public SortedMap<Integer, SegmentType> globalStructure;
 	
-	public ParsedMusicXMLObject(boolean followRepeats) {
+	public ParsedMusicXMLObject(String filename, boolean followRepeats) {
+		this.filename = filename;
 		this.followRepeats = followRepeats;
 	}
 
@@ -106,5 +110,49 @@ public class ParsedMusicXMLObject {
 		if (!unoverlappingHarmonyByPlayedMeasure.isEmpty()) {
 			measureCount = Math.max(measureCount, unoverlappingHarmonyByPlayedMeasure.get(unoverlappingHarmonyByPlayedMeasure.size()-1).getFirst() + 1);
 		}
+	}
+
+	public double divsToBeats(int divsOffset, int playedMeasure) {
+		int absoluteMeasure = playedToAbsoluteMeasureNumberMap.get(playedMeasure);
+		return (divsOffset/Utils.valueForKeyBeforeOrEqualTo(absoluteMeasure, divsPerQuarterByAbsoluteMeasure)) * (Utils.valueForKeyBeforeOrEqualTo(absoluteMeasure, timeByAbsoluteMeasure).beatType/4.0);
+	}
+
+	public SortedMap<Integer, SortedMap<Integer, Harmony>> getUnoverlappingHarmonyByPlayedMeasureAsMap() {
+		SortedMap<Integer, SortedMap<Integer, Harmony>> harmonyByMeasure = new TreeMap<Integer, SortedMap<Integer, Harmony>>();
+		for (Triple<Integer,Integer,Harmony> triple : unoverlappingHarmonyByPlayedMeasure) {
+			Integer measure = triple.getFirst();
+			Integer divOffset = triple.getSecond();
+			Harmony harmony = triple.getThird();
+			SortedMap<Integer, Harmony> harmoniesByOffset = harmonyByMeasure.get(measure);
+			if (harmoniesByOffset == null) {
+				harmoniesByOffset = new TreeMap<Integer, Harmony>();
+				harmonyByMeasure.put(measure, harmoniesByOffset);
+			}
+			
+			// should be no overlapping harmonies, already handled in xml parser
+			harmoniesByOffset.put(divOffset, harmony);
+		}
+		return harmonyByMeasure;
+	}
+
+	public SortedMap<Integer, SortedMap<Integer, Note>> getNotesByPlayedMeasureAsMap() {
+		SortedMap<Integer, SortedMap<Integer, Note>> notesByMeasure = new TreeMap<Integer, SortedMap<Integer, Note>>();
+		for (Triple<Integer,Integer,Note> triple : notesByPlayedMeasure) {
+			Integer measure = triple.getFirst();
+			Integer divOffset = triple.getSecond();
+			Note note = triple.getThird();
+			SortedMap<Integer, Note> notesByOffset = notesByMeasure.get(measure);
+			if (notesByOffset == null) {
+				notesByOffset = new TreeMap<Integer, Note>();
+				notesByMeasure.put(measure, notesByOffset);
+			}
+			
+			// keep the highest note if there are multiple
+			Note currNote = notesByOffset.get(divOffset);
+			if (currNote == null || note.pitch > currNote.pitch) {
+				notesByOffset.put(divOffset, note);
+			}
+		}
+		return notesByMeasure;
 	}
 }

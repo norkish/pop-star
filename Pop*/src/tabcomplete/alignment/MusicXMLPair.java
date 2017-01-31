@@ -77,71 +77,11 @@ public class MusicXMLPair extends SequencePair {
 	public MusicXMLPair(ParsedMusicXMLObject musicXML, ParsedMusicXMLObject musicXML2, 
 			double identityWeight, double lyricWeight, double harmonyWeight, double melodyWeight) {
 		
-		this.notesByMeasure1 = new TreeMap<Integer, SortedMap<Integer, Note>>();
-		for (Triple<Integer,Integer,Note> triple : musicXML.notesByPlayedMeasure) {
-			Integer measure = triple.getFirst();
-			Integer divOffset = triple.getSecond();
-			Note note = triple.getThird();
-			SortedMap<Integer, Note> notesByOffset = notesByMeasure1.get(measure);
-			if (notesByOffset == null) {
-				notesByOffset = new TreeMap<Integer, Note>();
-				notesByMeasure1.put(measure, notesByOffset);
-			}
-			
-			// keep the highest note if there are multiple
-			Note currNote = notesByOffset.get(divOffset);
-			if (currNote == null || note.pitch > currNote.pitch) {
-				notesByOffset.put(divOffset, note);
-			}
-		}
-
-		this.notesByMeasure2 = new TreeMap<Integer, SortedMap<Integer, Note>>();
-		for (Triple<Integer,Integer,Note> triple : musicXML2.notesByPlayedMeasure) {
-			Integer measure = triple.getFirst();
-			Integer divOffset = triple.getSecond();
-			Note note = triple.getThird();
-			SortedMap<Integer, Note> notesByOffset = notesByMeasure2.get(measure);
-			if (notesByOffset == null) {
-				notesByOffset = new TreeMap<Integer, Note>();
-				notesByMeasure2.put(measure, notesByOffset);
-			}
-			
-			// keep the highest note if there are multiple
-			Note currNote = notesByOffset.get(divOffset);
-			if (currNote == null || note.pitch > currNote.pitch) {
-				notesByOffset.put(divOffset, note);
-			}
-		}
+		this.notesByMeasure1 = musicXML1.getNotesByPlayedMeasureAsMap();
+		this.notesByMeasure2 = musicXML2.getNotesByPlayedMeasureAsMap();
 		
-		this.harmonyByMeasure1 = new TreeMap<Integer, SortedMap<Integer, Harmony>>();
-		for (Triple<Integer,Integer,Harmony> triple : musicXML.unoverlappingHarmonyByPlayedMeasure) {
-			Integer measure = triple.getFirst();
-			Integer divOffset = triple.getSecond();
-			Harmony harmony = triple.getThird();
-			SortedMap<Integer, Harmony> harmoniesByOffset = harmonyByMeasure1.get(measure);
-			if (harmoniesByOffset == null) {
-				harmoniesByOffset = new TreeMap<Integer, Harmony>();
-				harmonyByMeasure1.put(measure, harmoniesByOffset);
-			}
-			
-			// should be no overlapping harmonies, already handled in xml parser
-			harmoniesByOffset.put(divOffset, harmony);
-		}
-
-		this.harmonyByMeasure2 = new TreeMap<Integer, SortedMap<Integer, Harmony>>();
-		for (Triple<Integer,Integer,Harmony> triple : musicXML2.unoverlappingHarmonyByPlayedMeasure) {
-			Integer measure = triple.getFirst();
-			Integer divOffset = triple.getSecond();
-			Harmony harmony = triple.getThird();
-			SortedMap<Integer, Harmony> harmoniesByOffset = harmonyByMeasure2.get(measure);
-			if (harmoniesByOffset == null) {
-				harmoniesByOffset = new TreeMap<Integer, Harmony>();
-				harmonyByMeasure2.put(measure, harmoniesByOffset);
-			}
-			
-			// should be no overlapping harmonies, already handled in xml parser
-			harmoniesByOffset.put(divOffset, harmony);
-		}
+		this.harmonyByMeasure1 = musicXML1.getUnoverlappingHarmonyByPlayedMeasureAsMap();
+		this.harmonyByMeasure2 = musicXML2.getUnoverlappingHarmonyByPlayedMeasureAsMap();
 		
 		this.identityWeight = identityWeight;
 		this.lyricWeight = lyricWeight;

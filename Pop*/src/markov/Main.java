@@ -44,11 +44,11 @@ public class Main {
 		int length = 4;
 		List<Constraint<String>> constraints = new ArrayList<Constraint<String>>();
 		
-		Constraint<String> matchesClayConstraint = new Constraint<String>(0, new ExactUnaryMatch<String>(new String[]{"Clay"}), true);
-		constraints.add(matchesClayConstraint);
-		
-		Constraint<String> matchesTodayConstraint = new Constraint<String>(3, new ExactUnaryMatch<String>(new String[]{"today"}), true);
-		constraints.add(matchesTodayConstraint);
+//		Constraint<String> matchesClayConstraint = new Constraint<String>(0, new ExactUnaryMatch<String>(new String[]{"Clay"}), true);
+//		constraints.add(matchesClayConstraint);
+//		
+//		Constraint<String> matchesTodayConstraint = new Constraint<String>(3, new ExactUnaryMatch<String>(new String[]{"today"}), true);
+//		constraints.add(matchesTodayConstraint);
 	
 		AbstractMarkovModel<String> nhmmModel = new NHMM<String>(model, length, constraints);
 		
@@ -135,7 +135,7 @@ public class Main {
 		int length = 4;
 		List<Constraint<Character>> constraints = new ArrayList<Constraint<Character>>();
 		
-		Constraint<Character> isDConstraint = new Constraint<Character>(3, new ExactUnaryMatch<Character>(new Character[]{'D'}), true);
+		Constraint<Character> isDConstraint = new Constraint<Character>(new ExactUnaryMatch<Character>(new Character[]{'D'}), true);
 		constraints.add(isDConstraint);
 		
 //		double p = 0.5;

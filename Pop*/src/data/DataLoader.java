@@ -156,7 +156,7 @@ public class DataLoader {
 				// TODO: allow rhyme scheme to extend beyond segment beginning.
 //				if (rhymeSchemeValue != 0) {
 				if (rhymeSchemeValue != 0 && segmentLineIdx - rhymeSchemeValue >= 0) {
-					rhymeConstraintsForLine.add(new Constraint<Lyric>(Constraint.FINAL_POSITION, new Rhyme<Lyric>(segmentLineIdx - rhymeSchemeValue, Constraint.FINAL_POSITION), true));
+//					rhymeConstraintsForLine.add(new Constraint<Lyric>(Constraint.FINAL_POSITION, new Rhyme<Lyric>(segmentLineIdx - rhymeSchemeValue, Constraint.FINAL_POSITION), true));
 				}
 
 				// analyze chord line for transitions

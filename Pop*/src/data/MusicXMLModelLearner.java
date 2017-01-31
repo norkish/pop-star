@@ -21,7 +21,7 @@ import segmentstructure.DistributionalSegmentStructureEngineer.DistributionalSeg
 
 public class MusicXMLModelLearner {
 	private static final File[] files = new File(
-			"/Users/norkish/Archive/2015_BYU/ComputationalCreativity/data/Wikifonia").listFiles();
+			"/Users/norkish/Archive/2017_BYU/ComputationalCreativity/data/Wikifonia").listFiles();
 
 	private static Map<Class,MusicXMLModel> trainedModels = null;
 	
@@ -61,7 +61,7 @@ public class MusicXMLModelLearner {
 				final Document xml = MusicXMLSummaryGenerator.mxlToXML(file);
 				MusicXMLSummaryGenerator.printDocument(xml, System.out);
 
-				musicXMLParser = new MusicXMLParser(xml);
+				musicXMLParser = new MusicXMLParser(file.getName(), xml);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

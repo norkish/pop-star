@@ -15,6 +15,7 @@ public class Constraint<T> implements Serializable {
 	private static final long serialVersionUID = 1L;
 	public static final int FINAL_POSITION = -1;
 	public static final double ALL_POSITIONS = -2.0;
+	public static final String CONSTRAINT_ANNOTATIONS_DIR = "wikifonia_rhyme_annotations";
 	
 	public boolean getDesiredConditionState() {
 		return desiredConditionState;
@@ -33,8 +34,7 @@ public class Constraint<T> implements Serializable {
 	private int position;
 	protected ConstraintCondition<T> condition;
 
-	public Constraint(int i, ConstraintCondition<T> condition, boolean desiredConditionState) {
-		this.position = i; // Thinking we don't need this.
+	public Constraint(ConstraintCondition<T> condition, boolean desiredConditionState) {
 		this.condition = condition;
 		this.desiredConditionState = desiredConditionState;
 	}

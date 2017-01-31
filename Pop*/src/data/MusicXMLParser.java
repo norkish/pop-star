@@ -1224,8 +1224,10 @@ public class MusicXMLParser {
 	}
 
 	Document xml;
+	String filename;
 
-	public MusicXMLParser(Document xml) {
+	public MusicXMLParser(String filename, Document xml) {
+		this.filename = filename;
 		this.xml = xml;
 	}
 
@@ -1244,7 +1246,7 @@ public class MusicXMLParser {
 	private static int unparseableHarmonies = 0;
 	
 	public ParsedMusicXMLObject parse(boolean followRepeats) {
-		ParsedMusicXMLObject musicXML = new ParsedMusicXMLObject(followRepeats);
+		ParsedMusicXMLObject musicXML = new ParsedMusicXMLObject(filename, followRepeats);
 		List<Node> measures = MusicXMLSummaryGenerator.getMeasuresForPart(this,0);
 
 		// Harmony indexed by measure and by the offset (in divisions) from the beginning of the measure
@@ -2529,7 +2531,7 @@ public class MusicXMLParser {
 //				continue;
 //			}
 			 System.out.println(file.getName());
-			 MusicXMLParser musicXMLParser = new MusicXMLParser(MusicXMLSummaryGenerator.mxlToXML(file));
+			 MusicXMLParser musicXMLParser = new MusicXMLParser(file.getName(),MusicXMLSummaryGenerator.mxlToXML(file));
 			 WikifoniaCorrection.applyManualCorrections(musicXMLParser, file.getName());
 //			 MusicXMLSummaryGenerator.printDocument(musicXML.xml, System.out);
 			 ParsedMusicXMLObject parsedObject;

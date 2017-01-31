@@ -387,7 +387,7 @@ public class MusicXMLSummaryGenerator {
 //			 if (!file.getName().equals("Ahmad Jamal - Poinciana.mxl"))
 //			 continue;
 			System.out.println(file.getAbsolutePath());
-			MusicXMLParser musicXML = new MusicXMLParser(mxlToXML(file));
+			MusicXMLParser musicXML = new MusicXMLParser(file.getName(),mxlToXML(file));
 			try {
 
 				String scoreVersion = getScoreVersion(musicXML);

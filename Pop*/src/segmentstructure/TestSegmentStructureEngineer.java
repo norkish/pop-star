@@ -29,22 +29,22 @@ public class TestSegmentStructureEngineer extends SegmentStructureEngineer {
 		segmentStructure.addKey(0,0,KeyMode.MAJOR);
 		segmentStructure.addTime(0,3,4);
 		
-		segmentStructure.addConstraint(0, 2.0, new Constraint<Lyric>(0, new ExactUnaryMatch<Lyric>(new Lyric[]{new Lyric("It's")}), true));
+		segmentStructure.addConstraint(0, 2.0, new Constraint<Lyric>(new ExactUnaryMatch<Lyric>(new Lyric[]{new Lyric("It's")}), true));
 		
-		segmentStructure.addConstraint(5, 1.5, new Constraint<Lyric>(0, new ExactUnaryMatch<Lyric>(new Lyric[]{new Lyric("The")}), true));
-		segmentStructure.addConstraint(8, 0.0, new Constraint<Chord>(Constraint.FINAL_POSITION, new StrongResolution<Chord>(), false));
+		segmentStructure.addConstraint(5, 1.5, new Constraint<Lyric>(new ExactUnaryMatch<Lyric>(new Lyric[]{new Lyric("The")}), true));
+		segmentStructure.addConstraint(8, 0.0, new Constraint<Chord>(new StrongResolution<Chord>(), false));
 		
-		segmentStructure.addConstraint(8, 2.0, new Constraint<Lyric>(0, new ExactUnaryMatch<Lyric>(new Lyric[]{new Lyric("There's")}), true));
+		segmentStructure.addConstraint(8, 2.0, new Constraint<Lyric>(new ExactUnaryMatch<Lyric>(new Lyric[]{new Lyric("There's")}), true));
 		for (int i = 9; i < 13; i++) {
-			segmentStructure.addConstraint(i, 0.0, new Constraint<Chord>(i, new ExactBinaryMatch<Chord>(0,i), true));
+			segmentStructure.addConstraint(i, 0.0, new Constraint<Chord>(new ExactBinaryMatch<Chord>(0,i), true));
 		}
 		for (int i = 13; i < 17; i++) {
-			segmentStructure.addConstraint(i, 0.0, new Constraint<Pitch>(i, new ExactBinaryMatch<Pitch>(0, i), true));
+			segmentStructure.addConstraint(i, 0.0, new Constraint<Pitch>(new ExactBinaryMatch<Pitch>(0, i), true));
 		}
 		
-		segmentStructure.addConstraint(12, 2.0, new Constraint<Lyric>(0, new ExactUnaryMatch<Lyric>(new Lyric[]{new Lyric("Making")}), true));
-		segmentStructure.addConstraint(15, 0.0, new Constraint<Lyric>(Constraint.FINAL_POSITION, new Rhyme<Lyric>(1, Constraint.FINAL_POSITION), true));
-		segmentStructure.addConstraint(16, 0.0, new Constraint<Chord>(Constraint.FINAL_POSITION, new StrongResolution<Chord>(), true));
+		segmentStructure.addConstraint(12, 2.0, new Constraint<Lyric>(new ExactUnaryMatch<Lyric>(new Lyric[]{new Lyric("Making")}), true));
+		segmentStructure.addConstraint(15, 0.0, new Constraint<Lyric>(new Rhyme<Lyric>(1, Constraint.FINAL_POSITION), true));
+		segmentStructure.addConstraint(16, 0.0, new Constraint<Chord>(new StrongResolution<Chord>(), true));
 		
 		return segmentStructure;
 	}
