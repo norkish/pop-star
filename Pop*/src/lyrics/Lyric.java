@@ -1,15 +1,13 @@
 package lyrics;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Lyric implements Serializable {
+public class Lyric {
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 1L;
 	String lyric = null;
 	
 	public Lyric(String lyric) {

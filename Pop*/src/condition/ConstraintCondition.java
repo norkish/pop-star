@@ -2,7 +2,7 @@ package condition;
 
 import java.io.Serializable;
 
-public abstract class ConstraintCondition<T> implements Serializable {
+public abstract class ConstraintCondition<T> implements Serializable{
 
 	/**
 	 * 

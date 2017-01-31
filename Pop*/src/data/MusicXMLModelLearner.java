@@ -3,7 +3,9 @@ package data;
 import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.SortedMap;
 
 import org.w3c.dom.Document;
 
@@ -17,17 +19,18 @@ import lyrics.LyricTemplateEngineer.LyricTemplateEngineerMusicXMLModel;
 import melody.SegmentSpecificMelodyEngineer;
 import melody.SegmentSpecificMelodyEngineer.SegmentSpecificMelodyEngineerMusicXMLModel;
 import segmentstructure.DistributionalSegmentStructureEngineer;
+import segmentstructure.SegmentStructureExtractor;
 import segmentstructure.DistributionalSegmentStructureEngineer.DistributionalSegmentStructureEngineerMusicXMLModel;
 
 public class MusicXMLModelLearner {
 	private static final File[] files = new File(
-			"/Users/norkish/Archive/2017_BYU/ComputationalCreativity/data/Wikifonia").listFiles();
+			"/Users/norkish/Archive/2015_BYU/ComputationalCreativity/data/Wikifonia").listFiles();
 
 	private static Map<Class,MusicXMLModel> trainedModels = null;
 	
 	public static MusicXMLModel getTrainedModel(Class modelClassName) {
 		if (trainedModels == null) {
-			Map<Class,MusicXMLModel> models = new HashMap<Class,MusicXMLModel>();
+			LinkedHashMap<Class, MusicXMLModel> models = new LinkedHashMap<Class,MusicXMLModel>();
 
 			// populate from configuration
 			models.put(DistributionalGlobalStructureEngineer.class, new DistributionalGlobalStructureEngineerMusicXMLModel());
@@ -70,6 +73,7 @@ public class MusicXMLModelLearner {
 			System.out.println(musicXML);
 			
 			GlobalStructureExtractor.annotateGlobalStructure(musicXML);
+			SegmentStructureExtractor.annotateSegmentStructure(musicXML);
 
 			for (MusicXMLModel musicXMLModel: models) {
 				musicXMLModel.trainOnExample(musicXML);

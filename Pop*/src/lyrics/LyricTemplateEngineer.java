@@ -8,10 +8,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 import composition.Measure;
 import composition.Score;
+import condition.Rhyme;
+import constraint.Constraint;
 import data.MusicXMLModel;
 import data.MusicXMLModelLearner;
 import data.MusicXMLParser.Note;
@@ -32,36 +36,42 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 		@Override
 		/**
 		 * Only trains on examples with 95% of the lyrics recognizable English lyrics
-		 * Phrases are any string of note-associated lyrics that are demarcated by long stretches of rest or sentence-ending punctuation 
 		 */
 		public void trainOnExample(ParsedMusicXMLObject musicXML) {
 			
 			if (musicXML.totalSyllables == 0 || musicXML.totalSyllablesWithStressFromEnglishDictionary == 0) {
 				return;
 			}
-				
-			List<NoteLyric> lyricSequence = new ArrayList<NoteLyric>();
 			
-			int syllableCount = 0;
-			
-			for (Triple<Integer, Integer, Note> triple : musicXML.notesByPlayedMeasure){
+			List<Triple<Integer, Integer, Note>> notes = musicXML.notesByPlayedMeasure;
+			SortedMap<Integer, Double> phraseBeginnings = musicXML.phraseBeginnings;
+			List<NoteLyric> currPhrase = null;
+			for (Triple<Integer, Integer, Note> triple : notes) {
+				int measure = triple.getFirst();
+				int divsOffset = triple.getSecond();
+				double beatsOffset = musicXML.divsToBeats(divsOffset, measure);
+				if (phraseBeginnings.get(measure) == divsOffset) {
+					if (currPhrase != null && !currPhrase.isEmpty()) {
+						addTemplate(currPhrase);
+					}
+					currPhrase = new ArrayList<NoteLyric>();
+				}
 				Note note = triple.getThird();
-				NoteLyric lyric = note.lyric;
-				if (lyric == null || lyric.text == null)
-					continue;
-				syllableCount++;
-				lyricSequence.add(lyric);
+				if (note.lyric != null && note.lyric.text != null) {
+					currPhrase.add(note.lyric);
+				}
 			}
-			
-			List<List<NoteLyric>> templatesOfSpecifiedLen = templatesBySyllableLength.get(syllableCount);
-			
-			if (templatesOfSpecifiedLen == null) {
-				templatesOfSpecifiedLen = new ArrayList<List<NoteLyric>>();
-				templatesBySyllableLength.put(syllableCount, templatesOfSpecifiedLen);
-			}
-			templatesOfSpecifiedLen.add(lyricSequence);
 		}
-		
+
+		private void addTemplate(List<NoteLyric> currPhrase) {
+			List<List<NoteLyric>> templatesForSize = templatesBySyllableLength.get(currPhrase.size());
+			if (templatesForSize == null) {
+				templatesForSize = new ArrayList<List<NoteLyric>>();
+				templatesBySyllableLength.put(currPhrase.size(), templatesForSize);
+			}
+			templatesForSize.add(currPhrase);
+		}
+
 		public String toString() {
 			StringBuilder str = new StringBuilder();
 			
@@ -77,6 +87,13 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 			
 			return str.toString();
 		}
+
+		private static Random rand = new Random();
+		public List<NoteLyric> sampleTemplate(int phraseLength) {
+			List<List<NoteLyric>> templatesForLength = templatesBySyllableLength.get(phraseLength);
+			int offsetIntoDistribution = rand.nextInt(templatesForLength.size());
+			return templatesForLength.get(offsetIntoDistribution);
+		}
 	}
 
 	private LyricTemplateEngineerMusicXMLModel model;
@@ -89,7 +106,9 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 	public void addLyrics(Inspiration inspiration, Score score) {
 		//use score to get constraints and then model to find lyrics that fit constraints
 		List<Measure> measures = score.getMeasures();
-		
+		//TODO: get phrase lengths from score somehow and sample model to get lyrics
+		int phraseLength = 0;
+		List<NoteLyric> template = model.sampleTemplate(phraseLength);
 		List<NoteLyric> lyrics = getExternalLyrics();//model.templatesBySyllableLength.get(258).get(0);
 		int lyrIdx = 0;
 		

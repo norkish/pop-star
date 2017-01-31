@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 
+import constraint.Constraint;
 import data.MusicXMLParser.Harmony;
 import data.MusicXMLParser.Key;
 import data.MusicXMLParser.Note;
@@ -52,6 +54,8 @@ public class ParsedMusicXMLObject {
 	public int noteCount = -1; // needs to be set
 	public SortedMap<Integer, Integer> divsPerQuarterByAbsoluteMeasure;
 	public SortedMap<Integer, SegmentType> globalStructure;
+	public SortedMap<Integer, SortedMap<Double, List<Constraint<NoteLyric>>>> segmentStructure;
+	public SortedMap<Integer, Double> phraseBeginnings; 
 	
 	public ParsedMusicXMLObject(String filename, boolean followRepeats) {
 		this.filename = filename;
@@ -94,7 +98,7 @@ public class ParsedMusicXMLObject {
 		return builder.toString();
 	}
 
-	private int measureCount = 0; 
+	private int measureCount = 0;
 	public int getMeasureCount() {
 		if (measureCount == 0) {
 			recalculateMeasureCount();

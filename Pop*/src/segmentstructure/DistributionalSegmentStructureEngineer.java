@@ -24,6 +24,7 @@ import data.MusicXMLModel;
 import data.MusicXMLModelLearner;
 import data.MusicXMLParser.KeyMode;
 import data.MusicXMLParser.Note;
+import data.MusicXMLParser.NoteLyric;
 import data.ParsedMusicXMLObject;
 import globalstructure.SegmentType;
 import lyrics.Lyric;
@@ -37,7 +38,7 @@ public class DistributionalSegmentStructureEngineer extends SegmentStructureEngi
 
 		private Map<SegmentType,Map<Integer,Integer>> measureCountDistribution = new EnumMap<SegmentType, Map<Integer,Integer>>(SegmentType.class);
 		private Map<SegmentType, Integer> measureCountDistributionTotals = new EnumMap<SegmentType, Integer>(SegmentType.class); 
-		private Map<Integer, List<List<Triple<Integer, Double, Constraint<Lyric>>>>> rhymeConstraintDistribution = new HashMap<Integer, List<List<Triple<Integer, Double, Constraint<Lyric>>>>>();
+		private Map<Integer, List<List<Triple<Integer, Double, Constraint<NoteLyric>>>>> lyricConstraintDistribution = new HashMap<Integer, List<List<Triple<Integer, Double, Constraint<NoteLyric>>>>>();
 		private Random rand = new Random();
 		
 		public DistributionalSegmentStructureEngineerMusicXMLModel() {
@@ -71,170 +72,65 @@ public class DistributionalSegmentStructureEngineer extends SegmentStructureEngi
 			
 			// train constraint distribution
 			SegmentType currSegType,prevSegType = null;
-			List<Triple<Integer, Double, Constraint<Lyric>>> currentSegmentRhymeConstraints = null;
-			Map<Integer, SortedMap<Integer, Note>> notesMap = musicXML.getNotesByPlayedMeasureAsMap();
-			Map<Integer, SortedMap<Double, List<Constraint<Lyric>>>> manuallyAnnotatedConstraints = loadAndInstantiateConstraints(musicXML, notesMap);
+			List<Triple<Integer, Double, Constraint<NoteLyric>>> currentSegmentRhymeConstraints = null;
+			SortedMap<Integer, SortedMap<Integer, Note>> notesMap = musicXML.getNotesByPlayedMeasureAsMap();
+			SortedMap<Integer, SortedMap<Double, List<Constraint<NoteLyric>>>> manuallyAnnotatedConstraints = musicXML.segmentStructure;
 			
 			int currentSegmentStartMeasure = 0;
+			int measureIdxInSegment;
 			for (int measure = 0; measure < musicXML.getMeasureCount(); measure++) {
 				currSegType = globalStructure.get(measure);
-				int measureIdxInSegment = measure - currentSegmentStartMeasure;
+				measureIdxInSegment = measure - currentSegmentStartMeasure;
 				if (currSegType == null) {
 					currSegType = prevSegType;
 				} else {
 					// new segment
 					if (prevSegType != null) { // if not first segment, add previous one.
-						int currSegmentLength = measureIdxInSegment;
-						List<List<Triple<Integer, Double, Constraint<Lyric>>>> rhymeConstraintDistributionForSegLen = rhymeConstraintDistribution.get(currSegmentLength);
+						List<List<Triple<Integer, Double, Constraint<NoteLyric>>>> rhymeConstraintDistributionForSegLen = lyricConstraintDistribution.get(measureIdxInSegment);
 						if (rhymeConstraintDistributionForSegLen == null) {
-							rhymeConstraintDistributionForSegLen = new ArrayList<List<Triple<Integer, Double, Constraint<Lyric>>>>();
-							rhymeConstraintDistribution.put(currSegmentLength, rhymeConstraintDistributionForSegLen);
+							rhymeConstraintDistributionForSegLen = new ArrayList<List<Triple<Integer, Double, Constraint<NoteLyric>>>>();
+							lyricConstraintDistribution.put(measureIdxInSegment, rhymeConstraintDistributionForSegLen);
 						}
 						rhymeConstraintDistributionForSegLen.add(currentSegmentRhymeConstraints);
 					}
 					
 					prevSegType = currSegType;
 					currentSegmentStartMeasure = measure;
-					currentSegmentRhymeConstraints = new ArrayList<Triple<Integer, Double, Constraint<Lyric>>>();
+					currentSegmentRhymeConstraints = new ArrayList<Triple<Integer, Double, Constraint<NoteLyric>>>();
 				}
 				
 				SortedMap<Integer, Note> notesForMeasure = notesMap.get(measure);
 				if (notesForMeasure != null) { 
 					for(Integer offsetInDivs: notesForMeasure.keySet()) {
-						Map<Double, List<Constraint<Lyric>>> constraintsForMeasure = manuallyAnnotatedConstraints.get(measure);
+						SortedMap<Double, List<Constraint<NoteLyric>>> constraintsForMeasure = manuallyAnnotatedConstraints.get(measure);
 						if (constraintsForMeasure != null) {
 							double offsetInBeats = musicXML.divsToBeats(offsetInDivs,measure);
-							List<Constraint<Lyric>> constraintsForOffset = constraintsForMeasure.get(offsetInBeats);
+							List<Constraint<NoteLyric>> constraintsForOffset = constraintsForMeasure.get(offsetInBeats);
 							if (constraintsForOffset != null) {
-								for (Constraint<Lyric> constraint : constraintsForOffset) {
-									Constraint<Lyric> modifiedConstraint = (Constraint<Lyric>) Utils.deepCopy(constraint);
-									ConstraintCondition<Lyric> modifiedConstraintCondition = modifiedConstraint.getCondition();
+								for (Constraint<NoteLyric> constraint : constraintsForOffset) {
+									Constraint<NoteLyric> modifiedConstraint = (Constraint<NoteLyric>) Utils.deepCopy(constraint);
+									ConstraintCondition<NoteLyric> modifiedConstraintCondition = modifiedConstraint.getCondition();
 									if (modifiedConstraintCondition instanceof DelayedConstraintCondition<?>) {
 										// need to cast
-										modifiedConstraintCondition.setReferenceMeasure(modifiedConstraintCondition.getReferenceMeasure());
+										DelayedConstraintCondition delayedModifiedConstraintCondition = (DelayedConstraintCondition) modifiedConstraintCondition;
+										delayedModifiedConstraintCondition.setReferenceMeasure(delayedModifiedConstraintCondition.getReferenceMeasure());
 									}
-									currentSegmentRhymeConstraints.add(new Triple<Integer, Double, Constraint<Lyric>>(measureIdxInSegment, offsetInBeats, modifiedConstraint));
+									currentSegmentRhymeConstraints.add(new Triple<Integer, Double, Constraint<NoteLyric>>(measureIdxInSegment, offsetInBeats, modifiedConstraint));
 								}
 							}
 						}
 					}
 				}
 			}
-		}
-
-		private Map<Integer, SortedMap<Double, List<Constraint<Lyric>>>> loadAndInstantiateConstraints(
-				ParsedMusicXMLObject musicXML, Map<Integer, SortedMap<Integer, Note>> notesMap) {
-			
-			Map<Integer, SortedMap<Double, List<Constraint<Lyric>>>> constraints = new HashMap<Integer, SortedMap<Double, List<Constraint<Lyric>>>>();
-			
-			// First load contents of file
-			Scanner scan;
-			String filename = musicXML.filename.replaceFirst("mxl(\\.[\\d])?", "txt");
-			try {
-				scan = new Scanner(new File(Constraint.CONSTRAINT_ANNOTATIONS_DIR + "/" + filename));
-			} catch (FileNotFoundException e) {
-				throw new RuntimeException(e);
-			}
-			
-			String nextLine;
-			Class conditionClass = null;
-			while(scan.hasNextLine()) {
-				nextLine = scan.nextLine();
-				if (nextLine.startsWith("rh")) {
-					conditionClass = Rhyme.class;
-				} else if (nextLine.startsWith("ex")) {
-					conditionClass = ExactUnaryMatch.class;
-				} else {
-					throw new RuntimeException("Improperly formatted constraint file. Expected new constraint definition. Found: " + nextLine);
+			if (prevSegType != null) { // if not first segment, add previous one.
+				measureIdxInSegment = musicXML.getMeasureCount() - currentSegmentStartMeasure;
+				List<List<Triple<Integer, Double, Constraint<NoteLyric>>>> rhymeConstraintDistributionForSegLen = lyricConstraintDistribution.get(measureIdxInSegment);
+				if (rhymeConstraintDistributionForSegLen == null) {
+					rhymeConstraintDistributionForSegLen = new ArrayList<List<Triple<Integer, Double, Constraint<NoteLyric>>>>();
+					lyricConstraintDistribution.put(measureIdxInSegment, rhymeConstraintDistributionForSegLen);
 				}
-				
-				List<Triple<Integer,Double,Note>> constrainedNotes = new ArrayList<Triple<Integer, Double, Note>>();
-				Pair<Integer, Note> offsetNote;
-				nextLine = scan.nextLine();
-				do {
-					String[] tokens = nextLine.split("\t");
-					int measure = Integer.parseInt(tokens[1]) - 1;
-					// look up token that is described in line
-					try {
-						offsetNote = findNoteInMeasureWithLyric(notesMap.get(measure), tokens[0]);
-					} catch (Exception e) {
-						throw new RuntimeException(e.getMessage() + " in measure " + measure + " in " + filename);
-					}
-					// add it to constrained Notes
-					double offsetInBeats = musicXML.divsToBeats(offsetNote.getFirst(), measure);
-					assert (constrainedNotes.isEmpty() || constrainedNotes.get(constrainedNotes.size()-1).getFirst() < measure  ||
-							constrainedNotes.get(constrainedNotes.size()-1).getFirst() == measure && constrainedNotes.get(constrainedNotes.size()-1).getSecond() <= offsetInBeats);
-					constrainedNotes.add(new Triple<Integer, Double, Note>(measure, offsetInBeats, offsetNote.getSecond()));
-					nextLine = scan.nextLine();
-				} while(nextLine.trim().length() > 0 && scan.hasNextLine());
-				
-				// process constraint(s) given conditionClass and constrainedNotes
-				List<Triple<Integer,Double,Constraint<Lyric>>> constraintsFromEntry = enumerateConstraintsFromEntry(conditionClass, constrainedNotes);
-				
-				// index the processed constraint(s) by the positions (msr,offset) that it constrains
-				for (Triple<Integer, Double, Constraint<Lyric>> triple : constraintsFromEntry) {
-					Integer measure = triple.getFirst();
-					SortedMap<Double, List<Constraint<Lyric>>> constraintsForMeasure = constraints.get(measure);
-					if (constraintsForMeasure == null) {
-						constraintsForMeasure = new TreeMap<Double, List<Constraint<Lyric>>>();
-						constraints.put(measure, constraintsForMeasure);
-					}
-					
-					Double offsetInBeats = triple.getSecond();
-					List<Constraint<Lyric>> constraintsForOffset = constraintsForMeasure.get(offsetInBeats);
-					if (constraintsForOffset == null) {
-						constraintsForOffset = new ArrayList<Constraint<Lyric>>();
-						constraintsForMeasure.put(offsetInBeats, constraintsForOffset);
-					}
-					constraintsForOffset.add(triple.getThird());
-				}
+				rhymeConstraintDistributionForSegLen.add(currentSegmentRhymeConstraints);
 			}
-			
-			return constraints;
-		}
-
-		private List<Triple<Integer, Double, Constraint<Lyric>>> enumerateConstraintsFromEntry(Class conditionClass,
-				List<Triple<Integer, Double, Note>> constrainedNotes) {
-			
-			List<Triple<Integer, Double, Constraint<Lyric>>> enumeratedConstraints = new ArrayList<Triple<Integer, Double, Constraint<Lyric>>>();
-			
-			if (conditionClass == Rhyme.class) {
-				// if it's a rhyme, we place a constraint on the latter cases (assuming a feed-forward generation)
-				Triple<Integer,Double,Note> prevTriple = null;
-				for (Triple<Integer,Double,Note> triple : constrainedNotes) {
-					if (prevTriple != null) {
-						Constraint<Lyric> constraint = new Constraint<Lyric>(new Rhyme<Lyric>(prevTriple.getFirst(), prevTriple.getSecond()), true);
-						enumeratedConstraints.add(new Triple<Integer, Double, Constraint<Lyric>>(triple.getFirst(), triple.getSecond(), constraint));
-					}
-					prevTriple = triple;
-				}
-			} else if (conditionClass == ExactUnaryMatch.class) {
-				// if it's an exact match, we place a constraint on all of the positions
-				for (Triple<Integer,Double,Note> triple : constrainedNotes) {
-					Constraint<Lyric> constraint = new Constraint<Lyric>(new ExactBinaryMatch<Lyric>(ExactBinaryMatch.PREV_VERSE, ExactBinaryMatch.PREV_VERSE), true);
-					enumeratedConstraints.add(new Triple<Integer, Double, Constraint<Lyric>>(triple.getFirst(), triple.getSecond(), constraint));
-				}
-			}
-			
-			return enumeratedConstraints;
-		}
-
-		private Pair<Integer, Note> findNoteInMeasureWithLyric(SortedMap<Integer, Note> notesMap, String lyricToMatch) throws Exception {
-			Pair<Integer, Note> match = null;
-			
-			for (Integer divsOffset : notesMap.keySet()) {
-				Note note = notesMap.get(divsOffset);
-				if (note.lyric != null && note.lyric.text.equals(lyricToMatch)) {
-					if (match != null) throw new Exception("Two matching lyrics for \"" + lyricToMatch +"\" at offsets " + match.getFirst() + " and " + divsOffset);
-					match = new Pair<Integer, Note>(divsOffset, note);
-				}
-			}
-
-			if (match == null) {
-				throw new Exception("No matching lyrics for \"" + lyricToMatch +"\" found");
-			}
-			
-			return match;
 		}
 
 		public int sampleMeasureCountForSegmentType(SegmentType segmentType) {
@@ -253,12 +149,13 @@ public class DistributionalSegmentStructureEngineer extends SegmentStructureEngi
 			throw new RuntimeException("Should never reach here");
 		}
 
-		public List<Triple<Integer, Double, Constraint>> sampleConstraints(int measureCount) {
-			List<Triple<Integer, Double, Constraint>> constraints = new ArrayList<Triple<Integer, Double, Constraint>>();
+		public List<Triple<Integer, Double, Constraint<NoteLyric>>> sampleConstraints(int measureCount) {
 			
-//			constraints.add(new Triple<Integer, Double, Constraint>(2, Constraint.ALL_POSITIONS, new Constraint<Harmony>(2345, new ExactBinaryMatch<Harmony>(0, Constraint.ALL_POSITIONS), true));
-
-			return constraints;
+			List<List<Triple<Integer, Double, Constraint<NoteLyric>>>> distForMeasureCount = lyricConstraintDistribution.get(measureCount);
+			int offsetIntoDistribution = rand.nextInt(distForMeasureCount.size());
+			List<Triple<Integer, Double, Constraint<NoteLyric>>> sampledLyricConstraints = distForMeasureCount.get(offsetIntoDistribution);
+			
+			return sampledLyricConstraints;
 		}
 	}
 
@@ -277,8 +174,8 @@ public class DistributionalSegmentStructureEngineer extends SegmentStructureEngi
 		segmentStructure.addKey(0,0,KeyMode.MAJOR);
 		segmentStructure.addTime(0,4,4);
 		
-		List<Triple<Integer, Double, Constraint>> constraints = model.sampleConstraints(measureCount);
-		for (Triple<Integer, Double, Constraint> triple : constraints) {
+		List<Triple<Integer, Double, Constraint<NoteLyric>>> constraints = model.sampleConstraints(measureCount);
+		for (Triple<Integer, Double, Constraint<NoteLyric>> triple : constraints) {
 			segmentStructure.addConstraint(triple.getFirst(), triple.getSecond(), triple.getThird());
 		}
 		

@@ -10,6 +10,7 @@ import constraint.Constraint;
 import data.MusicXMLParser.Harmony;
 import data.MusicXMLParser.KeyMode;
 import data.MusicXMLParser.Note;
+import data.MusicXMLParser.NoteLyric;
 import globalstructure.SegmentType;
 import lyrics.Lyric;
 
@@ -61,8 +62,8 @@ public class FixedSegmentStructureEngineer extends SegmentStructureEngineer {
 		segmentStructure.addTime(0,4,4);
 
 		// lyric
-		segmentStructure.addConstraint(7, 0.0, new Constraint<Lyric>(new Rhyme<Lyric>(3, 0.0), true));
-		segmentStructure.addConstraint(15, 0.0, new Constraint<Lyric>(new Rhyme<Lyric>(11, 0.0), true));
+		segmentStructure.addConstraint(7, 0.0, new Constraint<NoteLyric>(new Rhyme<NoteLyric>(3, 0.0), true));
+		segmentStructure.addConstraint(15, 0.0, new Constraint<NoteLyric>(new Rhyme<NoteLyric>(11, 0.0), true));
 		
 		// harmony and melody
 		for (int i = 8; i < 14; i++) {
@@ -111,9 +112,9 @@ public class FixedSegmentStructureEngineer extends SegmentStructureEngineer {
 		segmentStructure.addTime(0,4,4);
 		
 		// lyric
-		segmentStructure.addConstraint(7, 0.0, new Constraint<Lyric>(new Rhyme<Lyric>(3, 0.0), true));
-		segmentStructure.addConstraint(11, 0.0, new Constraint<Lyric>(new Rhyme<Lyric>(7, 0.0), true));
-		segmentStructure.addConstraint(15, 0.0, new Constraint<Lyric>(new Rhyme<Lyric>(11, 0.0), true));
+		segmentStructure.addConstraint(7, 0.0, new Constraint<NoteLyric>(new Rhyme<NoteLyric>(3, 0.0), true));
+		segmentStructure.addConstraint(11, 0.0, new Constraint<NoteLyric>(new Rhyme<NoteLyric>(7, 0.0), true));
+		segmentStructure.addConstraint(15, 0.0, new Constraint<NoteLyric>(new Rhyme<NoteLyric>(11, 0.0), true));
 		
 		// harmony and melody
 		for (int i = 8; i < 12; i++) {
@@ -133,8 +134,8 @@ public class FixedSegmentStructureEngineer extends SegmentStructureEngineer {
 		segmentStructure.addKey(0,0,KeyMode.MAJOR);
 		segmentStructure.addTime(0,4,4);
 		
-		segmentStructure.addConstraint(5, 0.0, new Constraint<Lyric>(new Rhyme<Lyric>(1, 0.0), true));
-		segmentStructure.addConstraint(7, 0.0, new Constraint<Lyric>(new Rhyme<Lyric>(3, 0.0), true));
+		segmentStructure.addConstraint(5, 0.0, new Constraint<NoteLyric>(new Rhyme<NoteLyric>(1, 0.0), true));
+		segmentStructure.addConstraint(7, 0.0, new Constraint<NoteLyric>(new Rhyme<NoteLyric>(3, 0.0), true));
 		
 		// TODO: constrain melody shape over chords? e.g., Just the way you are doesn't have exact copy but shape is same for first and second halves
 		

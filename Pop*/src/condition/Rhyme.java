@@ -2,12 +2,12 @@ package condition;
 
 import java.util.List;
 
-import lyrics.Lyric;
+import data.MusicXMLParser.NoteLyric;
 import tabcomplete.rhyme.Phonetecizer;
 import tabcomplete.rhyme.RhymeStructureAnalyzer;
 import tabcomplete.rhyme.StressedPhone;
 
-public class Rhyme<T> extends DelayedConstraintCondition<Lyric> {
+public class Rhyme<T> extends DelayedConstraintCondition<NoteLyric> {
 
 	/**
 	 * 
@@ -19,11 +19,11 @@ public class Rhyme<T> extends DelayedConstraintCondition<Lyric> {
 		super(measure,offset);
 	}
 
-	public boolean isSatisfiedBy(Lyric t) {
+	public boolean isSatisfiedBy(NoteLyric t) {
 		return rhyme(t,prevT);
 	}
 
-	private boolean rhyme(Lyric t, Lyric s) {
+	private boolean rhyme(NoteLyric t, NoteLyric s) {
 		if (t.equals(s)) {
 			return false;
 		}

@@ -1,11 +1,11 @@
 package melody;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Random;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -37,10 +37,10 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 		Map<Integer, Map<Integer, Integer>> pitchTransitionCounts = new HashMap<Integer, Map<Integer, Integer>>();
 
 		// have a markov model for each offset position with the markov property applying to the previous duration
-		Map<Time, Map<Double, SparseSingleOrderMarkovModel<Double>>> durationMarkovModelsByOffsetByTime = new HashMap<Time, Map<Double, SparseSingleOrderMarkovModel<Double>>>();
-		Map<Time, TreeMap<Double, Map<Double, Integer>>> durationStatesByIndexByOffsetByTime = new HashMap<Time, TreeMap<Double,Map<Double, Integer>>>();// states are pitches for now
-		Map<Time, TreeMap<Double, Map<Integer, Integer>>> durationPriorCountsByOffsetByTime = new HashMap<Time, TreeMap<Double, Map<Integer, Integer>>>();
-		Map<Time, TreeMap<Double, Map<Integer, Map<Integer, Integer>>>> durationTransitionCountsByOffsetByTime = new HashMap<Time, TreeMap<Double, Map<Integer, Map<Integer, Integer>>>>();
+		Map<Time, Map<SegmentType,Map<Double, SparseSingleOrderMarkovModel<Double>>>> durationMarkovModelsByOffsetBySegmentByTime = new HashMap<Time, Map<SegmentType,Map<Double, SparseSingleOrderMarkovModel<Double>>>>();
+		Map<Time, Map<SegmentType, TreeMap<Double, Map<Double, Integer>>>> durationStatesByIndexByOffsetBySegmentByTime = new HashMap<Time, Map<SegmentType, TreeMap<Double,Map<Double, Integer>>>>();// states are pitches for now
+		Map<Time, Map<SegmentType, TreeMap<Double, Map<Integer, Integer>>>> durationPriorCountsByOffsetBySegmentByTime = new HashMap<Time, Map<SegmentType, TreeMap<Double, Map<Integer, Integer>>>>();
+		Map<Time, Map<SegmentType, TreeMap<Double, Map<Integer, Map<Integer, Integer>>>>> durationTransitionCountsByOffsetBySegmentByTime = new HashMap<Time, Map<SegmentType, TreeMap<Double, Map<Integer, Map<Integer, Integer>>>>>();
 
 		@Override
 		/**
@@ -64,6 +64,7 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 			
 			SortedMap<Integer, Integer> divsPerQuarterByMeasure = musicXML.divsPerQuarterByAbsoluteMeasure;
 			List<Triple<Integer, Integer, Note>> notesByMeasure = musicXML.notesByPlayedMeasure;
+			SortedMap<Integer, SegmentType> globalStructure = musicXML.globalStructure;
 			int notesToAdvanceForTies; 
 			int maxNotesToAdvanceForTies = 5;
 			for (int i = 0; i < notesByMeasure.size(); i += notesToAdvanceForTies) {
@@ -76,13 +77,14 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 				int measure = measureOffsetNote.getFirst();
 				int divsOffset = measureOffsetNote.getSecond();
 				Time currTime = Utils.valueForKeyBeforeOrEqualTo(measure, timeMap);
+				SegmentType currType = Utils.valueForKeyBeforeOrEqualTo(measure, globalStructure);
 				
 				// We'll count anything in 2/2 as 4/4
 				if (currTime.equals(Time.TWO_TWO)) {
 					currTime = Time.FOUR_FOUR;
 				}
 				
-				durationMarkovModelsByOffsetByTime.remove(currTime);
+				durationMarkovModelsByOffsetBySegmentByTime.remove(currTime);
 				double divsPerQuarter = (double) Utils.valueForKeyBeforeOrEqualTo(measure, divsPerQuarterByMeasure);
 				double beatsOffset = (divsOffset/divsPerQuarter) * (currTime.beatType/4.0);
 
@@ -115,18 +117,10 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 						}
 					}
 					
-					// if we found the end of the tie, add all the notes
-//					if (note.tie == NoteTie.START && currNote.tie == NoteTie.STOP || note.slur == NoteTie.START && currNote.slur == NoteTie.STOP) {
-						for (Double duration : noteDurationInBeatsToTie) {
-							noteDurationInBeats += duration;
-							notesToAdvanceForTies++;
-						}
-//					} else { // otherwise, just add one note
-//						if (!noteDurationInBeatsToTie.isEmpty()) {
-//							noteDurationInBeats += noteDurationInBeatsToTie.get(0);
-//							notesToAdvanceForTies++;
-//						}
-//					}
+					for (Double duration : noteDurationInBeatsToTie) {
+						noteDurationInBeats += duration;
+						notesToAdvanceForTies++;
+					}
 				}
 
 				Integer notePitchIdx = pitchStatesByIndex.get(note.pitch);
@@ -135,10 +129,16 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 					pitchStatesByIndex.put(note.pitch, notePitchIdx);
 				}
 
-				TreeMap<Double, Map<Double, Integer>> durationStatesByIndexByOffset = durationStatesByIndexByOffsetByTime.get(currTime);
+				Map<SegmentType, TreeMap<Double, Map<Double, Integer>>> durationStatesByIndexByOffsetBySegment = durationStatesByIndexByOffsetBySegmentByTime.get(currTime);
+				if (durationStatesByIndexByOffsetBySegment == null) {
+					durationStatesByIndexByOffsetBySegment = new EnumMap<SegmentType, TreeMap<Double, Map<Double, Integer>>>(SegmentType.class);
+					durationStatesByIndexByOffsetBySegmentByTime.put(currTime, durationStatesByIndexByOffsetBySegment);
+				}
+				
+				TreeMap<Double, Map<Double, Integer>> durationStatesByIndexByOffset = durationStatesByIndexByOffsetBySegment.get(currType);
 				if (durationStatesByIndexByOffset == null) {
 					durationStatesByIndexByOffset = new TreeMap<Double, Map<Double, Integer>>();
-					durationStatesByIndexByOffsetByTime.put(currTime, durationStatesByIndexByOffset);
+					durationStatesByIndexByOffsetBySegment.put(currType, durationStatesByIndexByOffset);
 				}
 				
 				Map<Double, Integer> durationStatesByIndex = durationStatesByIndexByOffset.get(beatsOffset);
@@ -161,10 +161,15 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 
 
 				if (prevNoteDurationInBeats == -1.0) {
-					TreeMap<Double, Map<Integer, Integer>> durationPriorCountsByOffset = durationPriorCountsByOffsetByTime.get(currTime);
+					Map<SegmentType, TreeMap<Double, Map<Integer, Integer>>> durationPriorCountsByOffsetBySegment = durationPriorCountsByOffsetBySegmentByTime.get(currTime);
+					if (durationPriorCountsByOffsetBySegment == null) {
+						durationPriorCountsByOffsetBySegment = new EnumMap<SegmentType, TreeMap<Double, Map<Integer, Integer>>>(SegmentType.class);
+						durationPriorCountsByOffsetBySegmentByTime.put(currTime, durationPriorCountsByOffsetBySegment);
+					}
+					TreeMap<Double, Map<Integer, Integer>> durationPriorCountsByOffset = durationPriorCountsByOffsetBySegment.get(currType);
 					if (durationPriorCountsByOffset == null) {
 						durationPriorCountsByOffset = new TreeMap<Double, Map<Integer, Integer>>();
-						durationPriorCountsByOffsetByTime.put(currTime, durationPriorCountsByOffset);
+						durationPriorCountsByOffsetBySegment.put(currType, durationPriorCountsByOffset);
 					}
 					Map<Integer, Integer> durationPriorCounts = durationPriorCountsByOffset.get(beatsOffset);
 					if (durationPriorCounts == null) {
@@ -174,10 +179,15 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 					
 					Utils.incrementValueForKey(durationPriorCounts, noteDurationIdx);
 				} else {
-					TreeMap<Double, Map<Integer, Map<Integer, Integer>>> durationTransitionCountsByOffset = durationTransitionCountsByOffsetByTime.get(currTime);
+					Map<SegmentType, TreeMap<Double, Map<Integer, Map<Integer, Integer>>>> durationTransitionCountsByOffsetBySegment = durationTransitionCountsByOffsetBySegmentByTime.get(currTime);
+					if (durationTransitionCountsByOffsetBySegment == null) {
+						durationTransitionCountsByOffsetBySegment = new EnumMap<SegmentType, TreeMap<Double, Map<Integer, Map<Integer, Integer>>>>(SegmentType.class);
+						durationTransitionCountsByOffsetBySegmentByTime.put(currTime, durationTransitionCountsByOffsetBySegment);
+					}
+					TreeMap<Double, Map<Integer, Map<Integer, Integer>>> durationTransitionCountsByOffset = durationTransitionCountsByOffsetBySegment.get(currType);
 					if (durationTransitionCountsByOffset == null) {
 						durationTransitionCountsByOffset = new TreeMap<Double, Map<Integer, Map<Integer, Integer>>>();
-						durationTransitionCountsByOffsetByTime.put(currTime, durationTransitionCountsByOffset);
+						durationTransitionCountsByOffsetBySegment.put(currType, durationTransitionCountsByOffset);
 					}
 					Map<Integer, Map<Integer, Integer>> durationTransitionCounts = durationTransitionCountsByOffset.get(beatsOffset);
 					if (durationTransitionCounts == null) {
@@ -220,7 +230,8 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 			// which depend on the harm sequence
 
 			// generate pitch
-			if (pitchMarkovModel == null) {
+			boolean rebuildModels = (pitchMarkovModel == null);
+			if (rebuildModels) {
 				pitchMarkovModel = buildPitchModel();
 			}
 			
@@ -230,9 +241,9 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 			List<Integer> pitchList = constrainedPitchModel.generate(length);
 			
 			// generate durations
-			Map<Double, SparseSingleOrderMarkovModel<Double>> durationMarkovModelsByOffset = durationMarkovModelsByOffsetByTime.get(sequenceTime);
-			if (durationMarkovModelsByOffset == null) {
-				durationMarkovModelsByOffset = buildDurationModels(sequenceTime);
+			Map<Double, SparseSingleOrderMarkovModel<Double>> durationMarkovModelsByOffset = durationMarkovModelsByOffsetBySegmentByTime.get(sequenceTime).get(type);
+			if (rebuildModels) {
+				durationMarkovModelsByOffset = buildDurationModels(sequenceTime, type);
 			}
 			List<Double> durationsAsBeats = generateSequenceOfDurationsAsBeats(durationMarkovModelsByOffset,length, sequenceTime.beats);
 			List<Pair<Integer,Double>> pitchDurationPairs = new ArrayList<Pair<Integer,Double>>();
@@ -245,15 +256,15 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 			return pitchDurationPairs;
 		}
 
-		private Map<Double, SparseSingleOrderMarkovModel<Double>> buildDurationModels(Time sequenceTime) {
+		private Map<Double, SparseSingleOrderMarkovModel<Double>> buildDurationModels(Time sequenceTime, SegmentType type) {
 			Map<Double, SparseSingleOrderMarkovModel<Double>> durationMarkovModelsByOffset = new HashMap<Double, SparseSingleOrderMarkovModel<Double>>();
 			
-			TreeMap<Double, Map<Double, Integer>> durationStatesByIndexByOffset = durationStatesByIndexByOffsetByTime.get(sequenceTime);
+			TreeMap<Double, Map<Double, Integer>> durationStatesByIndexByOffset = durationStatesByIndexByOffsetBySegmentByTime.get(sequenceTime).get(type);
 			if (durationStatesByIndexByOffset == null) {
 				throw new RuntimeException("Model was not trained on any XMLs with time signature " + sequenceTime);
 			}
-			TreeMap<Double, Map<Integer, Integer>> durationPriorCountsByOffset = durationPriorCountsByOffsetByTime.get(sequenceTime);
-			TreeMap<Double, Map<Integer, Map<Integer, Integer>>> durationTransitionCountsByOffset = durationTransitionCountsByOffsetByTime.get(sequenceTime);
+			TreeMap<Double, Map<Integer, Integer>> durationPriorCountsByOffset = durationPriorCountsByOffsetBySegmentByTime.get(sequenceTime).get(type);
+			TreeMap<Double, Map<Integer, Map<Integer, Integer>>> durationTransitionCountsByOffset = durationTransitionCountsByOffsetBySegmentByTime.get(sequenceTime).get(type);
 			
 			for (Double beatsOffset : durationStatesByIndexByOffset.keySet()) {
 				Map<Double, Integer> durationStatesByIndex = durationStatesByIndexByOffset.get(beatsOffset);

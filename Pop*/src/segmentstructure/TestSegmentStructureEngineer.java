@@ -9,6 +9,7 @@ import condition.Rhyme;
 import condition.StrongResolution;
 import constraint.Constraint;
 import data.MusicXMLParser.KeyMode;
+import data.MusicXMLParser.NoteLyric;
 import globalstructure.SegmentType;
 import harmony.Chord;
 import lyrics.Lyric;
@@ -29,12 +30,12 @@ public class TestSegmentStructureEngineer extends SegmentStructureEngineer {
 		segmentStructure.addKey(0,0,KeyMode.MAJOR);
 		segmentStructure.addTime(0,3,4);
 		
-		segmentStructure.addConstraint(0, 2.0, new Constraint<Lyric>(new ExactUnaryMatch<Lyric>(new Lyric[]{new Lyric("It's")}), true));
+		segmentStructure.addConstraint(0, 2.0, new Constraint<NoteLyric>(new ExactUnaryMatch<NoteLyric>(new NoteLyric[]{new NoteLyric(null, "It's", false, false)}), true));
 		
-		segmentStructure.addConstraint(5, 1.5, new Constraint<Lyric>(new ExactUnaryMatch<Lyric>(new Lyric[]{new Lyric("The")}), true));
+		segmentStructure.addConstraint(5, 1.5, new Constraint<NoteLyric>(new ExactUnaryMatch<NoteLyric>(new NoteLyric[]{new NoteLyric(null, "The", false, false)}), true));
 		segmentStructure.addConstraint(8, 0.0, new Constraint<Chord>(new StrongResolution<Chord>(), false));
 		
-		segmentStructure.addConstraint(8, 2.0, new Constraint<Lyric>(new ExactUnaryMatch<Lyric>(new Lyric[]{new Lyric("There's")}), true));
+		segmentStructure.addConstraint(8, 2.0, new Constraint<NoteLyric>(new ExactUnaryMatch<NoteLyric>(new NoteLyric[]{new NoteLyric(null, "There's", false, false)}), true));
 		for (int i = 9; i < 13; i++) {
 			segmentStructure.addConstraint(i, 0.0, new Constraint<Chord>(new ExactBinaryMatch<Chord>(0,i), true));
 		}
@@ -42,8 +43,8 @@ public class TestSegmentStructureEngineer extends SegmentStructureEngineer {
 			segmentStructure.addConstraint(i, 0.0, new Constraint<Pitch>(new ExactBinaryMatch<Pitch>(0, i), true));
 		}
 		
-		segmentStructure.addConstraint(12, 2.0, new Constraint<Lyric>(new ExactUnaryMatch<Lyric>(new Lyric[]{new Lyric("Making")}), true));
-		segmentStructure.addConstraint(15, 0.0, new Constraint<Lyric>(new Rhyme<Lyric>(1, Constraint.FINAL_POSITION), true));
+		segmentStructure.addConstraint(12, 2.0, new Constraint<NoteLyric>(new ExactUnaryMatch<NoteLyric>(new NoteLyric[]{new NoteLyric(null, "Making", false, false)}), true));
+		segmentStructure.addConstraint(15, 0.0, new Constraint<NoteLyric>(new Rhyme<NoteLyric>(1, Constraint.FINAL_POSITION), true));
 		segmentStructure.addConstraint(16, 0.0, new Constraint<Chord>(new StrongResolution<Chord>(), true));
 		
 		return segmentStructure;

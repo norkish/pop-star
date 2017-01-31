@@ -86,4 +86,12 @@ public abstract class DelayedConstraintCondition<T> extends ConstraintCondition<
 			return false;
 		return true;
 	}
+
+	public int getReferenceMeasure() {
+		return prevMeasureNumber;
+	}
+
+	public void setReferenceMeasure(int referenceMeasure) {
+		this.prevMeasureNumber = referenceMeasure;
+	}
 }
