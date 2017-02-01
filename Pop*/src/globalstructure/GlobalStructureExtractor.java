@@ -35,14 +35,14 @@ public class GlobalStructureExtractor {
 		structure.put(0, SegmentType.INTRO);
 		structure.put(4, SegmentType.VERSE);
 //		structure.put(32, SegmentType.CHORUS); // tagline choruses will not be treated as choruses, but rather as verses with fixed words across all instances
-		structure.put(34, SegmentType.INTERLUDE);
+		structure.put(36, SegmentType.INTERLUDE);
 		structure.put(38, SegmentType.VERSE);
 //		structure.put(66, SegmentType.CHORUS);
-		structure.put(68, SegmentType.INTERLUDE);
+		structure.put(70, SegmentType.INTERLUDE);
 		structure.put(72, SegmentType.BRIDGE);
 		structure.put(88, SegmentType.VERSE);
 //		structure.put(100, SegmentType.CHORUS);
-		structure.put(102, SegmentType.INTERLUDE);
+		structure.put(104, SegmentType.INTERLUDE);
 		structure.put(106, SegmentType.VERSE);
 //		structure.put(134, SegmentType.CHORUS);
 		structure.put(136, SegmentType.OUTRO);

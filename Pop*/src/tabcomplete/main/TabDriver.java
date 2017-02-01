@@ -41,7 +41,7 @@ public class TabDriver {
 	
 	public static final Set<String> filters = new HashSet<String>(Arrays.asList(filtersArray));
 
-	public final static String dataDir = "../../data";
+	public final static String dataDir = "/Users/norkish/Archive/2017_BYU/ComputationalCreativity/data";
 	public final static String serializedDataDir = dataDir + "/ser";
 	private static String serializedLyricsPath = serializedDataDir + "/" + (mini_data_set?"":"new_") +"lyrics" + (filters.size()==0?"":"." + filtersName) + ".ser";
 	private static String serializedTabsPath = serializedDataDir + "/" + (mini_data_set?"":"new_") +"tabs" + (filters.size()==0?"":"." + filtersName) + ".ser";

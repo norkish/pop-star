@@ -2,16 +2,14 @@ package data;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.SortedMap;
 
 import org.w3c.dom.Document;
 
-import globalstructure.GlobalStructureExtractor;
 import globalstructure.DistributionalGlobalStructureEngineer;
 import globalstructure.DistributionalGlobalStructureEngineer.DistributionalGlobalStructureEngineerMusicXMLModel;
+import globalstructure.GlobalStructureExtractor;
 import harmony.SegmentSpecificHarmonyEngineer;
 import harmony.SegmentSpecificHarmonyEngineer.SegmentSpecificHarmonyEngineerMusicXMLModel;
 import lyrics.LyricTemplateEngineer;
@@ -19,12 +17,13 @@ import lyrics.LyricTemplateEngineer.LyricTemplateEngineerMusicXMLModel;
 import melody.SegmentSpecificMelodyEngineer;
 import melody.SegmentSpecificMelodyEngineer.SegmentSpecificMelodyEngineerMusicXMLModel;
 import segmentstructure.DistributionalSegmentStructureEngineer;
-import segmentstructure.SegmentStructureExtractor;
 import segmentstructure.DistributionalSegmentStructureEngineer.DistributionalSegmentStructureEngineerMusicXMLModel;
+import segmentstructure.SegmentStructureExtractor;
+import tabcomplete.main.TabDriver;
 
 public class MusicXMLModelLearner {
 	private static final File[] files = new File(
-			"/Users/norkish/Archive/2015_BYU/ComputationalCreativity/data/Wikifonia").listFiles();
+			TabDriver.dataDir + "/Wikifonia").listFiles();
 
 	private static Map<Class,MusicXMLModel> trainedModels = null;
 	

@@ -14,8 +14,6 @@ import java.util.TreeMap;
 
 import composition.Measure;
 import composition.Score;
-import condition.Rhyme;
-import constraint.Constraint;
 import data.MusicXMLModel;
 import data.MusicXMLModelLearner;
 import data.MusicXMLParser.Note;
@@ -25,13 +23,15 @@ import data.MusicXMLParser.Syllabic;
 import data.ParsedMusicXMLObject;
 import globalstructure.SegmentType;
 import inspiration.Inspiration;
+import utils.Pair;
 import utils.Triple;
+import utils.Utils;
 
 public class LyricTemplateEngineer extends LyricalEngineer {
 
 	public static class LyricTemplateEngineerMusicXMLModel extends MusicXMLModel {
 
-		Map<Integer, List<List<NoteLyric>>> templatesBySyllableLength = new HashMap<Integer, List<List<NoteLyric>>>();
+		SortedMap<Integer, List<List<NoteLyric>>> templatesBySyllableLength = new TreeMap<Integer, List<List<NoteLyric>>>();
 		
 		@Override
 		/**
@@ -50,7 +50,8 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 				int measure = triple.getFirst();
 				int divsOffset = triple.getSecond();
 				double beatsOffset = musicXML.divsToBeats(divsOffset, measure);
-				if (phraseBeginnings.get(measure) == divsOffset) {
+				Double phraseBeginningInMeasure = phraseBeginnings.get(measure);
+				if (phraseBeginningInMeasure != null && phraseBeginningInMeasure == beatsOffset) {
 					if (currPhrase != null && !currPhrase.isEmpty()) {
 						addTemplate(currPhrase);
 					}
@@ -90,7 +91,10 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 
 		private static Random rand = new Random();
 		public List<NoteLyric> sampleTemplate(int phraseLength) {
-			List<List<NoteLyric>> templatesForLength = templatesBySyllableLength.get(phraseLength);
+			List<List<NoteLyric>> templatesForLength = Utils.valueForKeyBeforeOrEqualTo(phraseLength, templatesBySyllableLength);
+			if (templatesForLength.isEmpty()) {
+				throw new RuntimeException("No lyric templates with syllable count <= " + phraseLength);
+			}
 			int offsetIntoDistribution = rand.nextInt(templatesForLength.size());
 			return templatesForLength.get(offsetIntoDistribution);
 		}
@@ -106,10 +110,22 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 	public void addLyrics(Inspiration inspiration, Score score) {
 		//use score to get constraints and then model to find lyrics that fit constraints
 		List<Measure> measures = score.getMeasures();
-		//TODO: get phrase lengths from score somehow and sample model to get lyrics
-		int phraseLength = 0;
-		List<NoteLyric> template = model.sampleTemplate(phraseLength);
-		List<NoteLyric> lyrics = getExternalLyrics();//model.templatesBySyllableLength.get(258).get(0);
+		List<Pair<SegmentType, Integer>> syllablesPerSegment = getNoteCountBySegment(score);
+		
+		List<Pair<SegmentType, List<NoteLyric>>> templatesBySegment = new ArrayList<Pair<SegmentType, List<NoteLyric>>>();
+		boolean chorusTemplateGenerated = false;
+		for (Pair<SegmentType, Integer> pair : syllablesPerSegment) {
+			if (pair.getFirst() == SegmentType.CHORUS) {
+				if (chorusTemplateGenerated)
+					continue;
+				else
+					chorusTemplateGenerated = true;
+			}
+			int templateLength = pair.getSecond();
+			List<NoteLyric> template = model.sampleTemplate(templateLength);
+			templatesBySegment.add(new Pair<SegmentType, List<NoteLyric>>(pair.getFirst(), template));
+		}
+//		List<NoteLyric> lyrics = getExternalLyrics();
 		int lyrIdx = 0;
 		
 		int chorusStartMeasure = -1;
@@ -169,6 +185,33 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 			}
 			prevType = measure.segmentType;
 		}
+	}
+
+	private List<Pair<SegmentType, Integer>> getNoteCountBySegment(Score score) {
+		List<Pair<SegmentType, Integer>> noteCountBySegment = new ArrayList<Pair<SegmentType, Integer>>();
+		
+		//TODO: get phrase lengths from score somehow and sample model to get lyrics
+		List<Measure> measures = score.getMeasures();
+		SegmentType prevType = null, currType;
+		int currSegNoteCount = 0;
+		for (int currMeasureNumber = 0; currMeasureNumber < measures.size(); currMeasureNumber++) {
+			Measure measure = measures.get(currMeasureNumber);
+			currType = measure.segmentType;
+			if (currType != prevType && prevType != null) {
+				noteCountBySegment.add(new Pair<SegmentType, Integer>(prevType, currSegNoteCount));
+				currSegNoteCount = 0;
+			}
+			
+			TreeMap<Double, Note> notes = measure.getNotes();
+			for (Note note : notes.values()) {
+				if (note.pitch != Note.REST && note.tie != NoteTie.STOP) {
+					currSegNoteCount++;
+				}
+			}
+			prevType = currType;
+		}
+
+		return noteCountBySegment;
 	}
 
 	private List<NoteLyric> getExternalLyrics() {

@@ -16,7 +16,7 @@
 			<attribute name="javadoc_location" value="jar:platform:/resource/Pop*/lib/gson-2.8.0-javadoc.jar!/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/Users/norkish/Archive/2015_BYU/ComputationalCreativity/git/Pop*/lib/jfreechart-1.0.19.jar"/>
-	<classpathentry kind="lib" path="/Users/norkish/Archive/2015_BYU/ComputationalCreativity/git/Pop*/lib/jcommon-1.0.23.jar"/>
+	<classpathentry kind="lib" path="lib/jcommon-1.0.23.jar"/>
+	<classpathentry kind="lib" path="lib/jfreechart-1.0.19.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

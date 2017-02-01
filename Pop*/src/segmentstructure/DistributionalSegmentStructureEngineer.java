@@ -1,7 +1,5 @@
 package segmentstructure;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -9,16 +7,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
-import java.util.Scanner;
 import java.util.SortedMap;
-import java.util.TreeMap;
 
 import composition.Measure;
 import condition.ConstraintCondition;
 import condition.DelayedConstraintCondition;
-import condition.ExactBinaryMatch;
-import condition.ExactUnaryMatch;
-import condition.Rhyme;
 import constraint.Constraint;
 import data.MusicXMLModel;
 import data.MusicXMLModelLearner;
@@ -27,8 +20,6 @@ import data.MusicXMLParser.Note;
 import data.MusicXMLParser.NoteLyric;
 import data.ParsedMusicXMLObject;
 import globalstructure.SegmentType;
-import lyrics.Lyric;
-import utils.Pair;
 import utils.Triple;
 import utils.Utils;
 
