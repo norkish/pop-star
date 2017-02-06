@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -13,6 +14,7 @@ import data.MusicXMLParser.Note;
 import data.MusicXMLParser.Time;
 import globalstructure.SegmentType;
 import utils.Pair;
+import utils.Utils;
 
 public class Score {
 
@@ -222,5 +224,24 @@ public class Score {
 		}
 		
 		return segmentTimeSigs;
+	}
+
+	public Harmony getHarmonyPlayingAt(int measure, double beatsOffset) {
+		Measure currMeasure = measures.get(measure);
+		
+		TreeMap<Double, Harmony> harmoniesForMeasure = currMeasure.getHarmonies();
+		Harmony harmony = Utils.valueForKeyBeforeOrEqualTo(beatsOffset, harmoniesForMeasure);
+		if (harmony != null || measure == 0)
+			return harmony;
+		
+		do {
+			measure--;
+			currMeasure = measures.get(measure);
+			harmoniesForMeasure = currMeasure.getHarmonies();
+			if (!harmoniesForMeasure.isEmpty())
+				harmony = harmoniesForMeasure.lastEntry().getValue();
+		} while (harmony == null && measure > 0);
+		
+		return harmony;
 	}	
 }

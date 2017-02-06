@@ -53,9 +53,7 @@ public class Constraint<T> implements Serializable {
 	public String toString() {
 		StringBuilder str = new StringBuilder();
 		
-		str.append("token in ");
-		str.append(Utils.getPositionString(position));
-		str.append(" must ");
+		str.append("token must ");
 		if (!desiredConditionState) 
 			str.append("not ");
 		str.append("be a ");

@@ -14,6 +14,7 @@ public class Rhyme<T> extends DelayedConstraintCondition<NoteLyric> {
 	 */
 	private static final long serialVersionUID = 1L;
 	private static final double MATCHING_LINE_THRESHOLD = .6;
+	private boolean isPhraseEndingRhyme = false;
 
 	public Rhyme(int measure, double offset) {
 		super(measure,offset);
@@ -39,5 +40,13 @@ public class Rhyme<T> extends DelayedConstraintCondition<NoteLyric> {
 		}
 	
 		return false;
+	}
+
+	public void markPhraseEndingRhymeConstraint(boolean isPhraseEndingRhyme) {
+		this.isPhraseEndingRhyme  = isPhraseEndingRhyme;
+	}
+	
+	public boolean isPhraseEndingRhyme() {
+		return isPhraseEndingRhyme;
 	}
 }

@@ -63,7 +63,7 @@ public class DistributionalSegmentStructureEngineer extends SegmentStructureEngi
 			
 			// train constraint distribution
 			SegmentType currSegType,prevSegType = null;
-			List<Triple<Integer, Double, Constraint<NoteLyric>>> currentSegmentRhymeConstraints = null;
+			List<Triple<Integer, Double, Constraint<NoteLyric>>> currentSegmentLyricConstraints = null;
 			SortedMap<Integer, SortedMap<Integer, Note>> notesMap = musicXML.getNotesByPlayedMeasureAsMap();
 			SortedMap<Integer, SortedMap<Double, List<Constraint<NoteLyric>>>> manuallyAnnotatedConstraints = musicXML.segmentStructure;
 			
@@ -75,6 +75,7 @@ public class DistributionalSegmentStructureEngineer extends SegmentStructureEngi
 				if (currSegType == null) {
 					currSegType = prevSegType;
 				} else {
+					System.out.println("Training on segment " + currSegType);
 					// new segment
 					if (prevSegType != null) { // if not first segment, add previous one.
 						List<List<Triple<Integer, Double, Constraint<NoteLyric>>>> rhymeConstraintDistributionForSegLen = lyricConstraintDistribution.get(measureIdxInSegment);
@@ -82,13 +83,15 @@ public class DistributionalSegmentStructureEngineer extends SegmentStructureEngi
 							rhymeConstraintDistributionForSegLen = new ArrayList<List<Triple<Integer, Double, Constraint<NoteLyric>>>>();
 							lyricConstraintDistribution.put(measureIdxInSegment, rhymeConstraintDistributionForSegLen);
 						}
-						rhymeConstraintDistributionForSegLen.add(currentSegmentRhymeConstraints);
+						rhymeConstraintDistributionForSegLen.add(currentSegmentLyricConstraints);
 					}
 					
 					prevSegType = currSegType;
 					currentSegmentStartMeasure = measure;
-					currentSegmentRhymeConstraints = new ArrayList<Triple<Integer, Double, Constraint<NoteLyric>>>();
+					measureIdxInSegment = 0;
+					currentSegmentLyricConstraints = new ArrayList<Triple<Integer, Double, Constraint<NoteLyric>>>();
 				}
+				
 				
 				SortedMap<Integer, Note> notesForMeasure = notesMap.get(measure);
 				if (notesForMeasure != null) { 
@@ -100,13 +103,19 @@ public class DistributionalSegmentStructureEngineer extends SegmentStructureEngi
 							if (constraintsForOffset != null) {
 								for (Constraint<NoteLyric> constraint : constraintsForOffset) {
 									Constraint<NoteLyric> modifiedConstraint = (Constraint<NoteLyric>) Utils.deepCopy(constraint);
+//									System.out.println("Original constraint was m " + measure + " b" + offsetInBeats + " " + constraint);
 									ConstraintCondition<NoteLyric> modifiedConstraintCondition = modifiedConstraint.getCondition();
 									if (modifiedConstraintCondition instanceof DelayedConstraintCondition<?>) {
 										// need to cast
 										DelayedConstraintCondition delayedModifiedConstraintCondition = (DelayedConstraintCondition) modifiedConstraintCondition;
-										delayedModifiedConstraintCondition.setReferenceMeasure(delayedModifiedConstraintCondition.getReferenceMeasure());
+										int oldReferenceMeasure = delayedModifiedConstraintCondition.getReferenceMeasure();
+										if (oldReferenceMeasure != DelayedConstraintCondition.PREV_VERSE) {
+											delayedModifiedConstraintCondition.setReferenceMeasure(oldReferenceMeasure- currentSegmentStartMeasure);
+										}
+										System.out.println("In measure " + measureIdxInSegment + ", beat " + offsetInBeats + ", " + modifiedConstraint);
 									}
-									currentSegmentRhymeConstraints.add(new Triple<Integer, Double, Constraint<NoteLyric>>(measureIdxInSegment, offsetInBeats, modifiedConstraint));
+									currentSegmentLyricConstraints.add(new Triple<Integer, Double, Constraint<NoteLyric>>(measureIdxInSegment, offsetInBeats, modifiedConstraint));
+									// add phrase end constraint if it's phrase end
 								}
 							}
 						}
@@ -120,7 +129,7 @@ public class DistributionalSegmentStructureEngineer extends SegmentStructureEngi
 					rhymeConstraintDistributionForSegLen = new ArrayList<List<Triple<Integer, Double, Constraint<NoteLyric>>>>();
 					lyricConstraintDistribution.put(measureIdxInSegment, rhymeConstraintDistributionForSegLen);
 				}
-				rhymeConstraintDistributionForSegLen.add(currentSegmentRhymeConstraints);
+				rhymeConstraintDistributionForSegLen.add(currentSegmentLyricConstraints);
 			}
 		}
 

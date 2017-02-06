@@ -1,5 +1,9 @@
+/**
+ * This class doesn't work BECAUSE it uses a straight Markov model to generate rhythms 
+ * and occasionally will sample the segment end token prematurely
+ * Otherwise it works great as far as choosing measure-position-appropriate rhythms.
+ */
 package melody;
-
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -60,10 +64,8 @@ public class SegmentSpecificMelodyRhythmPositionEngineer extends MelodyEngineer 
 			double prevNoteDurationInBeats = -1.0;
 
 			// TODO: condition on chord
-			SortedMap<Integer, Time> timeMap = musicXML.timeByAbsoluteMeasure;
 			
-			SortedMap<Integer, Integer> divsPerQuarterByMeasure = musicXML.divsPerQuarterByAbsoluteMeasure;
-			List<Triple<Integer, Integer, Note>> notesByMeasure = musicXML.notesByPlayedMeasure;
+			List<Triple<Integer, Integer, Note>> notesByMeasure = musicXML.getNotesByPlayedMeasure();
 			SortedMap<Integer, SegmentType> globalStructure = musicXML.globalStructure;
 			int notesToAdvanceForTies; 
 			int maxNotesToAdvanceForTies = 5;
@@ -77,44 +79,31 @@ public class SegmentSpecificMelodyRhythmPositionEngineer extends MelodyEngineer 
 
 				int measure = measureOffsetNote.getFirst();
 				int divsOffset = measureOffsetNote.getSecond();
-				Time currTime = Utils.valueForKeyBeforeOrEqualTo(measure, timeMap);
+				Time currTime = musicXML.getTimeForMeasure(measure);
 				SegmentType currType = Utils.valueForKeyBeforeOrEqualTo(measure, globalStructure);
 				if (currType != prevType) {
 					prevNoteDurationInBeats = -1.0;
 				}
 				
-				// We'll count anything in 2/2 as 4/4
-				if (currTime.equals(Time.TWO_TWO)) {
-					currTime = Time.FOUR_FOUR;
-				}
-				
 				durationMarkovModelsByOffsetBySegmentByTime.remove(currTime);
-				double divsPerQuarter = (double) Utils.valueForKeyBeforeOrEqualTo(measure, divsPerQuarterByMeasure);
-				double beatsOffset = (divsOffset/divsPerQuarter) * (currTime.beatType/4.0);
+				double beatsOffset = musicXML.divsToBeats(divsOffset, measure);
 
-				double noteDurationInBeats = (note.duration/divsPerQuarter) * (currTime.beatType/4.0);
+				double noteDurationInBeats = musicXML.divsToBeats(note.duration, measure);
 				
 				// if the note is tied (or "slurred to same pitch")  
 				if (note.tie == NoteTie.START || note.slur == NoteTie.START) {
 					Note currNote = note;
-					Time currNoteTime = null;
-					double currNoteDivsPerQuarter = -1;
 					List<Double> noteDurationInBeatsToTie = new ArrayList<Double>();
 					for (int j = 1; j <= maxNotesToAdvanceForTies; j++) {
 						Triple<Integer, Integer, Note> currNoteMeasureOffsetNote = notesByMeasure.get(i+j);
 						currNote = currNoteMeasureOffsetNote.getThird();
 						int currNoteMeasure = currNoteMeasureOffsetNote.getFirst();
-						currNoteTime = Utils.valueForKeyBeforeOrEqualTo(currNoteMeasure, timeMap);
-						if (currNoteTime.equals(Time.TWO_TWO)) {
-							currNoteTime = Time.FOUR_FOUR;
-						}
-						currNoteDivsPerQuarter = (double) Utils.valueForKeyBeforeOrEqualTo(currNoteMeasure, divsPerQuarterByMeasure);
 
 						if (currNote.isChordWithPrevious || currNote.pitch != note.pitch || (currNote.lyric != null && !currNote.lyric.text.isEmpty())) {
 							break;
 						}
 						
-						noteDurationInBeatsToTie.add((currNote.duration/currNoteDivsPerQuarter) * (currNoteTime.beatType/4.0));
+						noteDurationInBeatsToTie.add(musicXML.divsToBeats(currNote.duration, currNoteMeasure));
 						
 						if (note.tie == NoteTie.START && currNote.tie == NoteTie.STOP || note.slur == NoteTie.START && currNote.slur == NoteTie.STOP) {
 							break;

@@ -49,8 +49,17 @@ public abstract class DelayedConstraintCondition<T> extends ConstraintCondition<
 		
 	}
 	
+	public static final int PREV_VERSE = -124123;
+	
 	public String asString() {
-		return " with the " + prevT.getClass().getName() + " at measure " + (prevMeasureNumber+1) + ", offset " + prevMeasureOffset +" (" + (prevT == null? "" : prevT) + ")";
+		StringBuilder str = new StringBuilder();
+		str.append(" with the ").append(prevT == null? "word" : prevT.getClass().getName());
+		if(prevMeasureNumber == PREV_VERSE) {
+			str.append(" in other instantiates of the segment");
+		} else {
+			str.append(" at measure ").append(prevMeasureNumber).append(", offset ").append(prevMeasureOffset).append(" (" + (prevT == null? "" : prevT)).append(")");
+		}
+		return str.toString(); 
 	}
 
 	@Override
@@ -89,6 +98,10 @@ public abstract class DelayedConstraintCondition<T> extends ConstraintCondition<
 
 	public int getReferenceMeasure() {
 		return prevMeasureNumber;
+	}
+	
+	public double getReferenceOffset() {
+		return prevMeasureOffset;
 	}
 
 	public void setReferenceMeasure(int referenceMeasure) {

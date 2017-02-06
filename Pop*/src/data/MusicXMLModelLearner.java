@@ -52,11 +52,14 @@ public class MusicXMLModelLearner {
 	
 	private static void trainModelsOnWholeDataset(Collection<MusicXMLModel> models) {
 		for (File file : files) {
-			 if (!file.getName().equals("Billy Joel - Just The Way You Are.mxl"))
-			 continue;
+//			 if (!file.getName().equals("Billy Joel - Just The Way You Are.mxl"))
+//			 continue;
 			// if (file.getName().charAt(0) < 'T') {
 			// continue;
 			// }
+			 if (!GlobalStructureExtractor.annotationsExistForFile(file)) {
+				 continue;
+			 }
 			System.out.println(file.getName());
 			MusicXMLParser musicXMLParser = null;
 			try {

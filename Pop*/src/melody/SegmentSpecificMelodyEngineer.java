@@ -14,6 +14,9 @@ import composition.Score;
 import constraint.Constraint;
 import data.MusicXMLModel;
 import data.MusicXMLModelLearner;
+import data.MusicXMLParser;
+import data.MusicXMLSummaryGenerator;
+import data.MusicXMLParser.Harmony;
 import data.MusicXMLParser.Key;
 import data.MusicXMLParser.Note;
 import data.MusicXMLParser.NoteTie;
@@ -29,6 +32,7 @@ import utils.Utils;
 
 public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 
+	private static boolean normalizeByHarmony = true;
 	public static class SegmentSpecificMelodyEngineerMusicXMLModel extends MusicXMLModel {
 
 		SparseSingleOrderMarkovModel<Integer> pitchMarkovModel;
@@ -36,34 +40,33 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 		Map<Integer, Integer> pitchPriorCounts = new HashMap<Integer, Integer>();
 		Map<Integer, Map<Integer, Integer>> pitchTransitionCounts = new HashMap<Integer, Map<Integer, Integer>>();
 
-		// have a markov model for each offset position with the markov property applying to the previous duration
+		// have a Markov model for each offset position with the markov property applying to the previous duration
 		Map<Time, Map<SegmentType, SparseSingleOrderMarkovModel<Double>>> durationMarkovModelsByOffsetBySegmentByTime = new HashMap<Time, Map<SegmentType,SparseSingleOrderMarkovModel<Double>>>();
 		Map<Time, Map<SegmentType, Map<Double, Integer>>> durationStatesByIndexBySegmentByTime = new HashMap<Time, Map<SegmentType, Map<Double, Integer>>>();// states are pitches for now
 		Map<Time, Map<SegmentType, Map<Integer, Integer>>> durationPriorCountsBySegmentByTime = new HashMap<Time, Map<SegmentType, Map<Integer, Integer>>>();
 		Map<Time, Map<SegmentType, Map<Integer, Map<Integer, Integer>>>> durationTransitionCountsBySegmentByTime = new HashMap<Time, Map<SegmentType, Map<Integer, Map<Integer, Integer>>>>();
 
+		
 		@Override
 		/**
 		 * Only trains on examples with harmony
 		 */
 		public void trainOnExample(ParsedMusicXMLObject musicXML) {
 			// if doesn't have harmony, return
-			if (musicXML.noteCount == 0) {
+			List<Triple<Integer, Integer, Note>> notesByMeasure = musicXML.getNotesByPlayedMeasure();
+			SortedMap<Integer, SortedMap<Integer, Harmony>> harmonyByMeasure = musicXML.getUnoverlappingHarmonyByPlayedMeasureAsMap();
+			if (notesByMeasure.isEmpty() || harmonyByMeasure.isEmpty()) {
 				return;
 			}
 
-			// the current markovModel is now obselete and will be regenerated
+			// the current markovModel is now obsolete and will be regenerated
 			// when next sampled
 			pitchMarkovModel = null;
 
 			Integer prevNotePitchIdx = -1;
+			Harmony currHarmony = null;
 			double prevNoteDurationInBeats = -1.0;
 
-			// TODO: condition on chord
-			SortedMap<Integer, Time> timeMap = musicXML.timeByAbsoluteMeasure;
-			
-			SortedMap<Integer, Integer> divsPerQuarterByMeasure = musicXML.divsPerQuarterByAbsoluteMeasure;
-			List<Triple<Integer, Integer, Note>> notesByMeasure = musicXML.notesByPlayedMeasure;
 			SortedMap<Integer, SegmentType> globalStructure = musicXML.globalStructure;
 			int notesToAdvanceForTies; 
 			int maxNotesToAdvanceForTies = 5;
@@ -72,49 +75,37 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 				notesToAdvanceForTies = 1;
 				Triple<Integer, Integer, Note> measureOffsetNote = notesByMeasure.get(i);
 				Note note = measureOffsetNote.getThird();
+				int measure = measureOffsetNote.getFirst();
+				int divsOffset = measureOffsetNote.getSecond();
+				currHarmony = Utils.valueForKeyBeforeOrEqualTo(measure, divsOffset, harmonyByMeasure);
 				if (note == null || note.isChordWithPrevious)
 					continue;
 
-				int measure = measureOffsetNote.getFirst();
-				int divsOffset = measureOffsetNote.getSecond();
-				Time currTime = Utils.valueForKeyBeforeOrEqualTo(measure, timeMap);
+				Time currTime = musicXML.getTimeForMeasure(measure);
 				SegmentType currType = Utils.valueForKeyBeforeOrEqualTo(measure, globalStructure);
 				if (currType != prevType) {
 					prevNoteDurationInBeats = -1.0;
 				}
 				
-				// We'll count anything in 2/2 as 4/4
-				if (currTime.equals(Time.TWO_TWO)) {
-					currTime = Time.FOUR_FOUR;
-				}
-				
 				durationMarkovModelsByOffsetBySegmentByTime.remove(currTime);
-				double divsPerQuarter = (double) Utils.valueForKeyBeforeOrEqualTo(measure, divsPerQuarterByMeasure);
-				double beatsOffset = (divsOffset/divsPerQuarter) * (currTime.beatType/4.0);
+//				double beatsOffset = musicXML.divsToBeats(divsOffset, measure);
 
-				double noteDurationInBeats = (note.duration/divsPerQuarter) * (currTime.beatType/4.0);
+				double noteDurationInBeats = musicXML.divsToBeats(note.duration, measure);
 				
 				// if the note is tied (or "slurred to same pitch")  
 				if (note.tie == NoteTie.START || note.slur == NoteTie.START) {
 					Note currNote = note;
-					Time currNoteTime = null;
-					double currNoteDivsPerQuarter = -1;
 					List<Double> noteDurationInBeatsToTie = new ArrayList<Double>();
 					for (int j = 1; j <= maxNotesToAdvanceForTies; j++) {
 						Triple<Integer, Integer, Note> currNoteMeasureOffsetNote = notesByMeasure.get(i+j);
 						currNote = currNoteMeasureOffsetNote.getThird();
 						int currNoteMeasure = currNoteMeasureOffsetNote.getFirst();
-						currNoteTime = Utils.valueForKeyBeforeOrEqualTo(currNoteMeasure, timeMap);
-						if (currNoteTime.equals(Time.TWO_TWO)) {
-							currNoteTime = Time.FOUR_FOUR;
-						}
-						currNoteDivsPerQuarter = (double) Utils.valueForKeyBeforeOrEqualTo(currNoteMeasure, divsPerQuarterByMeasure);
 
 						if (currNote.isChordWithPrevious || currNote.pitch != note.pitch || (currNote.lyric != null && !currNote.lyric.text.isEmpty())) {
 							break;
 						}
 						
-						noteDurationInBeatsToTie.add((currNote.duration/currNoteDivsPerQuarter) * (currNoteTime.beatType/4.0));
+						noteDurationInBeatsToTie.add(musicXML.divsToBeats(currNote.duration, currNoteMeasure));
 						
 						if (note.tie == NoteTie.START && currNote.tie == NoteTie.STOP || note.slur == NoteTie.START && currNote.slur == NoteTie.STOP) {
 							break;
@@ -127,10 +118,22 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 					}
 				}
 
-				Integer notePitchIdx = pitchStatesByIndex.get(note.pitch);
+				int notePitchToken;
+				if (normalizeByHarmony) {
+					if (note.pitch == Note.REST) {
+						notePitchToken = note.pitch;
+					} else {
+						int octave = note.pitch / 12; // loss of precision to get octave
+						notePitchToken = currHarmony.getScaleStep(note.pitch) + octave * 12;
+					}
+				} else { 
+					notePitchToken = note.pitch;
+				}
+				
+				Integer notePitchIdx = pitchStatesByIndex.get(notePitchToken);
 				if (notePitchIdx == null) {
 					notePitchIdx = pitchStatesByIndex.size();
-					pitchStatesByIndex.put(note.pitch, notePitchIdx);
+					pitchStatesByIndex.put(notePitchToken, notePitchIdx);
 				}
 
 				Map<SegmentType, Map<Double, Integer>> durationStatesByIndexBySegment = durationStatesByIndexBySegmentByTime.get(currTime);
@@ -412,7 +415,20 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 				// notes that need generating
 				while (accumulativeDivisions < totalMeasureDivisions) {
 					Pair<Integer,Double> pitchDuration = melodySeq.get(counter);
-					int pitch = pitchDuration.getFirst();
+					Harmony currHarmony = score.getHarmonyPlayingAt(i, ((double)accumulativeDivisions)/divisionsPerQuarterNote);
+					int pitchToken = pitchDuration.getFirst();
+					int pitch;
+					if (normalizeByHarmony) {
+						if (pitchToken == Note.REST) {
+							pitch = pitchToken;
+						} else {
+							int octave = pitchToken / 12;
+							int harmonySpecificInterval = currHarmony.getIntervalForScaleStep(pitchToken%12);
+							pitch = octave*12 + harmonySpecificInterval;
+						}
+					} else {
+						pitch = pitchToken;
+					}
 					
 					if (counter < melodySeqDurations.size()) {
 						// durations should be the same for repeats of the same segment type
