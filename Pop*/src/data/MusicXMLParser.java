@@ -31,6 +31,7 @@ import org.xml.sax.SAXException;
 import data.MusicXMLParser.DirectionType;
 import data.MusicXMLParser.Harmony;
 import data.MusicXMLParser.Note;
+import data.MusicXMLParser.NoteLyric;
 import data.MusicXMLParser.Barline.RepeatDirection;
 import data.WikifoniaCorrection.CorrectionType;
 import pitch.Pitch;
@@ -267,18 +268,20 @@ public class MusicXMLParser {
 		public int pitch;
 		public int duration;
 		public int type; // represents the denominator in the note (e.g., quarter = 1/4)
-		public NoteLyric lyric;
+		private NoteLyric lyric;
+		public boolean lyricVerseMatchesRepeatCount;
 		public int dots;
 		public NoteTie tie;
 		public NoteTie slur;
 		public NoteTimeModification timeModification;
 		public boolean isChordWithPrevious;
 		
-		public Note(int pitch, int duration, int type, NoteLyric lyric, int dots, NoteTie tie, NoteTie slur, NoteTimeModification timeModification, boolean isChordWithPreviousNote) {
+		public Note(int pitch, int duration, int type, NoteLyric lyric, boolean lyricVerseMatchesRepeatCount, int dots, NoteTie tie, NoteTie slur, NoteTimeModification timeModification, boolean isChordWithPreviousNote) {
 			this.pitch = pitch;
 			this.duration = duration;
 			this.type = type;
 			this.lyric = lyric;
+			this.lyricVerseMatchesRepeatCount = lyricVerseMatchesRepeatCount;
 			this.dots = dots;
 			this.tie = tie;
 			this.slur = slur;
@@ -440,6 +443,19 @@ public class MusicXMLParser {
 			if (tie == NoteTie.STOP)
 				return false;
 			return true;
+		}
+
+		public NoteLyric getLyric(boolean requireLyricVerseMatchesRepeatCount) {
+			if (requireLyricVerseMatchesRepeatCount && !lyricVerseMatchesRepeatCount)
+				return null;
+			else {
+				return lyric;
+			}
+		}
+
+		public void setLyric(NoteLyric lyric, boolean lyricVerseMatchesRepeatCount) {
+			this.lyric = lyric;
+			this.lyricVerseMatchesRepeatCount = lyricVerseMatchesRepeatCount;
 		}
 		
 	}
@@ -1698,7 +1714,7 @@ public class MusicXMLParser {
 						}
 					} else if (nodeName.equals("forward")) {
 						int duration = Integer.parseInt(((Element)mChild).getElementsByTagName("duration").item(0).getTextContent());
-						Note note = new Note(-1,duration,-1,null,0,NoteTie.NONE,NoteTie.NONE,null,false);
+						Note note = new Note(-1,duration,-1,null,false, 0,NoteTie.NONE,NoteTie.NONE,null,false);
 						currMeasurePositionInDivisions += note.duration;
 						if (currMeasurePositionInDivisions == calculateTotalDivisionsInMeasure(currTime, currDivisionsPerQuarterNote)) {
 							break;
@@ -2249,11 +2265,12 @@ public class MusicXMLParser {
 	}
 
 	private static final int UNPITCHED_RHYTHM = -3;
-	private static Note parseNote(Node node, int verse, Key currKey) {
+	private static Note parseNote(Node node, int currVerse, Key currKey) {
 		int pitch = -1;
 		int duration = -1;
 		int type = -1;
 		NoteLyric lyric = null;
+		boolean lyricVerseMatchesRepeatCount = false;
 		int dots = 0;
 		NoteTie tie = NoteTie.NONE;
 		NoteTie slur = NoteTie.NONE;
@@ -2281,9 +2298,13 @@ public class MusicXMLParser {
 			} else if (childName.equals("beam")) {
 				// do nothing (this is for visualizing music)
 			} else if (childName.equals("lyric")) {
-				int currVerse = Integer.parseInt(child.getAttributes().getNamedItem("number").getTextContent());
-				if (currVerse == verse)
+				int parsedVerse = Integer.parseInt(child.getAttributes().getNamedItem("number").getTextContent());
+				if (parsedVerse <= currVerse && !lyricVerseMatchesRepeatCount) { // we take any verse before or up to the current verse, assuming that if there is a closer matching verse, it will replace lyric
+					if (parsedVerse == currVerse) {
+						lyricVerseMatchesRepeatCount = true;
+					}
 					lyric = parseNoteLyric(child);
+				}
 			} else if (childName.equals("dot")) {
 				dots++;
 			} else if (childName.equals("tie")) {
@@ -2357,7 +2378,7 @@ public class MusicXMLParser {
 			throw new RuntimeException("Note missing pitch or duration or type");
 		}
 		
-		return new Note(normalizePitch(pitch, currKey), duration, type, lyric, dots, tie, slur, timeModification, isChordWithPreviousNote); 
+		return new Note(normalizePitch(pitch, currKey), duration, type, lyric, lyricVerseMatchesRepeatCount, dots, tie, slur, timeModification, isChordWithPreviousNote); 
 	}
 	
 	private static NoteTimeModification parseNoteTimeModification(Node node) {

@@ -163,7 +163,7 @@ public class Measure {
 			boolean intervalOn = pitches[i];
 			if (intervalOn) {
 				Note newNote = new Note(rootPitch + Quality.HARMONY_CONSTANT_INTERVALS[i], 
-						chordRoot.duration, chordRoot.type, null, chordRoot.dots, chordRoot.tie, chordRoot.slur, null, orchestrationNotes.size()>0);
+						chordRoot.duration, chordRoot.type, null, true, chordRoot.dots, chordRoot.tie, chordRoot.slur, null, orchestrationNotes.size()>0);
 				orchestrationNotes.add(newNote);
 			}
 		}

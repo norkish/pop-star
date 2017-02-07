@@ -20,6 +20,7 @@ import data.MusicXMLModel;
 import data.MusicXMLModelLearner;
 import data.MusicXMLParser.Key;
 import data.MusicXMLParser.Note;
+import data.MusicXMLParser.NoteLyric;
 import data.MusicXMLParser.NoteTie;
 import data.MusicXMLParser.Time;
 import data.ParsedMusicXMLObject;
@@ -63,8 +64,6 @@ public class SegmentSpecificMelodyRhythmPositionEngineer extends MelodyEngineer 
 			Integer prevNotePitchIdx = -1;
 			double prevNoteDurationInBeats = -1.0;
 
-			// TODO: condition on chord
-			
 			List<Triple<Integer, Integer, Note>> notesByMeasure = musicXML.getNotesByPlayedMeasure();
 			SortedMap<Integer, SegmentType> globalStructure = musicXML.globalStructure;
 			int notesToAdvanceForTies; 
@@ -98,8 +97,10 @@ public class SegmentSpecificMelodyRhythmPositionEngineer extends MelodyEngineer 
 						Triple<Integer, Integer, Note> currNoteMeasureOffsetNote = notesByMeasure.get(i+j);
 						currNote = currNoteMeasureOffsetNote.getThird();
 						int currNoteMeasure = currNoteMeasureOffsetNote.getFirst();
+						SegmentType currTiedNoteType = Utils.valueForKeyBeforeOrEqualTo(currNoteMeasure, globalStructure);
 
-						if (currNote.isChordWithPrevious || currNote.pitch != note.pitch || (currNote.lyric != null && !currNote.lyric.text.isEmpty())) {
+						NoteLyric lyric = currNote.getLyric(currTiedNoteType != SegmentType.CHORUS);
+						if (currNote.isChordWithPrevious || currNote.pitch != note.pitch || (lyric != null && !lyric.text.isEmpty())) {
 							break;
 						}
 						

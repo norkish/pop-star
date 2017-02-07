@@ -48,6 +48,7 @@ public class SegmentStructureExtractor {
 		
 		boolean newSegmentStartNotAfterRhyme = true, prevLyrNoteRhymeConstrained = false, currLyrNoteRhymeConstrained = false;
 		Rhyme<NoteLyric> lastRhymeConstraint = null;
+		SegmentType currSegment = null;
 		for (Integer measure: notesMap.keySet()) {
 			final SortedMap<Integer, Note> notesMapForMeasure = notesMap.get(measure);
 			boolean firstInMeasure = true;
@@ -55,12 +56,15 @@ public class SegmentStructureExtractor {
 				double offsetInBeats = musicXML.divsToBeats(offsetInDivs, measure);
 				
 				// check essentially to make sure we didn't just add a phrase because of rhyme
-				if (globalStructure.containsKey(measure) && (measure - lyricSequenceFirstMeasure >= MIN_FULL_MSRS_LYR_PHRASE)) {
-					newSegmentStartNotAfterRhyme = true;
+				if (globalStructure.containsKey(measure)) {
+					currSegment = globalStructure.get(measure);
+					if(measure - lyricSequenceFirstMeasure >= MIN_FULL_MSRS_LYR_PHRASE) {
+						newSegmentStartNotAfterRhyme = true;
+					}
 				}
 				
 				Note note = notesMapForMeasure.get(offsetInDivs);
-				boolean isLyricOnset = note != null && note.lyric != null && note.pitch != Note.REST && note.tie != NoteTie.STOP;
+				boolean isLyricOnset = (note != null && note.getLyric(currSegment != SegmentType.CHORUS) != null && note.pitch != Note.REST && note.tie != NoteTie.STOP);
 				// if this is a lyric and it's is rhyme 
 				Rhyme<NoteLyric> rhymeConstraint = getRhymeConstraint(measure, offsetInBeats, constraintsByNote);
 				if (isLyricOnset && rhymeConstraint != null) {
@@ -119,8 +123,10 @@ public class SegmentStructureExtractor {
 			for(Integer divOffset : notesForMeasure.keySet()) {
 				double beatOffset = musicXML.divsToBeats(divOffset, measure);
 				Note note = notesForMeasure.get(divOffset);
-				if (note == null || note.lyric == null) continue;
-				System.out.println((measure+1) +"\t" + beatOffset + "\t" + note.lyric);
+				if (note == null) continue;
+				NoteLyric lyric = note.getLyric(true);
+				if (lyric == null) continue;
+				System.out.println((measure+1) +"\t" + beatOffset + "\t" + lyric);
 			}
 		}
 		
@@ -158,7 +164,7 @@ public class SegmentStructureExtractor {
 				int measure = Integer.parseInt(tokens[1]) - 1;
 				// look up token that is described in line
 				try {
-					offsetNote = findNoteInMeasureWithLyric(notesMap.get(measure), tokens[0]);
+					offsetNote = findNoteInMeasureWithLyric(notesMap.get(measure), tokens[0], false);
 				} catch (Exception e) {
 					throw new RuntimeException(e.getMessage() + " in measure " + measure + " in " + filename);
 				}
@@ -223,12 +229,13 @@ public class SegmentStructureExtractor {
 		return enumeratedConstraints;
 	}
 
-	private static Pair<Integer, Note> findNoteInMeasureWithLyric(SortedMap<Integer, Note> notesMap, String lyricToMatch) throws Exception {
+	private static Pair<Integer, Note> findNoteInMeasureWithLyric(SortedMap<Integer, Note> notesMap, String lyricToMatch, boolean requireLyricVerseMatchesRepeatCount) throws Exception {
 		Pair<Integer, Note> match = null;
 		
 		for (Integer divsOffset : notesMap.keySet()) {
 			Note note = notesMap.get(divsOffset);
-			if (note.lyric != null && note.lyric.text.equals(lyricToMatch)) {
+			NoteLyric lyric = note.getLyric(requireLyricVerseMatchesRepeatCount);
+			if (lyric != null && lyric.text.equals(lyricToMatch)) {
 				if (match != null) throw new Exception("Two matching lyrics for \"" + lyricToMatch +"\" at offsets " + match.getFirst() + " and " + divsOffset);
 				match = new Pair<Integer, Note>(divsOffset, note);
 			}

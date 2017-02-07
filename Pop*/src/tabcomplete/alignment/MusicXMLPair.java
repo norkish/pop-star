@@ -157,8 +157,9 @@ public class MusicXMLPair extends SequencePair {
 					
 					// calculate the subscore for lyrics
 					if (lyricWeight != 0.0) {
-						NoteLyric note1Lyric = note1.lyric;
-						if (note1Lyric == null && note2.lyric == null || note1Lyric !=null && note1Lyric.equals(note2.lyric)) {
+						NoteLyric note1Lyric = note1.getLyric(false);
+						NoteLyric note2Lyric = note2.getLyric(false);
+						if (note1Lyric == null && note2Lyric == null || note1Lyric !=null && note1Lyric.equals(note2Lyric)) {
 							lyricScore += SequencePair.MATCH_SCORE;
 						} else {
 							lyricScore += SequencePair.MISMATCH_SCORE;

@@ -33,7 +33,7 @@ public abstract class MelodyEngineer {
 			int divsForNote = biggestUntiedNote.getFirst();
 			int noteType = biggestUntiedNote.getSecond();
 			int dots = biggestUntiedNote.getThird(); 
-			Note newNote = new Note(pitch, divsForNote, noteType, null, dots, NoteTie.NONE, NoteTie.NONE, null, false);
+			Note newNote = new Note(pitch, divsForNote, noteType, null, true, dots, NoteTie.NONE, NoteTie.NONE, null, false);
 			tiedNotes.add(newNote);
 			divsLeftToAdd -= divsForNote;
 		}

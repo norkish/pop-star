@@ -19,6 +19,7 @@ import data.MusicXMLSummaryGenerator;
 import data.MusicXMLParser.Harmony;
 import data.MusicXMLParser.Key;
 import data.MusicXMLParser.Note;
+import data.MusicXMLParser.NoteLyric;
 import data.MusicXMLParser.NoteTie;
 import data.MusicXMLParser.Time;
 import data.ParsedMusicXMLObject;
@@ -100,8 +101,10 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 						Triple<Integer, Integer, Note> currNoteMeasureOffsetNote = notesByMeasure.get(i+j);
 						currNote = currNoteMeasureOffsetNote.getThird();
 						int currNoteMeasure = currNoteMeasureOffsetNote.getFirst();
+						SegmentType currTiedNoteType = Utils.valueForKeyBeforeOrEqualTo(currNoteMeasure, globalStructure);
 
-						if (currNote.isChordWithPrevious || currNote.pitch != note.pitch || (currNote.lyric != null && !currNote.lyric.text.isEmpty())) {
+						NoteLyric lyric = currNote.getLyric(currTiedNoteType != SegmentType.CHORUS);
+						if (currNote.isChordWithPrevious || currNote.pitch != note.pitch || (lyric != null && !lyric.text.isEmpty())) {
 							break;
 						}
 						

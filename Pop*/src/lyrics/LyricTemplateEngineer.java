@@ -1,6 +1,8 @@
 package lyrics;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -47,9 +49,14 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 			
 			List<Triple<Integer, Integer, Note>> notes = musicXML.getNotesByPlayedMeasure();
 			SortedMap<Integer, Double> phraseBeginnings = musicXML.phraseBeginnings;
+			SortedMap<Integer, SegmentType> globalStructure = musicXML.globalStructure;
 			List<NoteLyric> currPhrase = null;
+			SegmentType currSegment = null;
 			for (Triple<Integer, Integer, Note> triple : notes) {
 				int measure = triple.getFirst();
+				if (globalStructure.containsKey(measure)) {
+					currSegment = globalStructure.get(measure);
+				}
 				int divsOffset = triple.getSecond();
 				double beatsOffset = musicXML.divsToBeats(divsOffset, measure);
 				Double phraseBeginningInMeasure = phraseBeginnings.get(measure);
@@ -60,8 +67,9 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 					currPhrase = new ArrayList<NoteLyric>();
 				}
 				Note note = triple.getThird();
-				if (note.lyric != null && note.lyric.text != null) {
-					currPhrase.add(note.lyric);
+				NoteLyric lyric = note.getLyric(currSegment != SegmentType.CHORUS);
+				if (lyric != null && lyric.text != null) {
+					currPhrase.add(lyric);
 				}
 			}
 		}
@@ -178,6 +186,7 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 		printTemplateForLyrist(inspiration, templatesBySegment);
 		List<Triple<SegmentType, List<List<NoteLyric>>, List<Integer>>> lyricPhrasesToAdd = templatesBySegment;
 		
+		boolean inTheMiddleOfATie = false;
 		for (int currMeasureNumber = 0; currMeasureNumber < measures.size(); currMeasureNumber++) {
 			Measure measure = measures.get(currMeasureNumber);
 			
@@ -215,7 +224,8 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 					for (Double offset: otherNotes.keySet()) {
 						Note thisNote = notes.get(offset);
 						Note otherNote = otherNotes.get(offset);
-						thisNote.lyric = otherNote.lyric == null ? null : new NoteLyric(otherNote.lyric);
+						NoteLyric otherLyric = otherNote.getLyric(false);
+						thisNote.setLyric(otherLyric == null ? null : new NoteLyric(otherLyric), true);
 					}
 					
 					chorusMeasureCounter++;
@@ -229,10 +239,16 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 			if (generateLyrics) {
 				TreeMap<Double, Note> notes = measure.getNotes();
 				for (Note note : notes.values()) {
-					if (note.pitch != Note.REST && note.tie != NoteTie.STOP) {
+					if (note.tie == NoteTie.STOP) {
+						inTheMiddleOfATie = false;
+					}
+					if (note.isPlayedNoteOnset() && !inTheMiddleOfATie) {
+						if (note.tie == NoteTie.START) {
+							inTheMiddleOfATie = true;
+						}
 						List<NoteLyric> currTemplate = currTemplates.get(phraseIdx);
 						if (lyrIdx < currTemplate.size()) {
-							note.lyric = currTemplate.get(lyrIdx++);
+							note.setLyric(currTemplate.get(lyrIdx++), true);
 							if (lyrIdx == currTemplate.size()) {
 								phraseIdx++;
 								lyrIdx = 0;
@@ -247,6 +263,11 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 	}
 
 	private void printTemplateForLyrist(Inspiration inspiration, List<Triple<SegmentType, List<List<NoteLyric>>, List<Integer>>> templatesBySegment) {
+//		File lyricFile = new File("lyricTemplate.txt");
+//		File rhymeFile = new File("rhymeTemplate.txt");
+//		PrintWriter lyricFileWriter = new PrintWriter(lyricFile);
+//		PrintWriter rhymeFileWriter = new PrintWriter(rhymeFile);
+		
 		System.out.println("TITLE: BSSF");
 		System.out.println("INSPIRATION: " + inspiration.getMaxEmotion());
 		System.out.println();
@@ -291,6 +312,7 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 		Map<Integer,Map<Double,Integer>> rhymeGroupByMeasureOffset = new HashMap<Integer,Map<Double,Integer>>();
 		int nextRhymeGroup = 0;
 		int prevPhraseRhymeGroup = -1;
+		boolean inTheMiddleOfATie = false;
 		for (int currMeasureNumber = 0; currMeasureNumber < measures.size(); currMeasureNumber++) {
 			if (currMeasureNumber + 1 < measures.size()) {
 				nextMeasure = measures.get(currMeasureNumber+1);
@@ -349,7 +371,13 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 			// add notes, and if the closest note is one of the notes in the measure, include it and then end the phrase.
 			for (Double beatOffset : notes.keySet()) {
 				Note note = notes.get(beatOffset);
-				if (note.isPlayedNoteOnset()) {
+				if (note.tie == NoteTie.STOP) {
+					inTheMiddleOfATie = false;
+				}
+				if (note.isPlayedNoteOnset() && !inTheMiddleOfATie) {
+					if (note.tie == NoteTie.START) {
+						inTheMiddleOfATie = true;
+					}
 					currPhraseNoteCount++;
 					if (forceEndPhraseOnNextNote || beatOffset == closestNoteOffsetToPhraseEndOffset) {
 						// add previous phrase
