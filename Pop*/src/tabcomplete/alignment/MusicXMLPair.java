@@ -118,14 +118,15 @@ public class MusicXMLPair extends SequencePair {
 		SortedMap<Integer, Harmony> harmoniesfor1Measure = harmonyByMeasure1.get(mXML1MsrNo);
 		SortedMap<Integer, Harmony> harmoniesfor2Measure = harmonyByMeasure2.get(mXML2MsrNo);
 
-		Time time1 = Utils.valueForKeyBeforeOrEqualTo(mXML1MsrNo, musicXML1.timeByAbsoluteMeasure);
+		Time time1 = musicXML1.getTimeForMeasure(mXML1MsrNo);
 		int beatsIn1Msr = time1.beats;
-		Time time2 = Utils.valueForKeyBeforeOrEqualTo(mXML2MsrNo, musicXML2.timeByAbsoluteMeasure);
+		Time time2 = musicXML2.getTimeForMeasure(mXML2MsrNo);
 		int beatsIn2Msr = time2.beats;
 		int comparableBeats = Math.min(beatsIn1Msr, beatsIn2Msr);
 
-		double divsPerBeatIn1Msr = Utils.valueForKeyBeforeOrEqualTo(mXML1MsrNo, musicXML1.divsPerQuarterByAbsoluteMeasure) * (4.0/time1.beatType);
-		double divsPerBeatIn2Msr = Utils.valueForKeyBeforeOrEqualTo(mXML2MsrNo, musicXML2.divsPerQuarterByAbsoluteMeasure) * (4.0/time2.beatType);
+		double divsPerBeatIn1Msr = musicXML1.getDivsPerQuarterForAbsoluteMeasure(mXML1MsrNo) * (4.0/time1.beatType);
+		double divsPerBeatIn2Msr = musicXML2.getDivsPerQuarterForAbsoluteMeasure(mXML2MsrNo) * (4.0/time2.beatType);
+		
 		// max number of divs we consider is 12
 		double comparableDivs = Math.min(4.0, Math.max(divsPerBeatIn1Msr, divsPerBeatIn2Msr));
 		double divs1PerComparedDiv = divsPerBeatIn1Msr/comparableDivs;
@@ -156,8 +157,9 @@ public class MusicXMLPair extends SequencePair {
 					
 					// calculate the subscore for lyrics
 					if (lyricWeight != 0.0) {
-						NoteLyric note1Lyric = note1.lyric;
-						if (note1Lyric == null && note2.lyric == null || note1Lyric !=null && note1Lyric.equals(note2.lyric)) {
+						NoteLyric note1Lyric = note1.getLyric(false);
+						NoteLyric note2Lyric = note2.getLyric(false);
+						if (note1Lyric == null && note2Lyric == null || note1Lyric !=null && note1Lyric.equals(note2Lyric)) {
 							lyricScore += SequencePair.MATCH_SCORE;
 						} else {
 							lyricScore += SequencePair.MISMATCH_SCORE;

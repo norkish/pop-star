@@ -29,6 +29,9 @@ import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
 import data.MusicXMLParser.DirectionType;
+import data.MusicXMLParser.Harmony;
+import data.MusicXMLParser.Note;
+import data.MusicXMLParser.NoteLyric;
 import data.MusicXMLParser.Barline.RepeatDirection;
 import data.WikifoniaCorrection.CorrectionType;
 import pitch.Pitch;
@@ -193,6 +196,11 @@ public class MusicXMLParser {
 
 	public static class NoteLyric {
 
+		@Override
+		public String toString() {
+			return "NoteLyric [" + text + "]";
+		}
+
 		final public Syllabic syllabic;
 		final public String text;
 		final public boolean extend;
@@ -260,18 +268,20 @@ public class MusicXMLParser {
 		public int pitch;
 		public int duration;
 		public int type; // represents the denominator in the note (e.g., quarter = 1/4)
-		public NoteLyric lyric;
+		private NoteLyric lyric;
+		public boolean lyricVerseMatchesRepeatCount;
 		public int dots;
 		public NoteTie tie;
 		public NoteTie slur;
 		public NoteTimeModification timeModification;
 		public boolean isChordWithPrevious;
 		
-		public Note(int pitch, int duration, int type, NoteLyric lyric, int dots, NoteTie tie, NoteTie slur, NoteTimeModification timeModification, boolean isChordWithPreviousNote) {
+		public Note(int pitch, int duration, int type, NoteLyric lyric, boolean lyricVerseMatchesRepeatCount, int dots, NoteTie tie, NoteTie slur, NoteTimeModification timeModification, boolean isChordWithPreviousNote) {
 			this.pitch = pitch;
 			this.duration = duration;
 			this.type = type;
 			this.lyric = lyric;
+			this.lyricVerseMatchesRepeatCount = lyricVerseMatchesRepeatCount;
 			this.dots = dots;
 			this.tie = tie;
 			this.slur = slur;
@@ -422,13 +432,38 @@ public class MusicXMLParser {
 			
 			return str.toString();
 		}
+
+		/**
+		 * is this note a played note (not sustained from being tied to previous note or a rest)
+		 * @return
+		 */
+		public boolean isPlayedNoteOnset() {
+			if (pitch == REST)
+				return false;
+			if (tie == NoteTie.STOP)
+				return false;
+			return true;
+		}
+
+		public NoteLyric getLyric(boolean requireLyricVerseMatchesRepeatCount) {
+			if (requireLyricVerseMatchesRepeatCount && !lyricVerseMatchesRepeatCount)
+				return null;
+			else {
+				return lyric;
+			}
+		}
+
+		public void setLyric(NoteLyric lyric, boolean lyricVerseMatchesRepeatCount) {
+			this.lyric = lyric;
+			this.lyricVerseMatchesRepeatCount = lyricVerseMatchesRepeatCount;
+		}
 		
 	}
 
 	
 	public static class Quality {
 		private static final int FLAT_SECONDi = 0, SECONDi = 1, FLAT_THIRDi = 2, THIRDi = 3, FOURTHi = 4, FLAT_FIFTHi = 5,
-				FIFTHi = 6, FLAT_SIXTHi = 7, SIXTHi = 8, FLAT_SEVENTHi = 9, SEVENTHi = 10, FLAT_NINTHi = 11, 
+				FIFTHi = 6, AUGMENTED_FIFTHi = 7, SIXTHi = 8, FLAT_SEVENTHi = 9, SEVENTHi = 10, FLAT_NINTHi = 11, 
 				NINTHi = 12, SHARP_NINTHi = 13, FLAT_ELEVENTHi = 14, ELEVENTHi = 15, SHARP_ELEVENTHi = 16, 
 				FLAT_THIRTEENTHi = 17, THIRTEENTHi = 18, SHARP_THIRTEENTHi = 19;
 		// this needs to reflect the intervals of the above constants
@@ -441,12 +476,6 @@ public class MusicXMLParser {
 		private static final String SECOND = "second", FOURTH = "fourth", SIXTH = "sixth", SEVENTH = "seventh", NINTH = "ninth", 
 				ELEVENTH = "eleventh", THIRTEENTH = "thirteenth";
 		
-		private static final String TWO = "2", THREE = "3", FOUR = "4",  
-				FOURSEVEN = "47", FLAT_FIVE = "b5", FIVE = "5", SHARP_FIVE = "#5", SIX = "6", 
-				FLAT_SEVEN = "b7", SEVEN = "7", FLAT_NINE = "b9", NINE = "9", SHARP_NINE = "#9", 
-				ELEVEN = "11", SHARP_ELEVEN = "#11", FLAT_THIRTEEN = "b13", THIRTEEN = "13", 
-				SHARP_THIRTEEN = "#13", SIXNINE = "69";
-
 		boolean[] notesOn = new boolean[SHARP_THIRTEENTHi+1];
 		// as per https://en.wikipedia.org/wiki/Chord_names_and_symbols_(popular_music)
 		String kind = MAJOR;
@@ -656,7 +685,7 @@ public class MusicXMLParser {
 					return true;
 				} else if (text.equals("-seventh")) {
 					notesOn[FIFTHi] = false;
-					notesOn[FLAT_SIXTHi] = true;
+					notesOn[AUGMENTED_FIFTHi] = true;
 					notesOn[FLAT_SEVENTHi] = true;
 					kindInterval = SEVENTH;
 				} else if (text.equals("-ninth")) {
@@ -846,7 +875,7 @@ public class MusicXMLParser {
 			case 3:
 				return THIRDi;
 			case 4:
-				return FIFTHi;
+				return FOURTHi;
 			case 5:
 				return FIFTHi;
 			case 7:
@@ -871,13 +900,124 @@ public class MusicXMLParser {
 				builder.append(kindInterval);
 			if (degreeType != null)
 				builder.append(degreeType);
-			if (degreeValue != -1)
+			if (degreeValue > 0)
 				builder.append(degreeValue);
 			return builder.toString();
 		}
 
 		public boolean[] getPitches() {
 			return notesOn;
+		}
+
+		/**
+		 * Given the scale defined by this quality, what step in the 8-note scale is halfStepsFromRoot?
+		 * @param halfStepsFromRoot
+		 * @return
+		 */
+		public int getScaleStep(int halfStepsFromRoot) {
+			switch (halfStepsFromRoot % 12) {
+			case 0:
+				return 0;
+			case 1:
+			case 2:
+				return 1;
+			case 3:
+				if (notesOn[SHARP_NINTHi]){ // if there's a sharp ninth, then three half steps could represent...
+					return 1; //... the second step
+				} else {
+					return 2; // otherwise it's the minor third
+				}
+			case 4:
+				if (notesOn[THIRDi]) {
+					return 2; // major third
+				} else {
+					assert(notesOn[FLAT_ELEVENTHi]);
+					return 3; // flat fourth
+				}
+			case 5:
+				return 3;
+			case 6: // tritone
+				if (notesOn[FLAT_FIFTHi] && notesOn[FIFTHi]) { // fourth-step if both fifth and flat fifth on
+					return 3; // sharp fourth step
+				} else { // fifth step
+					return 4; // flat fifth step
+				}
+			case 7:
+				return 4; // perfect fifth
+			case 8:
+				if (notesOn[FLAT_THIRTEENTHi] || notesOn[AUGMENTED_FIFTHi] && notesOn[FIFTHi]) { // if fifth and flat sixth are on, then it's a flat sixth, not a sharp five
+					return 5; // flat sixth
+				} else {
+					return 4; // augmented fifth
+				}
+			case 9:
+				return 5;
+			case 10:
+				if (notesOn[FLAT_SEVENTHi]) { // if flat seventh 
+					return 6; // then it's a seventh
+				} else if (notesOn[SHARP_THIRTEENTHi]) { // sharp sixth
+					return 5; // sixth
+				} else {
+					return 6;
+				}
+			case 11:
+				return 6;
+			}
+			
+			
+			return 0;
+		}
+		
+		public int getIntervalForScaleStep(int scaleStep) {
+			switch (scaleStep) {
+			case 0:
+				return 0;
+			case 1: // second
+				if (notesOn[FLAT_SECONDi] || notesOn[FLAT_NINTHi]) {
+					return HARMONY_CONSTANT_INTERVALS[FLAT_SECONDi];
+				} else if (notesOn[SHARP_NINTHi]){
+					return HARMONY_CONSTANT_INTERVALS[FLAT_THIRDi];
+				} else {
+					return HARMONY_CONSTANT_INTERVALS[SECONDi];
+				}
+			case 2: // third
+				if (notesOn[THIRDi]) { // third should be on unless it was changed
+					return HARMONY_CONSTANT_INTERVALS[THIRDi];
+				} else {
+					return HARMONY_CONSTANT_INTERVALS[FLAT_THIRDi];
+				}
+			case 3: // fourth
+				if (notesOn[FLAT_ELEVENTHi]) {
+					return HARMONY_CONSTANT_INTERVALS[THIRDi];
+				} else if (notesOn[SHARP_ELEVENTHi]){
+					return HARMONY_CONSTANT_INTERVALS[FLAT_FIFTHi];
+				} else {
+					return HARMONY_CONSTANT_INTERVALS[FOURTHi];
+				}
+			case 4: // fifth
+				if (notesOn[FIFTHi]) { // fifth should be on unless it was changed
+					return HARMONY_CONSTANT_INTERVALS[FIFTHi];
+				} else if (notesOn[FLAT_FIFTHi]) {
+					return HARMONY_CONSTANT_INTERVALS[FLAT_FIFTHi];
+				} else {
+					return HARMONY_CONSTANT_INTERVALS[AUGMENTED_FIFTHi];
+				}
+			case 5: // sixth
+				if (notesOn[FLAT_THIRTEENTHi] || notesOn[AUGMENTED_FIFTHi] && notesOn[FIFTHi]) { // if fifth and flat sixth are on, then it's a flat sixth, not a sharp five
+					return HARMONY_CONSTANT_INTERVALS[AUGMENTED_FIFTHi];
+				} else if (notesOn[SHARP_THIRTEENTHi]){
+					return HARMONY_CONSTANT_INTERVALS[FLAT_SEVENTHi];
+				} else {
+					return HARMONY_CONSTANT_INTERVALS[SIXTHi];
+				}
+			case 6: // seventh
+				if (notesOn[FLAT_SEVENTHi]) {
+					return HARMONY_CONSTANT_INTERVALS[FLAT_SEVENTHi];
+				} else {
+					return HARMONY_CONSTANT_INTERVALS[SEVENTHi];
+				}
+			}
+			throw new RuntimeException("Illegal scale step:" + scaleStep);
 		}
 	}
 
@@ -1089,9 +1229,26 @@ public class MusicXMLParser {
 			
 			return str.toString();
 		}
+
+		/**
+		 * returns the scale step (0-6) for the seven steps in the scale defined by this harmony's quality
+		 * @param pitch
+		 * @return
+		 */
+		public int getScaleStep(int pitch) {
+			if (pitch < 0) return pitch;
+			int halfStepsFromRoot = (pitch - (root.rootStep+9)) % 12;
+			
+			return quality.getScaleStep(halfStepsFromRoot);
+		}
+		
+		public int getIntervalForScaleStep(int step) {
+			return quality.getIntervalForScaleStep(step);
+		}
 	}
 
 	public static class Root {
+		//
 		public int rootStep;
 		public Root(int rootStep) {
 			this.rootStep = rootStep;
@@ -1541,7 +1698,7 @@ public class MusicXMLParser {
 						}
 						
 						if (!note.isChordWithPrevious) {
-							addNoteToMeasure(playedMeasureIdx, currMeasurePositionInDivisions, note, notesByPlayedMeasure, measureOffsetInfo);
+							addNoteToMeasure(playedMeasureIdx, absoluteMeasureIdx, currMeasurePositionInDivisions, note, notesByPlayedMeasure, measureOffsetInfo);
 							currMeasurePositionInDivisions += note.duration;
 						}
 					} else if (nodeName.equals("print")) {
@@ -1557,7 +1714,7 @@ public class MusicXMLParser {
 						}
 					} else if (nodeName.equals("forward")) {
 						int duration = Integer.parseInt(((Element)mChild).getElementsByTagName("duration").item(0).getTextContent());
-						Note note = new Note(-1,duration,-1,null,0,NoteTie.NONE,NoteTie.NONE,null,false);
+						Note note = new Note(-1,duration,-1,null,false, 0,NoteTie.NONE,NoteTie.NONE,null,false);
 						currMeasurePositionInDivisions += note.duration;
 						if (currMeasurePositionInDivisions == calculateTotalDivisionsInMeasure(currTime, currDivisionsPerQuarterNote)) {
 							break;
@@ -1615,12 +1772,13 @@ public class MusicXMLParser {
 		// ADD SYLLABLE STRESS
 		addStressToSyllables(notesByPlayedMeasure, musicXML);
 		
-		musicXML.timeByAbsoluteMeasure = timeByAbsoluteMeasure;
+		musicXML.setTimeByAbsoluteMeasure(timeByAbsoluteMeasure);
 		normalizeKeysByOriginalKey(keyByAbsoluteMeasure);
 		musicXML.normalizedKeyByAbsoluteMeasure = keyByAbsoluteMeasure;
-		musicXML.notesByPlayedMeasure = notesByPlayedMeasure;
+		
+		musicXML.setNotesByPlayedMeasure(notesByPlayedMeasure);
 		musicXML.unoverlappingHarmonyByPlayedMeasure = unoverlappingHarmonyByPlayedMeasure;
-		musicXML.divsPerQuarterByAbsoluteMeasure = divsPerQuarterByAbsoluteMeasure;
+		musicXML.setDivsPerQuarterByAbsoluteMeasure(divsPerQuarterByAbsoluteMeasure);
 		
 		return musicXML;
 	}
@@ -1809,6 +1967,18 @@ public class MusicXMLParser {
 		return (pitch - modification);
 	}
 
+//	public static int normalizePitchByHarmonyRoot(int pitch, Harmony currHarmony) {
+//		if (pitch < 0 || currHarmony == null) {
+//			return pitch;
+//		}
+//		
+//		int modification = (currHarmony.root.rootStep + 9) % 12;
+//		if (modification > 6) {
+//			modification -= 12;
+//		}
+//		return (pitch - modification);
+//	}
+	
 	private static int findDirectionTypeStartingFrom(List<Node> measures, DirectionType directionType, int startPoint) {
 		for (int i = startPoint-1; i >= 0; i--) {
 			Node measure = measures.get(i);
@@ -1870,28 +2040,6 @@ public class MusicXMLParser {
 			}
 		}
 		return barline;
-	}
-
-	private static Harmony getCurrHarmony(Map<Integer, Map<Integer, Harmony>> harmonyByMeasure, Integer measure,
-			Integer divOffset) {
-		Harmony lastHarmony = null;
-		for (Integer lastMeasure : harmonyByMeasure.keySet()) {
-			if (lastMeasure > measure) {
-				return lastHarmony;
-			}
-			
-			Map<Integer, Harmony> harmonyByOffset = harmonyByMeasure.get(lastMeasure);
-			for (Integer lastDivOffset : harmonyByOffset.keySet()) {
-				if (lastMeasure == measure && lastDivOffset > divOffset) {
-					return lastHarmony;
-				}
-				lastHarmony = harmonyByOffset.get(lastDivOffset);
-			}
-			
-		}
-		
-		assert lastHarmony != null;
-		return lastHarmony;
 	}
 
 	private static int getRepeatForMeasureOffset(Map<Integer, Map<Integer, Pair<Integer, NoteLyric>>> measureOffsetInfo, int measure,
@@ -2039,16 +2187,16 @@ public class MusicXMLParser {
 	}
 
 	private static final NoteLyric MULTIVERSE = new NoteLyric(null,"VERSE LYRIC",false,false);
-	private static void addNoteToMeasure(int measureNumber, int currMeasurePositionInDivisions, Note note,
+	private static void addNoteToMeasure(int playedMeasureNumber, int absoluteMeasureNumber, int currMeasurePositionInDivisions, Note note,
 			List<Triple<Integer, Integer, Note>> notesByMeasure, Map<Integer, Map<Integer, Pair<Integer, NoteLyric>>> measureOffsetInfo) {
 		// add note to the play order
-		notesByMeasure.add(new Triple<Integer, Integer, Note>(measureNumber, currMeasurePositionInDivisions, note));
+		notesByMeasure.add(new Triple<Integer, Integer, Note>(playedMeasureNumber, currMeasurePositionInDivisions, note));
 		
 		// adjust how many times this note has been seen and whether the lyrics are the same across all repeats
-		Map<Integer, Pair<Integer, NoteLyric>> offsetInfo = measureOffsetInfo.get(measureNumber);
+		Map<Integer, Pair<Integer, NoteLyric>> offsetInfo = measureOffsetInfo.get(absoluteMeasureNumber);
 		if (offsetInfo == null) {
 			offsetInfo = new TreeMap<Integer, Pair<Integer, NoteLyric>>();
-			measureOffsetInfo.put(measureNumber, offsetInfo);
+			measureOffsetInfo.put(absoluteMeasureNumber, offsetInfo);
 		}
 		
 		Pair<Integer, NoteLyric> info = offsetInfo.get(currMeasurePositionInDivisions);
@@ -2117,11 +2265,12 @@ public class MusicXMLParser {
 	}
 
 	private static final int UNPITCHED_RHYTHM = -3;
-	private static Note parseNote(Node node, int verse, Key currKey) {
+	private static Note parseNote(Node node, int currVerse, Key currKey) {
 		int pitch = -1;
 		int duration = -1;
 		int type = -1;
 		NoteLyric lyric = null;
+		boolean lyricVerseMatchesRepeatCount = false;
 		int dots = 0;
 		NoteTie tie = NoteTie.NONE;
 		NoteTie slur = NoteTie.NONE;
@@ -2149,9 +2298,13 @@ public class MusicXMLParser {
 			} else if (childName.equals("beam")) {
 				// do nothing (this is for visualizing music)
 			} else if (childName.equals("lyric")) {
-				int currVerse = Integer.parseInt(child.getAttributes().getNamedItem("number").getTextContent());
-				if (currVerse == verse)
+				int parsedVerse = Integer.parseInt(child.getAttributes().getNamedItem("number").getTextContent());
+				if (parsedVerse <= currVerse && !lyricVerseMatchesRepeatCount) { // we take any verse before or up to the current verse, assuming that if there is a closer matching verse, it will replace lyric
+					if (parsedVerse == currVerse) {
+						lyricVerseMatchesRepeatCount = true;
+					}
 					lyric = parseNoteLyric(child);
+				}
 			} else if (childName.equals("dot")) {
 				dots++;
 			} else if (childName.equals("tie")) {
@@ -2225,7 +2378,7 @@ public class MusicXMLParser {
 			throw new RuntimeException("Note missing pitch or duration or type");
 		}
 		
-		return new Note(normalizePitch(pitch, currKey), duration, type, lyric, dots, tie, slur, timeModification, isChordWithPreviousNote); 
+		return new Note(normalizePitch(pitch, currKey), duration, type, lyric, lyricVerseMatchesRepeatCount, dots, tie, slur, timeModification, isChordWithPreviousNote); 
 	}
 	
 	private static NoteTimeModification parseNoteTimeModification(Node node) {
@@ -2288,7 +2441,7 @@ public class MusicXMLParser {
 		
 		if (text == null && !extend) {
 			MusicXMLSummaryGenerator.printNode(node, System.err);
-			throw new RuntimeException("Note lyric missing text or syllabic");
+			throw new RuntimeException("Note lyric missing text or extend");
 		}
 		
 		return new NoteLyric(syllabic, text, extend, elision);

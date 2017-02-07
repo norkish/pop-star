@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 
+import constraint.Constraint;
 import data.MusicXMLParser.Harmony;
 import data.MusicXMLParser.Key;
 import data.MusicXMLParser.Note;
@@ -29,17 +29,17 @@ public class ParsedMusicXMLObject {
 	// this is a list of the measure numbers in the order they are played, thus if there are repeats, sequences of measure numbers will be reinserted
 	public List<Integer> playedToAbsoluteMeasureNumberMap = new ArrayList<Integer>();
 	public List<SortedSet<Integer>> absoluteToPlayedMeasureNumbersMap = new ArrayList<SortedSet<Integer>>();
-	
+		
 	// this represents the total number of notes that had text associated with them
 	public int totalSyllables;
 
 	// this represents the total number of notes that had text associated with them which could be associated with an entry in the cmu english dict
 	public int totalSyllablesWithStressFromEnglishDictionary;
-	public SortedMap<Integer, Time> timeByAbsoluteMeasure;
+	private SortedMap<Integer, Time> timeByAbsoluteMeasure;
 	public SortedMap<Integer, Key> normalizedKeyByAbsoluteMeasure;
 	
 	//measure, offset in divs, note
-	public List<Triple<Integer, Integer, Note>> notesByPlayedMeasure;
+	private List<Triple<Integer, Integer, Note>> notesByPlayedMeasure;
 	//measure, offset in divs, 
 	public List<Triple<Integer, Integer, Harmony>> unoverlappingHarmonyByPlayedMeasure;
 	
@@ -50,8 +50,10 @@ public class ParsedMusicXMLObject {
 		= new ArrayList<Pair<List<NoteLyric>, List<Triple<String, StressedPhone[], Integer>>>>();
 	
 	public int noteCount = -1; // needs to be set
-	public SortedMap<Integer, Integer> divsPerQuarterByAbsoluteMeasure;
+	private SortedMap<Integer, Integer> divsPerQuarterByAbsoluteMeasure;
 	public SortedMap<Integer, SegmentType> globalStructure;
+	public SortedMap<Integer, SortedMap<Double, List<Constraint<NoteLyric>>>> segmentStructure;
+	public SortedMap<Integer, Double> phraseBeginnings; 
 	
 	public ParsedMusicXMLObject(String filename, boolean followRepeats) {
 		this.filename = filename;
@@ -94,7 +96,8 @@ public class ParsedMusicXMLObject {
 		return builder.toString();
 	}
 
-	private int measureCount = 0; 
+	private int measureCount = 0;
+	private SortedMap<Integer, SortedMap<Integer, Note>> notesByPlayedMeasureMap;
 	public int getMeasureCount() {
 		if (measureCount == 0) {
 			recalculateMeasureCount();
@@ -110,11 +113,6 @@ public class ParsedMusicXMLObject {
 		if (!unoverlappingHarmonyByPlayedMeasure.isEmpty()) {
 			measureCount = Math.max(measureCount, unoverlappingHarmonyByPlayedMeasure.get(unoverlappingHarmonyByPlayedMeasure.size()-1).getFirst() + 1);
 		}
-	}
-
-	public double divsToBeats(int divsOffset, int playedMeasure) {
-		int absoluteMeasure = playedToAbsoluteMeasureNumberMap.get(playedMeasure);
-		return (divsOffset/Utils.valueForKeyBeforeOrEqualTo(absoluteMeasure, divsPerQuarterByAbsoluteMeasure)) * (Utils.valueForKeyBeforeOrEqualTo(absoluteMeasure, timeByAbsoluteMeasure).beatType/4.0);
 	}
 
 	public SortedMap<Integer, SortedMap<Integer, Harmony>> getUnoverlappingHarmonyByPlayedMeasureAsMap() {
@@ -135,7 +133,7 @@ public class ParsedMusicXMLObject {
 		return harmonyByMeasure;
 	}
 
-	public SortedMap<Integer, SortedMap<Integer, Note>> getNotesByPlayedMeasureAsMap() {
+	private SortedMap<Integer, SortedMap<Integer, Note>> generateNotesByPlayedMeasureAsMap() {
 		SortedMap<Integer, SortedMap<Integer, Note>> notesByMeasure = new TreeMap<Integer, SortedMap<Integer, Note>>();
 		for (Triple<Integer,Integer,Note> triple : notesByPlayedMeasure) {
 			Integer measure = triple.getFirst();
@@ -155,4 +153,46 @@ public class ParsedMusicXMLObject {
 		}
 		return notesByMeasure;
 	}
+
+	public void setTimeByAbsoluteMeasure(SortedMap<Integer, Time> timeByAbsoluteMeasure) {
+		this.timeByAbsoluteMeasure = timeByAbsoluteMeasure;
+	}
+
+	public Time getTimeForMeasure(int measure) {
+		Time time = Utils.valueForKeyBeforeOrEqualTo(measure, timeByAbsoluteMeasure);
+
+		// We'll count anything in 2/2 as 4/4
+		if (time.equals(Time.TWO_TWO)) {
+			return Time.FOUR_FOUR;
+		}
+		
+		return time;
+	}
+
+	public void setDivsPerQuarterByAbsoluteMeasure(SortedMap<Integer, Integer> divsPerQuarterByAbsoluteMeasure) {
+		this.divsPerQuarterByAbsoluteMeasure = divsPerQuarterByAbsoluteMeasure;
+	}
+	
+	public double divsToBeats(int divsOffset, int playedMeasure) {
+		int absoluteMeasure = playedToAbsoluteMeasureNumberMap.get(playedMeasure);
+		return (divsOffset*1.0/Utils.valueForKeyBeforeOrEqualTo(absoluteMeasure, divsPerQuarterByAbsoluteMeasure)) * (getTimeForMeasure(absoluteMeasure).beatType/4.0);
+	}
+
+	public double getDivsPerQuarterForAbsoluteMeasure(int absoluteMeasureNumber) {
+		return Utils.valueForKeyBeforeOrEqualTo(absoluteMeasureNumber, divsPerQuarterByAbsoluteMeasure);
+	}
+
+	public SortedMap<Integer, SortedMap<Integer, Note>> getNotesByPlayedMeasureAsMap() {
+		return notesByPlayedMeasureMap;
+	}
+	
+	public void setNotesByPlayedMeasure(List<Triple<Integer, Integer, Note>> notesByPlayedMeasure) {
+		this.notesByPlayedMeasure = notesByPlayedMeasure;
+		notesByPlayedMeasureMap = generateNotesByPlayedMeasureAsMap();
+	}
+
+	public List<Triple<Integer, Integer, Note>> getNotesByPlayedMeasure() {
+		return this.notesByPlayedMeasure;
+	}
+
 }

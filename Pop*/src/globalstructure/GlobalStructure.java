@@ -5,6 +5,8 @@ import java.util.Iterator;
 
 public class GlobalStructure implements Iterable<SegmentType>{
 
+	public static final String GLOBAL_STRUCTURE_ANNOTATIONS_DIR = "wikifonia_global_structure_annotations";
+
 	private SegmentType[] structure;
 	
 	public GlobalStructure(SegmentType[] structure) {

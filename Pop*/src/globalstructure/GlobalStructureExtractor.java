@@ -1,8 +1,12 @@
 package globalstructure;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import constraint.Constraint;
 import data.ParsedMusicXMLObject;
 import tabcomplete.alignment.Aligner;
 import tabcomplete.alignment.Alignment;
@@ -13,40 +17,45 @@ public class GlobalStructureExtractor {
 
 	public static void annotateGlobalStructure(ParsedMusicXMLObject musicXML) {
 		
-		if (musicXML.unoverlappingHarmonyByPlayedMeasure.isEmpty() || musicXML.notesByPlayedMeasure.isEmpty()) {
+		if (musicXML.unoverlappingHarmonyByPlayedMeasure.isEmpty() || musicXML.getNotesByPlayedMeasure().isEmpty()) {
 			musicXML.globalStructure = null;
 			return;
 		}
 
-//		TreeMap<Integer, SegmentType> globalStructure = annotateGlobalStructureNaively(musicXML);
-//		TreeMap<Integer, SegmentType> globalStructure = annotateGlobalStructureUsingAlignment(musicXML);
 		SortedMap<Integer, SegmentType> globalStructure = annotateGlobalStructureUsingFixed(musicXML); // only works for Just the Way You Are
 		musicXML.globalStructure = globalStructure;		
 	}
 
 	private static SortedMap<Integer, SegmentType> annotateGlobalStructureUsingFixed(ParsedMusicXMLObject musicXML) {
 		SortedMap<Integer, SegmentType> structure = new TreeMap<Integer, SegmentType>();
-//		
-//		int i = 0;
-//		for (Integer msr : musicXML.playedToAbsoluteMeasureNumberMap) {
-//			System.err.println(i++ + "\t" + msr);
-//		}
+
+		// uncomment to see the played-to-absolute measure number
+		int i = 0;
+		for (Integer msr : musicXML.playedToAbsoluteMeasureNumberMap) {
+			System.err.println(i++ + "\t" + msr);
+		}
 		
-		structure.put(0, SegmentType.INTRO);
-		structure.put(4, SegmentType.VERSE);
-//		structure.put(32, SegmentType.CHORUS); // tagline choruses will not be treated as choruses, but rather as verses with fixed words across all instances
-		structure.put(34, SegmentType.INTERLUDE);
-		structure.put(38, SegmentType.VERSE);
-//		structure.put(66, SegmentType.CHORUS);
-		structure.put(68, SegmentType.INTERLUDE);
-		structure.put(72, SegmentType.BRIDGE);
-		structure.put(88, SegmentType.VERSE);
-//		structure.put(100, SegmentType.CHORUS);
-		structure.put(102, SegmentType.INTERLUDE);
-		structure.put(106, SegmentType.VERSE);
-//		structure.put(134, SegmentType.CHORUS);
-		structure.put(136, SegmentType.OUTRO);
+		// First load contents of file
+		Scanner scan;
+		String filename = musicXML.filename.replaceFirst("mxl(\\.[\\d])?", "txt");
+		try {
+			scan = new Scanner(new File(GlobalStructure.GLOBAL_STRUCTURE_ANNOTATIONS_DIR + "/" + filename));
+		} catch (FileNotFoundException e) {
+			throw new RuntimeException(e);
+		}
 		
+		String nextLine;
+		while(scan.hasNextLine()) {
+			nextLine = scan.nextLine();
+			if (nextLine.startsWith("//")) {
+				continue;
+			}
+			String[] tokens = nextLine.split("\t");
+			int playedMeasureNumber = Integer.parseInt(tokens[0]);
+			SegmentType type = SegmentType.valueOf(tokens[1]);
+			assert structure.isEmpty() || playedMeasureNumber > structure.lastKey(): "Global Structure annotation should be in order by measure number where segments occur";
+			structure.put(playedMeasureNumber, type);
+		}		
 		return structure;
 	}
 
@@ -65,12 +74,10 @@ public class GlobalStructureExtractor {
 		return null;
 	}
 
-	private static SortedMap<Integer, SegmentType> annotateGlobalStructureNaively(ParsedMusicXMLObject musicXML) {
-		// store start measures and segment types 
-		TreeMap<Integer,SegmentType> globalStructure = new TreeMap<Integer, SegmentType>();
-		
-		// TODO:		
-		return globalStructure;
+	public static boolean annotationsExistForFile(File MusicXMLFile) {
+		String filename = MusicXMLFile.getName().replaceFirst("mxl(\\.[\\d])?", "txt");
+		File file =  new File(GlobalStructure.GLOBAL_STRUCTURE_ANNOTATIONS_DIR + "/" + filename);
+		return file.exists();
 	}
 
 }

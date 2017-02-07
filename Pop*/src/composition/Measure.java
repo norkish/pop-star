@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import condition.ConstraintCondition;
+import condition.Rhyme;
 import constraint.Constraint;
 import data.MusicXMLParser.Bass;
 import data.MusicXMLParser.Harmony;
@@ -16,6 +18,7 @@ import data.MusicXMLParser.Quality;
 import data.MusicXMLParser.Time;
 import globalstructure.SegmentType;
 import melody.MelodyEngineer;
+import utils.Pair;
 import utils.Utils;
 
 public class Measure {
@@ -160,7 +163,7 @@ public class Measure {
 			boolean intervalOn = pitches[i];
 			if (intervalOn) {
 				Note newNote = new Note(rootPitch + Quality.HARMONY_CONSTANT_INTERVALS[i], 
-						chordRoot.duration, chordRoot.type, null, chordRoot.dots, chordRoot.tie, chordRoot.slur, null, orchestrationNotes.size()>0);
+						chordRoot.duration, chordRoot.type, null, true, chordRoot.dots, chordRoot.tie, chordRoot.slur, null, orchestrationNotes.size()>0);
 				orchestrationNotes.add(newNote);
 			}
 		}
@@ -183,6 +186,78 @@ public class Measure {
 		assert chordBassWithTies.size() == 1: "Chord Bass note requested that requires tied notes to accomplish desired duration";
 		Note chordRoot = chordBassWithTies.get(0);
 		bassOrchestrationNotes.add(chordRoot);
+	}
+
+	public Pair<Rhyme<NoteLyric>, Double> getPhraseEndingRhymeAndOffset() {
+		for(Double offset : constraints.keySet()) {
+			for (Constraint<NoteLyric> constraint : constraints.get(offset)) {
+				ConstraintCondition<NoteLyric> condition = constraint.getCondition();
+				if (condition instanceof Rhyme) {
+					Rhyme<NoteLyric> rhymeCondition = (Rhyme<NoteLyric>) condition;
+					if (rhymeCondition.isPhraseEndingRhyme()) {
+						return new Pair<Rhyme<NoteLyric>, Double>(rhymeCondition, offset);
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * if before and after are given, the function will check whether a note in the measure before or the measure after would be closer.
+	 * @param targetOffset
+	 * @param before
+	 * @param after
+	 * @return Double.negativeInfinity if last note in previous measure is closest
+	 * @return Double.positiveInfinity if first note in next measure is closest
+	 * @return -1 if targetOffset is -1
+	 * 			
+	 */
+	public double getClosestNoteOffset(double targetOffset, Measure before, Measure after) {
+		if (targetOffset == -1) return -1.;
+		
+		double minDelta = 100.0;
+		double minOffsetForDelta = -1.;
+		for(Double offset: notes.keySet()) {
+			if (!notes.get(offset).isPlayedNoteOnset())
+					continue;
+			double delta = Math.abs(targetOffset - offset);
+			if (delta < minDelta) {
+				minDelta = delta;
+				minOffsetForDelta = offset;
+			}
+		}
+		
+		if (after != null && (minOffsetForDelta < targetOffset || notes.isEmpty())) {
+			// check measure after
+			double offsetToFirstNoteInMeasureAfter = after.getClosestNoteOffset(0.0, null, null);
+			if (offsetToFirstNoteInMeasureAfter != -1.0) {
+				double beatsInCurrMeasure = time.beats;
+				double delta = Math.abs(targetOffset - (beatsInCurrMeasure + offsetToFirstNoteInMeasureAfter));
+				if (delta < minDelta) {
+					minDelta = delta;
+					minOffsetForDelta = Double.POSITIVE_INFINITY;
+				}
+			}
+		} 
+		
+		if (before != null && (minOffsetForDelta > targetOffset || notes.isEmpty())){
+			// check measure before
+			double offsetFromLastNoteInMeasureBeforeToEnd = before.getClosestNoteOffset(before.time.beats, null, null);
+			if (offsetFromLastNoteInMeasureBeforeToEnd != -1.0) {
+				double delta = Math.abs(targetOffset - -offsetFromLastNoteInMeasureBeforeToEnd);
+				if (delta < minDelta) {
+					minDelta = delta;
+					minOffsetForDelta = Double.NEGATIVE_INFINITY;
+				}
+			}
+		}
+		
+		return minOffsetForDelta;
+	}
+
+	public TreeMap<Double, Harmony> getHarmonies() {
+		return harmonies;
 	}
 
 

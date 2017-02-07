@@ -24,7 +24,7 @@ public class TestLyricEngineer extends LyricalEngineer {
 			TreeMap<Double, Note> notes = measure.getNotes();
 			for (Note note : notes.values()) {
 				if (note.pitch != -1 && note.tie != NoteTie.STOP) {
-					note.lyric = lyrics[lyrIdx++];
+					note.setLyric(lyrics[lyrIdx++], true);
 				}
 			}
 		}
