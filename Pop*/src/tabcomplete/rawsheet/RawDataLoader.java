@@ -53,8 +53,8 @@ public class RawDataLoader {
 			for (int i = 1; csvRecordIterator.hasNext(); i++) {
 				loadLyricSheet(csvRecordIterator.next(),s,songs);
 				if (i % 20000 == 0) System.out.println("Scanned " + i + " records...");
-//				if (lyricSheetsByArtist.size() > 50)
-//					return lyricSheetsByArtist;
+				if (lyricSheetsByArtist.size() > 500)
+					return lyricSheetsByArtist;
 			}
 			
 			
@@ -182,8 +182,8 @@ public class RawDataLoader {
 			return;
 		}
 		lyricsWriter.print("\t" + songKey);
-		if (songs == null)
-			return;
+//		if (songs == null)
+//			return;
 		Map<String, List<LyricSheet>> artistLyricSheets = lyricSheetsByArtist.get(artistKey);
 		if (artistLyricSheets == null) {
 			artistLyricSheets = new HashMap<String, List<LyricSheet>>();

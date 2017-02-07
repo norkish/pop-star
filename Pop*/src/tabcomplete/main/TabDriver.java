@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.SortedMap;
 
@@ -24,7 +25,7 @@ import tabcomplete.validate.TabValidator;
 public class TabDriver {
 	
 	private static boolean deserializeLyrics = true;
-	private static boolean serializeLyrics = false;
+	private static boolean serializeLyrics = true;
 	private static boolean deserializeChords = true;
 	private static boolean serializeChords = false;
 	private static boolean deserializeValidatedTabs = false;
@@ -71,6 +72,32 @@ public class TabDriver {
 					Serializer.serialize(lyricSheets, serializedLyricsPath);
 				}
 	
+				int sampleSize = 150;
+				Set<String> artists = new HashSet<String>();
+				Random rand = new Random();
+				String[] artistList = lyricSheets.keySet().toArray(new String[0]);
+				
+				while(artists.size() < sampleSize) {
+					String nextArtist = artistList[rand.nextInt(lyricSheets.size())];
+					artists.add(nextArtist);
+				}
+				
+				for(String artist: artists) {
+					Map<String, List<LyricSheet>> songsForArtist = lyricSheets.get(artist);
+					for(String songName:songsForArtist.keySet()) {
+						List<LyricSheet> song = songsForArtist.get(songName);
+						File file = new File("/Users/norkish/Downloads/Ben's Lyrics Templates/" + artist + " - " + songName + ".lyrics.txt");
+						PrintWriter writer = new PrintWriter(file);
+						LyricSheet lyricSheet = song.get(0);
+						String lyrics = lyricSheet.getLyrics();
+						writer.write(lyrics);
+						writer.close();
+						break;
+					}
+				}
+				if (sampleSize > 0)
+					return null;
+				
 				int count = 0;
 				for(Map<String, List<LyricSheet>> songsByArtist:lyricSheets.values()) {
 					count+= songsByArtist.size();

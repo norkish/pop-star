@@ -134,7 +134,8 @@ public class LyricSheet implements Serializable{
 					for (String lyr : el.html().split("<br>")) {
 						String trim = lyr.replaceAll("(?i)([\\S])(\\1)+", "$1$2").trim();
 						if (trim.length() > 0) {
-							if (trim.startsWith("We are not in a position to display these lyrics due to licensing restrictions. Sorry for the inconvenience."))
+							if (trim.startsWith("We are not in a position to display these lyrics due to licensing restrictions. Sorry for the inconvenience.") || 
+									trim.startsWith("We do not have the lyrics for"))
 								return;
 							if (DirtyFilter.isProfane(trim)){
 								lyricSheetsIgnoredBecauseOfLanguage++;
@@ -185,10 +186,15 @@ public class LyricSheet implements Serializable{
 	public String getLyrics() {
 		StringBuilder builder = new StringBuilder();
 
-		boolean first = true;
+		boolean firstBlock = true;
 		for (List<String> block : lyricBlocks) {
+			if (firstBlock)
+				firstBlock = false;
+			else
+				builder.append("\n");
+			boolean first = true;
 			for (String lyric : block) {
-				if (first)
+				if (first && firstBlock)
 					first = false;
 				else
 					builder.append("\n");
