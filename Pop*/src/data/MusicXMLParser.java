@@ -12,10 +12,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.zip.ZipException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -28,12 +26,7 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
-import data.MusicXMLParser.DirectionType;
-import data.MusicXMLParser.Harmony;
-import data.MusicXMLParser.Note;
-import data.MusicXMLParser.NoteLyric;
 import data.MusicXMLParser.Barline.RepeatDirection;
-import data.WikifoniaCorrection.CorrectionType;
 import pitch.Pitch;
 import syllabify.Syllabifier;
 import tabcomplete.rhyme.Phonetecizer;
@@ -1744,7 +1737,7 @@ public class MusicXMLParser {
 				prevPlayedMeasure = absoluteMeasureIdx;
 				musicXML.playedToAbsoluteMeasureNumberMap.add(absoluteMeasureIdx);
 				if (absoluteMeasureIdx >= musicXML.absoluteToPlayedMeasureNumbersMap.size()) {
-					SortedSet<Integer> newSet = new TreeSet<Integer>();
+					List<Integer> newSet = new ArrayList<Integer>();
 					newSet.add(playedMeasureIdx);
 					musicXML.absoluteToPlayedMeasureNumbersMap.add(newSet);
 				} else {
@@ -2026,10 +2019,15 @@ public class MusicXMLParser {
 				String direction = child.getAttributes().getNamedItem("direction").getTextContent();
 				barline.addRepeatDirection(RepeatDirection.parse(direction));
 			} else if (childName.equals("ending")) { 
-				final String textContent = child.getAttributes().getNamedItem("number").getTextContent().trim();
-				if (textContent.isEmpty())
+				final String numberContent = child.getAttributes().getNamedItem("number").getTextContent().trim();
+				Node typeItem = child.getAttributes().getNamedItem("type");
+				final String typeContent = typeItem == null?null:typeItem.getTextContent().trim();
+				
+				if (numberContent.isEmpty() || typeContent != null && typeContent.equals("discontinue"))
 					continue;
-				String[] numberStrings = textContent.split("\\s*[,.]\\s*");
+				if (typeContent != null && typeContent.equals("discontinue"))
+					throw new RuntimeException("What ending type is this? " + typeContent);
+				String[] numberStrings = numberContent.split("\\s*[,.]\\s*");
 				int[] numbers = new int[numberStrings.length];
 				for (int j = 0; j < numberStrings.length; j++) {
 					numbers[j] = Integer.parseInt(numberStrings[j]);

@@ -96,6 +96,9 @@ public class WikifoniaCorrection {
 		addCorrection(acorrections, "B Goodman, C Christian - Air Mail Special.mxl", 32, CorrectionType.REMOVE, DirectionType.CODA1, null);
 		addCorrection(acorrections, "B Goodman, C Christian - Air Mail Special.mxl", 33, CorrectionType.REMOVE, DirectionType.CODA1, null);
 		
+		addCorrection(acorrections, "Carole King - You've Got a Friend.mxl", 47, CorrectionType.ADD, null, DirectionType.DS_AL_FINE);
+		addCorrection(acorrections, "Carole King - You've Got a Friend.mxl", 20, CorrectionType.ADD, null, DirectionType.SEGNO);
+		addCorrection(acorrections, "Carole King - You've Got a Friend.mxl", 33, CorrectionType.ADD, null, DirectionType.FINE);
 		
 		
 		
@@ -112,6 +115,10 @@ public class WikifoniaCorrection {
 		
 		
 		addCorrection(acorrections, "Billie Joe Armstrong - Wake Me Up When September Ends.mxl", 58, CorrectionType.REPLACE, DirectionType.CODA1, DirectionType.AL_CODA1); // coda -> al coda
+		
+		addCorrection(acorrections, "Billy Joel - Honesty.mxl", 2, CorrectionType.ADD, null, DirectionType.SEGNO); 
+		addCorrection(acorrections, "Billy Joel - Honesty.mxl", 29, CorrectionType.ADD, null, DirectionType.CODA1);
+		addCorrection(acorrections, "Billy Joel - Honesty.mxl", 16, CorrectionType.ADD, null, DirectionType.AL_CODA1);
 		
 		addCorrection(acorrections, "Billy Joel - Just The Way You Are.mxl", 99, CorrectionType.REPLACE, DirectionType.CODA1, DirectionType.AL_CODA1); // coda -> al coda
 		

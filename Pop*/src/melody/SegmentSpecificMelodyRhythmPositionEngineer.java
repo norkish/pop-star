@@ -65,7 +65,7 @@ public class SegmentSpecificMelodyRhythmPositionEngineer extends MelodyEngineer 
 			double prevNoteDurationInBeats = -1.0;
 
 			List<Triple<Integer, Integer, Note>> notesByMeasure = musicXML.getNotesByPlayedMeasure();
-			SortedMap<Integer, SegmentType> globalStructure = musicXML.globalStructure;
+			SortedMap<Integer, SortedMap<Double, SegmentType>> globalStructure = musicXML.getGlobalStructureBySegmentTokenStart();
 			int notesToAdvanceForTies; 
 			int maxNotesToAdvanceForTies = 5;
 			SegmentType prevType = null;
@@ -79,13 +79,13 @@ public class SegmentSpecificMelodyRhythmPositionEngineer extends MelodyEngineer 
 				int measure = measureOffsetNote.getFirst();
 				int divsOffset = measureOffsetNote.getSecond();
 				Time currTime = musicXML.getTimeForMeasure(measure);
-				SegmentType currType = Utils.valueForKeyBeforeOrEqualTo(measure, globalStructure);
+				double beatsOffset = musicXML.divsToBeats(divsOffset, measure);
+				SegmentType currType = Utils.valueForKeyBeforeOrEqualTo(measure, beatsOffset, globalStructure);
 				if (currType != prevType) {
 					prevNoteDurationInBeats = -1.0;
 				}
 				
 				durationMarkovModelsByOffsetBySegmentByTime.remove(currTime);
-				double beatsOffset = musicXML.divsToBeats(divsOffset, measure);
 
 				double noteDurationInBeats = musicXML.divsToBeats(note.duration, measure);
 				
@@ -93,13 +93,15 @@ public class SegmentSpecificMelodyRhythmPositionEngineer extends MelodyEngineer 
 				if (note.tie == NoteTie.START || note.slur == NoteTie.START) {
 					Note currNote = note;
 					List<Double> noteDurationInBeatsToTie = new ArrayList<Double>();
-					for (int j = 1; j <= maxNotesToAdvanceForTies; j++) {
+					for (int j = 1; j <= maxNotesToAdvanceForTies && i+j < notesByMeasure.size(); j++) {
 						Triple<Integer, Integer, Note> currNoteMeasureOffsetNote = notesByMeasure.get(i+j);
 						currNote = currNoteMeasureOffsetNote.getThird();
 						int currNoteMeasure = currNoteMeasureOffsetNote.getFirst();
-						SegmentType currTiedNoteType = Utils.valueForKeyBeforeOrEqualTo(currNoteMeasure, globalStructure);
+						int currNoteDivsOffset = currNoteMeasureOffsetNote.getSecond();
+						double currNoteBeatsOffset = musicXML.divsToBeats(currNoteDivsOffset, currNoteMeasure);
+						SegmentType currTiedNoteType = Utils.valueForKeyBeforeOrEqualTo(currNoteMeasure, currNoteBeatsOffset, globalStructure);
 
-						NoteLyric lyric = currNote.getLyric(currTiedNoteType != SegmentType.CHORUS);
+						NoteLyric lyric = currNote.getLyric(currTiedNoteType.mustHaveDifferentLyricsOnRepeats());
 						if (currNote.isChordWithPrevious || currNote.pitch != note.pitch || (lyric != null && !lyric.text.isEmpty())) {
 							break;
 						}

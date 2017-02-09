@@ -9,7 +9,7 @@ import org.w3c.dom.Document;
 
 import globalstructure.DistributionalGlobalStructureEngineer;
 import globalstructure.DistributionalGlobalStructureEngineer.DistributionalGlobalStructureEngineerMusicXMLModel;
-import globalstructure.GlobalStructureExtractor;
+import globalstructure.StructureExtractor;
 import harmony.SegmentSpecificHarmonyEngineer;
 import harmony.SegmentSpecificHarmonyEngineer.SegmentSpecificHarmonyEngineerMusicXMLModel;
 import lyrics.LyricTemplateEngineer;
@@ -18,7 +18,6 @@ import melody.SegmentSpecificMelodyEngineer;
 import melody.SegmentSpecificMelodyEngineer.SegmentSpecificMelodyEngineerMusicXMLModel;
 import segmentstructure.DistributionalSegmentStructureEngineer;
 import segmentstructure.DistributionalSegmentStructureEngineer.DistributionalSegmentStructureEngineerMusicXMLModel;
-import segmentstructure.SegmentStructureExtractor;
 import tabcomplete.main.TabDriver;
 
 public class MusicXMLModelLearner {
@@ -57,14 +56,14 @@ public class MusicXMLModelLearner {
 			// if (file.getName().charAt(0) < 'T') {
 			// continue;
 			// }
-			 if (!GlobalStructureExtractor.annotationsExistForFile(file)) {
+			 if (!StructureExtractor.annotationsExistForFile(file)) {
 				 continue;
 			 }
 			System.out.println(file.getName());
 			MusicXMLParser musicXMLParser = null;
 			try {
 				final Document xml = MusicXMLSummaryGenerator.mxlToXML(file);
-				MusicXMLSummaryGenerator.printDocument(xml, System.out);
+//				MusicXMLSummaryGenerator.printDocument(xml, System.out);
 
 				musicXMLParser = new MusicXMLParser(file.getName(), xml);
 			} catch (Exception e) {
@@ -72,13 +71,20 @@ public class MusicXMLModelLearner {
 			}
 			WikifoniaCorrection.applyManualCorrections(musicXMLParser, file.getName());
 			ParsedMusicXMLObject musicXML = musicXMLParser.parse(true);
+			if (musicXML == null) {
+				System.err.println("musicXML was null for " + file.getName());
+				continue;
+			}
 			System.out.println(musicXML);
-			
-			GlobalStructureExtractor.annotateGlobalStructure(musicXML);
-			SegmentStructureExtractor.annotateSegmentStructure(musicXML);
-
-			for (MusicXMLModel musicXMLModel: models) {
-				musicXMLModel.trainOnExample(musicXML);
+			try {
+				StructureExtractor.annotateStructure(musicXML);
+	
+				for (MusicXMLModel musicXMLModel: models) {
+					musicXMLModel.trainOnExample(musicXML);
+				}
+			} catch (Exception e) {
+				System.err.println("For " + file.getName() + ":\n");
+				throw new RuntimeException(e);
 			}
 		}
 	}

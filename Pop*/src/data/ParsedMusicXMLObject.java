@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
 
 import constraint.Constraint;
@@ -28,7 +27,7 @@ public class ParsedMusicXMLObject {
 
 	// this is a list of the measure numbers in the order they are played, thus if there are repeats, sequences of measure numbers will be reinserted
 	public List<Integer> playedToAbsoluteMeasureNumberMap = new ArrayList<Integer>();
-	public List<SortedSet<Integer>> absoluteToPlayedMeasureNumbersMap = new ArrayList<SortedSet<Integer>>();
+	public List<List<Integer>> absoluteToPlayedMeasureNumbersMap = new ArrayList<List<Integer>>();
 		
 	// this represents the total number of notes that had text associated with them
 	public int totalSyllables;
@@ -51,7 +50,13 @@ public class ParsedMusicXMLObject {
 	
 	public int noteCount = -1; // needs to be set
 	private SortedMap<Integer, Integer> divsPerQuarterByAbsoluteMeasure;
-	public SortedMap<Integer, SegmentType> globalStructure;
+	
+	/**
+	 * Key is measure where segment Form starts (ignoring pickups or delays), value contains 
+	 * 1) segment type of the form and 2) the delta from the form start of the measure of the
+	 * first actual note belonging to the form and and 3) offset within that measure 
+	 */
+	private SortedMap<Integer, Triple<SegmentType, Integer, Double>> globalStructureByFormStart;
 	public SortedMap<Integer, SortedMap<Double, List<Constraint<NoteLyric>>>> segmentStructure;
 	public SortedMap<Integer, Double> phraseBeginnings; 
 	
@@ -98,6 +103,7 @@ public class ParsedMusicXMLObject {
 
 	private int measureCount = 0;
 	private SortedMap<Integer, SortedMap<Integer, Note>> notesByPlayedMeasureMap;
+	private SortedMap<Integer, SortedMap<Double, SegmentType>> globalStructureBySegmentTokenStart;
 	public int getMeasureCount() {
 		if (measureCount == 0) {
 			recalculateMeasureCount();
@@ -193,6 +199,40 @@ public class ParsedMusicXMLObject {
 
 	public List<Triple<Integer, Integer, Note>> getNotesByPlayedMeasure() {
 		return this.notesByPlayedMeasure;
+	}
+
+	public void setGlobalStructure(SortedMap<Integer, Triple<SegmentType, Integer, Double>> globalStructure) {
+		this.globalStructureByFormStart = globalStructure;
+		this.globalStructureBySegmentTokenStart = globalStructure == null ? null : generateGlobalStructureBySegmentTokenStart();
+	}
+	
+	private SortedMap<Integer, SortedMap<Double, SegmentType>> generateGlobalStructureBySegmentTokenStart() {
+		SortedMap<Integer, SortedMap<Double, SegmentType>> newGlobalStructureBySegmentTokenStart = new TreeMap<Integer, SortedMap<Double, SegmentType>>();
+		
+		for (Integer formStartMeasure : globalStructureByFormStart.keySet()) {
+			Triple<SegmentType, Integer, Double> segment = globalStructureByFormStart.get(formStartMeasure);
+			SegmentType type = segment.getFirst();
+			Integer measureDeltaToStartToken = segment.getSecond();
+			Double beatOffsetOfStartToken = segment.getThird();
+			int measureOfStartToken = formStartMeasure + measureDeltaToStartToken;
+			SortedMap<Double, SegmentType> newGlobalStructureBySegmentTokenStartOffsets = newGlobalStructureBySegmentTokenStart.get(measureOfStartToken);
+			if (newGlobalStructureBySegmentTokenStartOffsets == null) {
+				newGlobalStructureBySegmentTokenStartOffsets = new TreeMap<Double, SegmentType>();
+				newGlobalStructureBySegmentTokenStart.put(measureOfStartToken, newGlobalStructureBySegmentTokenStartOffsets);
+			}
+		
+			newGlobalStructureBySegmentTokenStartOffsets.put(beatOffsetOfStartToken, type);
+		}
+		
+		return newGlobalStructureBySegmentTokenStart;
+	}
+
+	public SortedMap<Integer, SortedMap<Double, SegmentType>> getGlobalStructureBySegmentTokenStart() {
+		return globalStructureBySegmentTokenStart;
+	}
+
+	public SortedMap<Integer, Triple<SegmentType, Integer, Double>> getGlobalStructureByFormStart() {
+		return globalStructureByFormStart;
 	}
 
 }

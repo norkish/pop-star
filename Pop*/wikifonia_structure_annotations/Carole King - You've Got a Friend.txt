@@ -1,0 +1,68 @@
+INTRO	1	1	0.0	0
+
+VERSE	4	1	When	-1
+
+rhyme
+right	10	1
+night	18	1
+
+rhyme
+care	7	1
+there	15	1
+
+CHORUS	20	1	You	-1
+
+rhyme
+gain	26	1
+friend	34	1
+
+rhyme
+fall	29	1
+call	31	1
+
+exactBinaryMatch
+You	20	1
+friend	34	1
+
+INTERLUDE	35	1	0.0	0
+
+VERSE	38	1	2.If	-1
+// missing lyrics
+
+CHORUS	20	2	You	-1
+
+rhyme
+gain	26	2
+friend	34	2
+
+rhyme
+fall	29	2
+call	31	2
+
+exactBinaryMatch
+You	20	2
+friend	34	2
+
+BRIDGE	39	1	Ain't	0
+
+rhyme
+hurt	42	1
+sert	43	1
+
+rhyme
+you	43	1
+you	44	1
+
+CHORUS	48	1	You	-1
+
+rhyme
+gain	26	3
+friend	34	3
+
+rhyme
+fall	29	3
+call	31	3
+
+exactBinaryMatch
+You	48	1
+friend	34	3

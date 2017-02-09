@@ -28,5 +28,11 @@ public enum SegmentType {
 			return false;
 		}
 		return true;
+	}
+
+	public boolean mustHaveDifferentLyricsOnRepeats() {
+		if (this == VERSE)
+			return true;
+		return false;
 	} 
 }

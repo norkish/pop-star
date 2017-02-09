@@ -1,14 +1,17 @@
 package globalstructure;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 
 import data.BackedDistribution;
 import data.MusicXMLModel;
 import data.MusicXMLModelLearner;
 import data.ParsedMusicXMLObject;
+import utils.Triple;
 
 public class DistributionalGlobalStructureEngineer extends GlobalStructureEngineer {
 
@@ -22,7 +25,14 @@ public class DistributionalGlobalStructureEngineer extends GlobalStructureEngine
 		public void trainOnExample(ParsedMusicXMLObject musicXML) {
 			distribution = null;
 			
-			GlobalStructure structureX = new GlobalStructure(musicXML.globalStructure.values().toArray(new SegmentType[0])); // 
+			SortedMap<Integer, Triple<SegmentType, Integer, Double>> globalStructureByFormStart = musicXML.getGlobalStructureByFormStart();
+			SegmentType[] globalStructure = new SegmentType[globalStructureByFormStart.size()];
+			
+			int i = 0;
+			for (Integer segmentType : globalStructureByFormStart.keySet()) {
+				globalStructure[i++] = globalStructureByFormStart.get(segmentType).getFirst();
+			}
+			GlobalStructure structureX = new GlobalStructure(globalStructure); 
 
 			List<Integer> songsWithStructureX = structureToSongIdx.get(structureX);
 			if (songsWithStructureX == null) {

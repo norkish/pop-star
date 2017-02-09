@@ -150,22 +150,26 @@ public class Utils {
 	}
 
 	public static <S extends Comparable<S>, T> T valueForKeyBeforeOrEqualTo(Integer outerKey, S innerKey, SortedMap<Integer, SortedMap<S, T>> tokens) {
+		T returnVal = null;
+		
 		if (tokens.containsKey(outerKey)) {
-			return valueForKeyBeforeOrEqualTo(innerKey, tokens.get(outerKey));
-		} else {
+			returnVal = valueForKeyBeforeOrEqualTo(innerKey, tokens.get(outerKey));
+		} 
+		
+		if (returnVal != null) 
+			return returnVal;
+		
+		outerKey--;
+		while (!tokens.containsKey(outerKey) && outerKey >= 0) {
 			outerKey--;
-			while (!tokens.containsKey(outerKey) && outerKey >= 0) {
-				outerKey--;
-			}
-			
-			SortedMap<S, T> innerMap = tokens.get(outerKey);
-			
-			if (innerMap == null) {
-				return null;
-			} else {
-				return innerMap.get(innerMap.lastKey());
-			}
-			
+		}
+		
+		SortedMap<S, T> innerMap = tokens.get(outerKey);
+		
+		if (innerMap == null) {
+			return null;
+		} else {
+			return innerMap.get(innerMap.lastKey());
 		}
 	}
 

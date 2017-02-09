@@ -45,14 +45,19 @@ public class DistributionalSegmentStructureEngineer extends SegmentStructureEngi
 			// train measure count distribution
 			int prevMsr = 0;
 			SegmentType prevType = null;
-			final SortedMap<Integer, SegmentType> globalStructure = musicXML.globalStructure;
+			final SortedMap<Integer, Triple<SegmentType, Integer, Double>> globalStructure = musicXML.getGlobalStructureByFormStart();
 			for(Integer msr : globalStructure.keySet()) {
 				if (prevType != null) {
 					Utils.incrementValueForKey(measureCountDistribution.get(prevType), (msr-prevMsr));
 					measureCountDistributionTotals.put(prevType, measureCountDistributionTotals.get(prevType)+1);
 				}
 				
-				prevType = globalStructure.get(msr);
+				Triple<SegmentType, Integer, Double> globalStructureForMeasure = globalStructure.get(msr);
+				if (globalStructureForMeasure != null) {
+					prevType = globalStructureForMeasure.getFirst();
+				} else {
+					prevType = null;
+				}
 				prevMsr = msr;
 			}
 
@@ -70,7 +75,12 @@ public class DistributionalSegmentStructureEngineer extends SegmentStructureEngi
 			int currentSegmentStartMeasure = 0;
 			int measureIdxInSegment;
 			for (int measure = 0; measure < musicXML.getMeasureCount(); measure++) {
-				currSegType = globalStructure.get(measure);
+				Triple<SegmentType, Integer, Double> globalStructureForMeasure = globalStructure.get(measure);
+				if (globalStructureForMeasure != null) {
+					currSegType = globalStructureForMeasure.getFirst();
+				} else {
+					currSegType = null;
+				}
 				measureIdxInSegment = measure - currentSegmentStartMeasure;
 				if (currSegType == null) {
 					currSegType = prevSegType;

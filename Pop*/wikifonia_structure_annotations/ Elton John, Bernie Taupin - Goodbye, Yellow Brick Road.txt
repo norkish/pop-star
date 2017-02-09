@@ -1,0 +1,55 @@
+VERSE	1	1	When	0
+
+rhyme
+land	4	1
+man	7	1
+
+rhyme
+you	11	1
+blues	17	1
+
+INTERLUDE	19	1	Ah	0
+
+CHORUS	22	1	so	-1
+
+rhyme
+howl	26	1
+plough	30	1
+
+rhyme
+toad	34	1
+road	39	1
+
+exactBinaryMatch
+so	22	1
+road	39	1
+
+INTERLUDE	40	1	Ah	0
+
+VERSE	1	2	What	0
+
+rhyme
+plane	4	2
+gain	7	2
+
+rhyme
+found	12	2
+ground.	17	2
+
+INTERLUDE	19	2	Ah	0
+
+CHORUS	22	2	so	-1
+
+rhyme
+howl	26	2
+plough	30	2
+
+rhyme
+toad	34	2
+road	39	2
+
+exactBinaryMatch
+so	22	2
+road	39	2
+
+OUTRO	40	2	Ah	0
