@@ -68,12 +68,12 @@ public class SongConfigurationLoader {
 		SongConfiguration config = new SongConfiguration();
 		
 		config.inspirationSource = InspirationSource.RANDOM; // TODO
-		config.globalStructureSource = StructureSource.DISTRIBUTION;
+		config.globalStructureSource = StructureSource.MARKOV;
 		config.substructureSource = SegmentStructureSource.DISTRIBUTION;
-		config.lyricSource = LyricalSource.TEMPLATE; // TODO: Lyrical ngram
+		config.lyricSource = LyricalSource.TEMPLATE;
 		config.harmonySource = HarmonySource.SEGMENTSPECIFIC_HMM;
-		config.melodySource = MelodySource.SEGMENTSPECIFIC_HMM; // TODO
-		config.rhythmSource = RhythmSource.RANDOM; // TODO
+		config.melodySource = MelodySource.SEGMENTSPECIFIC_HMM; 
+		config.rhythmSource = RhythmSource.RANDOM; // TODO: need to get rid of this entirely
 		config.pitchSource = PitchSource.RANDOM; // TODO
 		
 		return config;

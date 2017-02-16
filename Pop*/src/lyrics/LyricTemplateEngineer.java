@@ -124,6 +124,12 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 			}
 			return template;
 		}
+
+		@Override
+		public void toGraph() {
+			// TODO Auto-generated method stub
+			
+		}
 	}
 
 	private LyricTemplateEngineerMusicXMLModel model;
@@ -137,7 +143,7 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 		//use score to get constraints and then model to find lyrics that fit constraints
 		List<Measure> measures = score.getMeasures();
 		List<Triple<SegmentType, List<Integer>, List<Integer>>> syllablesPerPhrase = getNoteCountBySegment(score);
-		
+
 		List<Triple<SegmentType, List<List<NoteLyric>>, List<Integer>>> templatesBySegment = new ArrayList<Triple<SegmentType, List<List<NoteLyric>>, List<Integer>>>();
 		List<Integer> templateLengths;
 		List<List<NoteLyric>> templates = null;
@@ -189,6 +195,7 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 		List<Triple<SegmentType, List<List<NoteLyric>>, List<Integer>>> lyricPhrasesToAdd = getExternalLyrics(templatesBySegment);
 		
 		boolean inTheMiddleOfATie = false;
+		int notesInSegment = 0;
 		for (int currMeasureNumber = 0; currMeasureNumber < measures.size(); currMeasureNumber++) {
 			Measure measure = measures.get(currMeasureNumber);
 			
@@ -199,6 +206,7 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 				lyrIdx = 0;
 				segmentIdx++;
 				currTemplates = lyricPhrasesToAdd.get(segmentIdx).getSecond();
+				notesInSegment = 0;
 			}
 			switch (currType) {
 			case INTERLUDE:
@@ -248,6 +256,7 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 						if (note.tie == NoteTie.START) {
 							inTheMiddleOfATie = true;
 						}
+						notesInSegment++;
 						List<NoteLyric> currTemplate = currTemplates.get(phraseIdx);
 						if (lyrIdx < currTemplate.size()) {
 							note.setLyric(currTemplate.get(lyrIdx++), true);
@@ -265,7 +274,8 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 	}
 
 	private void printTemplateForLyrist(Inspiration inspiration, List<Triple<SegmentType, List<List<NoteLyric>>, List<Integer>>> templatesBySegment) {
-		File lyricFile = new File("lyricTemplate.txt");
+		File lyricFile = new File("externalLyrics.txt");
+//		File lyricFile = new File("lyricTemplate.txt");
 //		File rhymeFile = new File("rhymeTemplate.txt");
 		PrintWriter lyricFileWriter = null;
 		try {

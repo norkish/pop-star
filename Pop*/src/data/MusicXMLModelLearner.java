@@ -8,7 +8,9 @@ import java.util.Map;
 import org.w3c.dom.Document;
 
 import globalstructure.DistributionalGlobalStructureEngineer;
+import globalstructure.MarkovGlobalStructureEngineer.MarkovGlobalStructureEngineerMusicXMLModel;
 import globalstructure.DistributionalGlobalStructureEngineer.DistributionalGlobalStructureEngineerMusicXMLModel;
+import globalstructure.MarkovGlobalStructureEngineer;
 import globalstructure.StructureExtractor;
 import harmony.SegmentSpecificHarmonyEngineer;
 import harmony.SegmentSpecificHarmonyEngineer.SegmentSpecificHarmonyEngineerMusicXMLModel;
@@ -25,6 +27,8 @@ public class MusicXMLModelLearner {
 			TabDriver.dataDir + "/Wikifonia").listFiles();
 
 	private static Map<Class,MusicXMLModel> trainedModels = null;
+
+	private static boolean generateGraphs = true;
 	
 	public static MusicXMLModel getTrainedModel(Class modelClassName) {
 		if (trainedModels == null) {
@@ -32,6 +36,7 @@ public class MusicXMLModelLearner {
 
 			// populate from configuration
 			models.put(DistributionalGlobalStructureEngineer.class, new DistributionalGlobalStructureEngineerMusicXMLModel());
+			models.put(MarkovGlobalStructureEngineer.class, new MarkovGlobalStructureEngineerMusicXMLModel());
 			models.put(DistributionalSegmentStructureEngineer.class, new DistributionalSegmentStructureEngineerMusicXMLModel());
 			models.put(LyricTemplateEngineer.class, new LyricTemplateEngineerMusicXMLModel());
 			models.put(SegmentSpecificHarmonyEngineer.class, new SegmentSpecificHarmonyEngineerMusicXMLModel());
@@ -40,6 +45,13 @@ public class MusicXMLModelLearner {
 			System.out.println("Training models on XML dataset");
 			trainModelsOnWholeDataset(models.values());
 			System.out.println("Training complete");
+			
+			if (generateGraphs ){
+				System.out.println("Generating graphs for models");
+				for (MusicXMLModel model : models.values()) {
+					model.toGraph();
+				}
+			}
 			
 			trainedModels = models;
 			

@@ -173,4 +173,21 @@ public class Utils {
 		}
 	}
 
+	public static void normalizeByFirstDimension(double[][] matrix) {
+		for (double[] row : matrix) {
+			//compute sum
+			double max = 0.0;
+			for (double colVal : row) {
+				if (colVal > max) {
+					max = colVal;
+				}
+			}
+			
+			//normalize
+			for (int i = 0; i < row.length; i++) {
+				row[i] /= max;
+			}
+		}
+	}
+
 }

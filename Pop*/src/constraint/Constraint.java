@@ -5,7 +5,6 @@ import java.util.List;
 import composition.Measure;
 import condition.ConstraintCondition;
 import condition.DelayedConstraintCondition;
-import utils.Utils;
 
 public class Constraint<T> implements Serializable {
 
@@ -21,17 +20,12 @@ public class Constraint<T> implements Serializable {
 		return desiredConditionState;
 	}
 
-	public int getPosition() {
-		return position;
-	}
-
 	public ConstraintCondition<T> getCondition() {
 		return condition;
 	}
 
 	// We allow for a constraint to enforce a condition or the negation of the condition
 	private boolean desiredConditionState;
-	private int position;
 	protected ConstraintCondition<T> condition;
 
 	public Constraint(ConstraintCondition<T> condition, boolean desiredConditionState) {
@@ -68,7 +62,6 @@ public class Constraint<T> implements Serializable {
 		int result = 1;
 		result = prime * result + ((condition == null) ? 0 : condition.hashCode());
 		result = prime * result + (desiredConditionState ? 1231 : 1237);
-		result = prime * result + position;
 		return result;
 	}
 
@@ -88,8 +81,6 @@ public class Constraint<T> implements Serializable {
 		} else if (!condition.equals(other.condition))
 			return false;
 		if (desiredConditionState != other.desiredConditionState)
-			return false;
-		if (position != other.position)
 			return false;
 		return true;
 	}

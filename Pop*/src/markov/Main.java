@@ -6,6 +6,7 @@ import java.util.Map;
 
 import condition.ExactUnaryMatch;
 import constraint.Constraint;
+import utils.Pair;
 
 public class Main {
 	public static void main(String[] args) {
@@ -42,13 +43,13 @@ public class Main {
 		System.out.println("Sparse Single-Order Markov Model:\n" + smodel + "\n\n");
 		
 		int length = 4;
-		List<Constraint<String>> constraints = new ArrayList<Constraint<String>>();
+		List<Pair<Integer, Constraint<String>>> constraints = new ArrayList<Pair<Integer,Constraint<String>>>();
 		
-//		Constraint<String> matchesClayConstraint = new Constraint<String>(0, new ExactUnaryMatch<String>(new String[]{"Clay"}), true);
-//		constraints.add(matchesClayConstraint);
-//		
-//		Constraint<String> matchesTodayConstraint = new Constraint<String>(3, new ExactUnaryMatch<String>(new String[]{"today"}), true);
-//		constraints.add(matchesTodayConstraint);
+		Constraint<String> matchesClayConstraint = new Constraint<String>(new ExactUnaryMatch<String>(new String[]{"Clay"}), true);
+		constraints.add(new Pair<Integer, Constraint<String>>(0,matchesClayConstraint));
+		
+		Constraint<String> matchesTodayConstraint = new Constraint<String>(new ExactUnaryMatch<String>(new String[]{"today"}), true);
+		constraints.add(new Pair<Integer, Constraint<String>>(3,matchesTodayConstraint));
 	
 		AbstractMarkovModel<String> nhmmModel = new NHMM<String>(model, length, constraints);
 		
@@ -58,7 +59,7 @@ public class Main {
 		
 		System.out.println("Constrained Sparse Single-Order Markov Model\n" + snhmmModel);
 		
-		for (Constraint<String> constraint : constraints) {
+		for (Pair<Integer, Constraint<String>> constraint : constraints) {
 			System.out.println("Constraint: " + constraint);
 		}
 		
@@ -133,10 +134,10 @@ public class Main {
 //		System.out.println("Sparse Single-Order Markov Model:\n" + smodel + "\n\n");
 		
 		int length = 4;
-		List<Constraint<Character>> constraints = new ArrayList<Constraint<Character>>();
+		List<Pair<Integer, Constraint<Character>>> constraints = new ArrayList<Pair<Integer,Constraint<Character>>>();
 		
 		Constraint<Character> isDConstraint = new Constraint<Character>(new ExactUnaryMatch<Character>(new Character[]{'D'}), true);
-		constraints.add(isDConstraint);
+		constraints.add(new Pair<Integer,Constraint<Character>>(3, isDConstraint));
 		
 //		double p = 0.5;
 //		double q = 0.;
@@ -156,7 +157,7 @@ public class Main {
 		
 		System.out.println("Constrained Sparse Single-Order Markov Model\n" + snhmmModel);
 		
-		for (Constraint<Character> constraint : constraints) {
+		for (Pair<Integer, Constraint<Character>> constraint : constraints) {
 			System.out.println("Constraint: " + constraint);
 		}
 		

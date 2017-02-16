@@ -1,6 +1,10 @@
 package segmentstructure;
 
+import java.awt.Color;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
@@ -8,10 +12,24 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.SortedMap;
+import java.util.TreeMap;
+
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartUtilities;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.NumberTickUnit;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.renderer.category.StandardBarPainter;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.tc33.jheatchart.HeatChart;
 
 import composition.Measure;
 import condition.ConstraintCondition;
 import condition.DelayedConstraintCondition;
+import condition.Rhyme;
 import constraint.Constraint;
 import data.MusicXMLModel;
 import data.MusicXMLModelLearner;
@@ -29,7 +47,8 @@ public class DistributionalSegmentStructureEngineer extends SegmentStructureEngi
 
 		private Map<SegmentType,Map<Integer,Integer>> measureCountDistribution = new EnumMap<SegmentType, Map<Integer,Integer>>(SegmentType.class);
 		private Map<SegmentType, Integer> measureCountDistributionTotals = new EnumMap<SegmentType, Integer>(SegmentType.class); 
-		private Map<Integer, List<List<Triple<Integer, Double, Constraint<NoteLyric>>>>> lyricConstraintDistribution = new HashMap<Integer, List<List<Triple<Integer, Double, Constraint<NoteLyric>>>>>();
+		// for a segment of a given length, a list of possible segment structures of that length, each defined as a list of constraints 
+		private SortedMap<Integer, List<List<Triple<Integer, Double, Constraint<NoteLyric>>>>> lyricConstraintDistribution = new TreeMap<Integer, List<List<Triple<Integer, Double, Constraint<NoteLyric>>>>>();
 		private Random rand = new Random();
 		
 		public DistributionalSegmentStructureEngineerMusicXMLModel() {
@@ -166,6 +185,166 @@ public class DistributionalSegmentStructureEngineer extends SegmentStructureEngi
 			List<Triple<Integer, Double, Constraint<NoteLyric>>> sampledLyricConstraints = distForMeasureCount.get(offsetIntoDistribution);
 			
 			return sampledLyricConstraints;
+		}
+
+		@Override
+		public void toGraph() {
+			measureCountDistributionToGraph();
+			lyricConstraintDistributionToGraph();
+		}
+
+		private void measureCountDistributionToGraph() {
+			int maxXValues = 500;
+//			Map<SegmentType, Map<Integer, Integer>> measureCountDistribution;
+			int maxLength = 0;
+			for (Map<Integer, Integer> countDistributionForSegment : measureCountDistribution.values()) {
+				for (Integer measureCount : countDistributionForSegment.keySet()) {
+					if (measureCount > maxLength) {
+						maxLength = measureCount;
+					}
+				}
+			}
+			
+			// +1 for priors
+			int chartXDimension = Math.min(maxXValues, maxLength); 
+			int chartYDimension = measureCountDistribution.size(); 
+
+			String[] yValues = new String[chartYDimension];
+			double[][] chartValues = new double[chartYDimension][chartXDimension];
+			
+			// set axis labels
+			int i = 0;
+			for (SegmentType segmentType : measureCountDistribution.keySet()) {
+				yValues[i++] = segmentType.toString();
+			}
+			// x-axis labels set automatically 0 to n-1
+			
+			// populate heatchart
+			
+			i = 0;
+			for (SegmentType segmentType : measureCountDistribution.keySet()) {
+				Map<Integer, Integer> measureCountDistributionForSegment = measureCountDistribution.get(segmentType);
+				for (int j = 0; j < chartXDimension; j++) {
+					Integer distributionValue = measureCountDistributionForSegment.get(j);
+					chartValues[i][j] = distributionValue == null? 0.0: distributionValue;
+				}
+				i++;
+			}
+			
+			Utils.normalizeByFirstDimension(chartValues);
+
+			HeatChart chart = new HeatChart(chartValues);
+			chart.setHighValueColour(Color.RED);
+			chart.setLowValueColour(Color.BLUE);
+			
+			chart.setYAxisLabel("Segment Type");
+			chart.setXAxisLabel("Segment Length");
+			chart.setYValues(yValues);
+			
+			try {
+				chart.saveToFile(new File(GRAPH_DIR + "/measure_count_by_segment.jpeg"));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		private void lyricConstraintDistributionToGraph() {
+			final DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+			//			SortedMap<Integer, List<List<Triple<Integer, Double, Constraint<NoteLyric>>>>> lyricConstraintDistribution;
+			
+			Map<String, Integer> rhymeSchemeDistribution = new HashMap<String,Integer>();
+
+			for (List<List<Triple<Integer, Double, Constraint<NoteLyric>>>> segmentStructuresForLength : lyricConstraintDistribution.values()) {
+				for (List<Triple<Integer, Double, Constraint<NoteLyric>>> segmentStructure : segmentStructuresForLength) {
+					String rhymeScheme = summarizeRhymeScheme(segmentStructure);
+					if (rhymeScheme != null && !rhymeScheme.isEmpty())
+						Utils.incrementValueForKey(rhymeSchemeDistribution, rhymeScheme);
+				}
+			}
+			
+			int maxNumberRangeValues = 20;
+			
+			List<Map.Entry<String, Integer>> list = new ArrayList<Map.Entry<String, Integer>>(rhymeSchemeDistribution.entrySet());
+			Collections.sort(list, new ValueThenKeyComparator<String, Integer>());
+			
+			List<Entry<String, Integer>> displayedItems = list.subList(0, Math.min(maxNumberRangeValues, list.size()));
+			int totalItems = 0;
+			for (Entry<String, Integer> entry : displayedItems) {
+				totalItems += entry.getValue();
+			}
+			
+			double maxValue = 0.;
+			for (Entry<String, Integer> globalStructureRepresentation : displayedItems) {
+				double value = globalStructureRepresentation.getValue() / (double) totalItems;
+				if (value > maxValue) {
+					maxValue = value;
+				}
+				dataset.addValue(value, "", globalStructureRepresentation.getKey());
+			}
+			int numberOfRangeValues = 5;
+			double tickUnit = Math.floor((maxValue/numberOfRangeValues) * 100) / 100;
+			
+			JFreeChart barChart = ChartFactory.createBarChart("Segment Structure Distribution", "Segment Structure", "Probability", dataset,
+					PlotOrientation.VERTICAL, false, false, false);
+			
+			CategoryPlot plot = barChart.getCategoryPlot();
+			plot.setBackgroundPaint(Color.WHITE);
+
+			BarRenderer renderer = (BarRenderer) plot.getRenderer();
+			renderer.setBarPainter(new StandardBarPainter());
+			renderer.setSeriesPaint(0,Color.BLUE);
+
+			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+
+			rangeAxis.setTickUnit(new NumberTickUnit(tickUnit));
+			
+			int width = 640; /* Width of the image */
+			int height = 480; /* Height of the image */
+			File BarChart = new File(GRAPH_DIR + "/segment_structure.jpeg");
+			if (BarChart.exists())
+				BarChart.delete();
+			try {
+				ChartUtilities.saveChartAsJPEG(BarChart, barChart, width, height);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		private String summarizeRhymeScheme(List<Triple<Integer, Double, Constraint<NoteLyric>>> segmentStructure) {
+			StringBuilder rhymeSchemeBuilder = new StringBuilder();
+			
+			Map<Integer,Map<Double,Integer>> rhymeGroupByMeasureOffset = new HashMap<Integer,Map<Double,Integer>>();
+
+			Integer phraseRhymeGroup;
+			int nextRhymeGroup = 0;
+			//TODO: prevent the consecutive rhyme from counting twice.
+			for (Triple<Integer, Double, Constraint<NoteLyric>> offsetConstraint : segmentStructure) {
+				Constraint<NoteLyric> constraint = offsetConstraint.getThird();
+				ConstraintCondition<NoteLyric> constraintCondition = constraint.getCondition();
+				if (!(constraintCondition instanceof Rhyme<?>)) {
+					continue;
+				}
+				Rhyme<NoteLyric> condition = (Rhyme<NoteLyric>) constraintCondition;
+				if (!condition.isPhraseEndingRhyme()) {
+					continue;
+				}
+				int rhymeDefiningMeasure = condition.getReferenceMeasure();
+				double rhymeDefiningOffset = condition.getReferenceOffset();
+				Map<Double, Integer> rhymeGroupByOffset = rhymeGroupByMeasureOffset.get(rhymeDefiningMeasure);
+				if (rhymeGroupByOffset == null) {
+					rhymeGroupByOffset = new HashMap<Double,Integer>();
+					rhymeGroupByMeasureOffset.put(rhymeDefiningMeasure, rhymeGroupByOffset);
+				}
+				phraseRhymeGroup = rhymeGroupByOffset.get(rhymeDefiningOffset);
+				if (phraseRhymeGroup == null) {
+					phraseRhymeGroup = nextRhymeGroup;
+					rhymeGroupByOffset.put(rhymeDefiningOffset,phraseRhymeGroup);
+					nextRhymeGroup++;
+				}
+				rhymeSchemeBuilder.append((char) ('A' + phraseRhymeGroup));
+			}
+			
+			return rhymeSchemeBuilder.toString();
 		}
 	}
 

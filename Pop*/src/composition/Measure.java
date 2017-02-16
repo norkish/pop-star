@@ -93,7 +93,9 @@ public class Measure {
 		
 		// do all harmonies
 		for (Entry<Double, Harmony> offsetHarmony : harmonies.entrySet()) {
-			str.append(offsetHarmony.getValue().toXML(indentationLevel, (int) (1 * offsetHarmony.getKey())));
+			Double offsetInBeats = offsetHarmony.getKey();
+			int offsetInDivs = beatsToDivs(offsetInBeats);
+			str.append(offsetHarmony.getValue().toXML(indentationLevel, (int) (1 * offsetInDivs)));
 		}
 		
 		// do all notes
@@ -104,6 +106,11 @@ public class Measure {
 		// TODO: constraints
 		
 		return str.toString();
+	}
+
+	private int beatsToDivs(Double beats) {
+		// beats * divs/quarter * quarters/beat
+		return (int) (beats * divisionsPerQuarterNote * (4.0/time.beatType));
 	}
 
 	public String orchestrationToXML(int indentationLevel, char part) {

@@ -1,21 +1,24 @@
 package melody;
 
+import java.awt.Color;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.SortedMap;
-import java.util.TreeMap;
+
+import org.tc33.jheatchart.HeatChart;
 
 import composition.Measure;
 import composition.Score;
 import constraint.Constraint;
 import data.MusicXMLModel;
 import data.MusicXMLModelLearner;
-import data.MusicXMLParser;
-import data.MusicXMLSummaryGenerator;
 import data.MusicXMLParser.Harmony;
 import data.MusicXMLParser.Key;
 import data.MusicXMLParser.Note;
@@ -235,7 +238,7 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 			}
 			
 			SparseNHMM<Integer> constrainedPitchModel = new SparseNHMM<Integer>(pitchMarkovModel, length,
-					new ArrayList<Constraint<Integer>>());
+					new ArrayList<Pair<Integer,Constraint<Integer>>>());
 			
 			List<Integer> pitchList = constrainedPitchModel.generate(length);
 			
@@ -254,7 +257,7 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 			}
 			
 			SparseNHMM<Double> constrainedDurationModel = new SparseNHMM<Double>(durationMarkovModel, length,
-					new ArrayList<Constraint<Double>>());
+					new ArrayList<Pair<Integer,Constraint<Double>>>());
 			List<Double> durationsAsBeats = constrainedDurationModel.generate(length);
 			List<Pair<Integer,Double>> pitchDurationPairs = new ArrayList<Pair<Integer,Double>>();
 			
@@ -278,72 +281,163 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 				throw new RuntimeException("Model was not trained on any XMLs with time signature " + sequenceTime + " and Segment Type " + type);
 			}
 			
-			Map<Integer, Integer> durationPriorCounts = durationPriorCountsBySegmentByTime.get(sequenceTime).get(type);
-			Map<Integer, Map<Integer, Integer>> durationTransitionCounts = durationTransitionCountsBySegmentByTime.get(sequenceTime).get(type);
-			
-			Map<Integer, Double> priors = new HashMap<Integer, Double>();
-			Map<Integer, Map<Integer, Double>> transitions = new HashMap<Integer, Map<Integer, Double>>();
+			Map<Integer, Double> priors = computeDurationPriors(sequenceTime, type);
 
-			double totalCount = 0;
-			if (durationPriorCounts != null) {
-				for (Integer count : durationPriorCounts.values()) {
-					totalCount += count;
-				}
-				for (Entry<Integer, Integer> entry : durationPriorCounts.entrySet()) {
-					priors.put(entry.getKey(), entry.getValue() / totalCount);
-				}
-			}
-
-			for (Entry<Integer, Map<Integer, Integer>> outerEntry : durationTransitionCounts.entrySet()) {
-				Integer fromIdx = outerEntry.getKey();
-				Map<Integer, Integer> innerMap = outerEntry.getValue();
-
-				Map<Integer, Double> newInnerMap = new HashMap<Integer, Double>();
-				transitions.put(fromIdx, newInnerMap);
-
-				totalCount = 0;
-				for (Integer count : innerMap.values()) {
-					totalCount += count;
-				}
-				for (Entry<Integer, Integer> entry : innerMap.entrySet()) {
-					newInnerMap.put(entry.getKey(), entry.getValue() / totalCount);
-				}
-			}
+			Map<Integer, Map<Integer, Double>> transitions = computeDurationTransitionProbabilities(sequenceTime, type);
 			
 			SparseSingleOrderMarkovModel<Double> durationMarkovModel = new SparseSingleOrderMarkovModel<Double>(durationStatesByIndex, priors, transitions);
 			
 			return durationMarkovModel;
 		}
 
+		private Map<Integer, Map<Integer, Double>> computeDurationTransitionProbabilities(Time sequenceTime,
+				SegmentType type) {
+			Map<Integer, Map<Integer, Integer>> durationTransitionCounts = durationTransitionCountsBySegmentByTime.get(sequenceTime).get(type);
+			return computeTransitionProbabilities(durationTransitionCounts);
+		}
+
+		private Map<Integer, Double> computeDurationPriors(Time sequenceTime, SegmentType type) {
+			Map<Integer, Integer> durationPriorCounts = durationPriorCountsBySegmentByTime.get(sequenceTime).get(type);
+			return computePriors(durationPriorCounts);
+		}
+
 		private SparseSingleOrderMarkovModel<Integer> buildPitchModel() {
-			Map<Integer, Double> priors = new HashMap<Integer, Double>();
-			Map<Integer, Map<Integer, Double>> transitions = new HashMap<Integer, Map<Integer, Double>>();
-
-			double totalCount = 0;
-			for (Integer count : pitchPriorCounts.values()) {
-				totalCount += count;
-			}
-			for (Entry<Integer, Integer> entry : pitchPriorCounts.entrySet()) {
-				priors.put(entry.getKey(), entry.getValue() / totalCount);
-			}
-
-			for (Entry<Integer, Map<Integer, Integer>> outerEntry : pitchTransitionCounts.entrySet()) {
-				Integer fromIdx = outerEntry.getKey();
-				Map<Integer, Integer> innerMap = outerEntry.getValue();
-
-				Map<Integer, Double> newInnerMap = new HashMap<Integer, Double>();
-				transitions.put(fromIdx, newInnerMap);
-
-				totalCount = 0;
-				for (Integer count : innerMap.values()) {
-					totalCount += count;
-				}
-				for (Entry<Integer, Integer> entry : innerMap.entrySet()) {
-					newInnerMap.put(entry.getKey(), entry.getValue() / totalCount);
-				}
-			}
+			Map<Integer, Double> priors = computePriors(pitchPriorCounts);
+			Map<Integer, Map<Integer, Double>> transitions = computeTransitionProbabilities(pitchTransitionCounts);
 
 			return new SparseSingleOrderMarkovModel<Integer>(pitchStatesByIndex, priors, transitions);
+		}
+
+
+		@Override
+		public void toGraph() {
+			durationModelToGraph();
+			pitchModelToGraph();
+		}
+
+		private void durationModelToGraph() {
+			Map<Integer, Double> priors = computeDurationPriors(Time.FOUR_FOUR, SegmentType.VERSE);
+			Map<Integer, Map<Integer, Double>> transitions = computeDurationTransitionProbabilities(Time.FOUR_FOUR, SegmentType.VERSE);
+			int maxXValues = 50;
+			int maxYValues = 10;
+			
+			Map<Double, Integer> statesByIndex = durationStatesByIndexBySegmentByTime.get(Time.FOUR_FOUR).get(SegmentType.VERSE);
+			Map<Integer, Map<Integer, Integer>> transitionCounts = durationTransitionCountsBySegmentByTime.get(Time.FOUR_FOUR).get(SegmentType.VERSE);
+			
+			boolean sortByFrequency = true;
+			//y-axis is from
+			Map<Double, Integer> statesByIndexSorted = null;
+			if (sortByFrequency) {
+				statesByIndexSorted = new LinkedHashMap<Double,Integer>();
+				Map<Integer, Integer> frequencyByID = new HashMap<Integer,Integer>();
+				//initialize frequencies
+				for (Integer harmonyID : statesByIndex.values()) {
+					frequencyByID.put(harmonyID, 0);
+				}
+				
+				// count frequencies
+				for (Map<Integer, Integer> toMap : transitionCounts.values()) {
+					for (Integer durationID : toMap.keySet()) {
+						Integer count = toMap.get(durationID);
+						frequencyByID.put(durationID, frequencyByID.get(durationID)+count);
+					}
+				}
+				
+				// sort by counts (and then by ID)
+				List<Map.Entry<Integer, Integer>> harmonyIDSortedByFrequency = new ArrayList<Map.Entry<Integer, Integer>>(frequencyByID.entrySet());
+				Collections.sort(harmonyIDSortedByFrequency, new ValueThenKeyComparator<Integer, Integer>());
+				
+				// get reverse map to create new Harmony-ID map that is sorted by frequency
+				Double[] durationByID = new Double[statesByIndex.size()];
+				for (Double duration : statesByIndex.keySet()) {
+					Integer harmonyID = statesByIndex.get(duration);
+					durationByID[harmonyID] = duration;
+				}
+				
+				for (Map.Entry<Integer, Integer> entry : harmonyIDSortedByFrequency) {
+					statesByIndexSorted.put(durationByID[entry.getKey()], entry.getKey());
+				}
+				
+			} else {
+				statesByIndexSorted = statesByIndex;
+			}
+			
+			
+			// +1 for priors
+			int chartXDimension = Math.min(maxXValues, statesByIndexSorted.size()); 
+			int chartYDimension = Math.min(maxYValues, statesByIndexSorted.size()); 
+
+			String[] xValues = new String[chartXDimension];
+			String[] yValues = new String[chartYDimension + 1];
+			double[][] chartValues = new double[chartYDimension + 1][chartXDimension];
+			
+			// set axis labels
+			yValues[0] = "START";
+			
+			int i = 0;
+			for (Double duration : statesByIndexSorted.keySet()) {
+				Integer harmonyId = statesByIndexSorted.get(duration);
+				if (i >= chartXDimension && i >= chartYDimension)
+					break;
+				
+				if (i < chartXDimension) {
+					xValues[i] = duration.toString();
+					Double prior = priors.get(harmonyId);
+					chartValues[0][i] = prior == null ? 0.0 : prior;
+				}
+				if (i < chartYDimension) {
+					yValues[i+1] = duration.toString();
+				}
+				i++;
+			}
+			
+			// populate heatchart
+			
+			int y = 0;
+			for (Double yDuration : statesByIndexSorted.keySet()) {
+				if (y >= chartYDimension) {
+					break;
+				}
+				Integer yDurationId = statesByIndexSorted.get(yDuration);
+				int x = 0;
+				for (Double xDuration : statesByIndexSorted.keySet()) {
+					if (x >= chartXDimension) {
+						break;
+					}
+					Integer xHarmonyId = statesByIndexSorted.get(xDuration);
+					Double prob = null; 
+					Map<Integer, Double> probsFromHarmony = transitions.get(yDurationId);
+					if (probsFromHarmony != null) {
+						prob = probsFromHarmony.get(xHarmonyId);
+					}
+					chartValues[y+1][x] = prob == null ? 0.0 : prob;
+					x++;
+				}
+				y++;
+			}
+			
+			Utils.normalizeByFirstDimension(chartValues);
+
+			HeatChart chart = new HeatChart(chartValues);
+			chart.setHighValueColour(Color.RED);
+			chart.setLowValueColour(Color.BLUE);
+			
+			chart.setYAxisLabel("Previous Note Duration (beats)");
+			chart.setXAxisLabel("Next Note Duration (beats)");
+			chart.setXValues(xValues);
+			chart.setYValues(yValues);
+			
+			try {
+				chart.saveToFile(new File(GRAPH_DIR + "/melody_rhythm.jpeg"));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		private void pitchModelToGraph() {
+			// TODO Auto-generated method stub
+			
 		}
 	}
 
