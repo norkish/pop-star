@@ -339,10 +339,10 @@ public class SegmentSpecificHarmonyEngineer extends HarmonyEngineer {
 
 		@Override
 		public void toGraph() {
-			Map<Integer, Double> priors = computePriors(chordPriorCountsByTimeBySegmentByOffset.get(Time.FOUR_FOUR).get(SegmentType.CHORUS).get(true));
-			Map<Integer, Map<Integer, Integer>> chordTransitionCounts = chordTransitionCountsByTimeBySegmentByOffset.get(Time.FOUR_FOUR).get(SegmentType.CHORUS).get(true);
+			Map<Integer, Double> priors = computePriors(chordPriorCountsByTimeBySegmentByOffset.get(Time.FOUR_FOUR).get(SegmentType.VERSE).get(true));
+			Map<Integer, Map<Integer, Integer>> chordTransitionCounts = chordTransitionCountsByTimeBySegmentByOffset.get(Time.FOUR_FOUR).get(SegmentType.VERSE).get(true);
 			Map<Integer, Map<Integer, Double>> transitions = computeTransitionProbabilities(chordTransitionCounts);
-			int maxXValues = 50;
+			int maxXValues = 10;
 			int maxYValues = 10;
 			
 			boolean sortByFrequency = true;

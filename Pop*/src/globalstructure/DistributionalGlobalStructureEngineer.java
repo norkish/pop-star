@@ -114,11 +114,12 @@ public class DistributionalGlobalStructureEngineer extends GlobalStructureEngine
 			int numberOfRangeValues = 5;
 			double tickUnit = Math.floor((maxValue/numberOfRangeValues) * 100) / 100;
 			
-			JFreeChart barChart = ChartFactory.createBarChart("Global Structure Distribution", "Global Structure", "Probability", dataset,
+			JFreeChart barChart = ChartFactory.createBarChart(null, "Global Structure", "Probability", dataset,
 					PlotOrientation.VERTICAL, false, false, false);
 			
 			CategoryPlot plot = barChart.getCategoryPlot();
 			plot.setBackgroundPaint(Color.WHITE);
+			plot.setOutlineVisible(false);
 
 			BarRenderer renderer = (BarRenderer) plot.getRenderer();
 			renderer.setBarPainter(new StandardBarPainter());

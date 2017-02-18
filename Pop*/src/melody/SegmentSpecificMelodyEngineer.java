@@ -39,10 +39,11 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 	private static boolean normalizeByHarmony = true;
 	public static class SegmentSpecificMelodyEngineerMusicXMLModel extends MusicXMLModel {
 
-		SparseSingleOrderMarkovModel<Integer> pitchMarkovModel;
+		private static final int DEISRED_AVERAGE_OCTAVE = 4; // in MIDI and MusicXML 4 octave starts with middle C
+		Map<SegmentType,SparseSingleOrderMarkovModel<Integer>> pitchMarkovModelsBySegment;
 		Map<Integer, Integer> pitchStatesByIndex = new HashMap<Integer, Integer>();// states are pitches for now
-		Map<Integer, Integer> pitchPriorCounts = new HashMap<Integer, Integer>();
-		Map<Integer, Map<Integer, Integer>> pitchTransitionCounts = new HashMap<Integer, Map<Integer, Integer>>();
+		Map<SegmentType,Map<Integer, Integer>> pitchPriorCountsBySegment = new EnumMap<SegmentType,Map<Integer, Integer>>(SegmentType.class);
+		Map<SegmentType,Map<Integer, Map<Integer, Integer>>> pitchTransitionCountsBySegment = new EnumMap<SegmentType, Map<Integer, Map<Integer, Integer>>>(SegmentType.class);
 
 		// have a Markov model for each offset position with the markov property applying to the previous duration
 		Map<Time, Map<SegmentType, SparseSingleOrderMarkovModel<Double>>> durationMarkovModelsByOffsetBySegmentByTime = new HashMap<Time, Map<SegmentType,SparseSingleOrderMarkovModel<Double>>>();
@@ -65,7 +66,7 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 
 			// the current markovModel is now obsolete and will be regenerated
 			// when next sampled
-			pitchMarkovModel = null;
+			pitchMarkovModelsBySegment = null;
 
 			Integer prevNotePitchIdx = -1;
 			Harmony currHarmony = null;
@@ -133,6 +134,7 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 						notePitchToken = note.pitch;
 					} else {
 						int octave = note.pitch / 12; // loss of precision to get octave
+						octave += DEISRED_AVERAGE_OCTAVE-musicXML.getAverageOctave();
 						notePitchToken = currHarmony.getScaleStep(note.pitch) + octave * 12;
 					}
 				} else { 
@@ -163,9 +165,24 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 					durationStatesByIndex.put(noteDurationInBeats, noteDurationIdx);
 				}
 
-				if (prevNotePitchIdx == -1) {
+				
+				
+				if (prevNotePitchIdx == -1 || currType != prevType) {
+					Map<Integer, Integer> pitchPriorCounts = pitchPriorCountsBySegment.get(currType);
+					if (pitchPriorCounts == null) {
+						pitchPriorCounts = new HashMap<Integer,Integer>();
+						pitchPriorCountsBySegment.put(currType, pitchPriorCounts);
+					}
+					
 					Utils.incrementValueForKey(pitchPriorCounts, notePitchIdx);
-				} else {
+				} 
+				
+				if (prevNotePitchIdx != -1){
+					Map<Integer, Map<Integer, Integer>> pitchTransitionCounts = pitchTransitionCountsBySegment.get(currType);
+					if (pitchTransitionCounts == null) {
+						pitchTransitionCounts = new HashMap<Integer,Map<Integer,Integer>>();
+						pitchTransitionCountsBySegment.put(currType, pitchTransitionCounts);
+					}
 					Utils.incrementValueForKeys(pitchTransitionCounts, prevNotePitchIdx, notePitchIdx);
 				}
 
@@ -233,14 +250,29 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 			// which depend on the harm sequence
 
 			// generate pitch
-			if (pitchMarkovModel == null) {
-				pitchMarkovModel = buildPitchModel();
+			if (pitchMarkovModelsBySegment == null) {
+				pitchMarkovModelsBySegment = buildPitchModels();
 			}
 			
-			SparseNHMM<Integer> constrainedPitchModel = new SparseNHMM<Integer>(pitchMarkovModel, length,
-					new ArrayList<Pair<Integer,Constraint<Integer>>>());
+			final SparseSingleOrderMarkovModel<Integer> pitchMarkovModel = pitchMarkovModelsBySegment.get(type);
+			List<Integer> pitchList = new ArrayList<Integer>();
 			
-			List<Integer> pitchList = constrainedPitchModel.generate(length);
+			Integer lastPitch = pitchMarkovModel.sampleStartState();
+			Integer nextPitch;
+			pitchList.add(lastPitch);
+			
+			//sample while not done
+			while(pitchList.size() < length) {
+				try {
+					nextPitch = pitchMarkovModel.sampleNextState(lastPitch);
+				} catch (Exception ex) {
+					nextPitch = sampleNextPitchForAnySegment(lastPitch);
+				}
+				
+				pitchList.add(lastPitch);
+				
+				lastPitch = nextPitch;
+			}
 			
 			// generate durations
 			Map<SegmentType, SparseSingleOrderMarkovModel<Double>> durationMarkovModelsByOffsetBySegment = durationMarkovModelsByOffsetBySegmentByTime.get(sequenceTime);
@@ -262,11 +294,37 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 			List<Pair<Integer,Double>> pitchDurationPairs = new ArrayList<Pair<Integer,Double>>();
 			
 			// combine pitch and durations
+			Double lastDuration = null,nextDuration;
 			for (int i = 0; i < pitchList.size(); i++) {
-				pitchDurationPairs.add(new Pair<Integer,Double>(pitchList.get(i), durationsAsBeats.get(i)));
+				nextPitch = pitchList.get(i);
+				nextDuration = durationsAsBeats.get(i);
+				
+				if (Note.REST == nextPitch && Note.REST == lastPitch) {
+					//combine multiple consecutive rests
+					lastDuration += nextDuration;
+					pitchDurationPairs.get(pitchDurationPairs.size()-1).setSecond(lastDuration);
+				} else {
+					pitchDurationPairs.add(new Pair<Integer,Double>(nextPitch, nextDuration));
+					lastPitch = nextPitch;
+					lastDuration = nextDuration;
+				}
 			}
 			
 			return pitchDurationPairs;
+		}
+
+		private Integer sampleNextPitchForAnySegment(Integer prevPitch) {
+			
+			for (SegmentType type : pitchMarkovModelsBySegment.keySet()) {
+				SparseSingleOrderMarkovModel<Integer> markovModel = pitchMarkovModelsBySegment.get(type);
+				Integer nextPitch;
+				try {
+					nextPitch = markovModel.sampleNextState(prevPitch);
+					return nextPitch;
+				} catch (ArrayIndexOutOfBoundsException ex) {
+				}
+			}
+			throw new RuntimeException("No next state for any offset from " + prevPitch);
 		}
 
 		private SparseSingleOrderMarkovModel<Double> buildDurationModels(Time sequenceTime, SegmentType type) {
@@ -301,11 +359,16 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 			return computePriors(durationPriorCounts);
 		}
 
-		private SparseSingleOrderMarkovModel<Integer> buildPitchModel() {
-			Map<Integer, Double> priors = computePriors(pitchPriorCounts);
-			Map<Integer, Map<Integer, Double>> transitions = computeTransitionProbabilities(pitchTransitionCounts);
+		private Map<SegmentType, SparseSingleOrderMarkovModel<Integer>> buildPitchModels() {
+			Map<SegmentType, SparseSingleOrderMarkovModel<Integer>> models = new EnumMap<SegmentType, SparseSingleOrderMarkovModel<Integer>>(SegmentType.class);
+			
+			for (SegmentType type : pitchTransitionCountsBySegment.keySet()) {
+				Map<Integer, Double> priors = computePriors(pitchPriorCountsBySegment.get(type));
+				Map<Integer, Map<Integer, Double>> transitions = computeTransitionProbabilities(pitchTransitionCountsBySegment.get(type));
+				models.put(type,new SparseSingleOrderMarkovModel<Integer>(pitchStatesByIndex, priors, transitions));
+			}
 
-			return new SparseSingleOrderMarkovModel<Integer>(pitchStatesByIndex, priors, transitions);
+			return models;
 		}
 
 

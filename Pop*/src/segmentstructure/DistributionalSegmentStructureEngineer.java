@@ -194,7 +194,7 @@ public class DistributionalSegmentStructureEngineer extends SegmentStructureEngi
 		}
 
 		private void measureCountDistributionToGraph() {
-			int maxXValues = 500;
+			int maxXValues = 20;
 //			Map<SegmentType, Map<Integer, Integer>> measureCountDistribution;
 			int maxLength = 0;
 			for (Map<Integer, Integer> countDistributionForSegment : measureCountDistribution.values()) {
@@ -284,10 +284,11 @@ public class DistributionalSegmentStructureEngineer extends SegmentStructureEngi
 			int numberOfRangeValues = 5;
 			double tickUnit = Math.floor((maxValue/numberOfRangeValues) * 100) / 100;
 			
-			JFreeChart barChart = ChartFactory.createBarChart("Segment Structure Distribution", "Segment Structure", "Probability", dataset,
+			JFreeChart barChart = ChartFactory.createBarChart(null, "Segment Structure", "Probability", dataset,
 					PlotOrientation.VERTICAL, false, false, false);
 			
 			CategoryPlot plot = barChart.getCategoryPlot();
+			plot.setOutlineVisible(false);
 			plot.setBackgroundPaint(Color.WHITE);
 
 			BarRenderer renderer = (BarRenderer) plot.getRenderer();

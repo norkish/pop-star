@@ -104,6 +104,7 @@ public class ParsedMusicXMLObject {
 	private int measureCount = 0;
 	private SortedMap<Integer, SortedMap<Integer, Note>> notesByPlayedMeasureMap;
 	private SortedMap<Integer, SortedMap<Double, SegmentType>> globalStructureBySegmentTokenStart;
+	private int averageOctave = -1;
 	public int getMeasureCount() {
 		if (measureCount == 0) {
 			recalculateMeasureCount();
@@ -233,6 +234,29 @@ public class ParsedMusicXMLObject {
 
 	public SortedMap<Integer, Triple<SegmentType, Integer, Double>> getGlobalStructureByFormStart() {
 		return globalStructureByFormStart;
+	}
+
+	public int getAverageOctave() {
+		if (averageOctave  == -1) {
+			averageOctave = computeAverageOctave();
+		}
+		return averageOctave;
+	}
+
+	private int computeAverageOctave() {
+		double total = 0.0;
+		int count = 0;
+		
+		for (Triple<Integer, Integer, Note> noteTriple : notesByPlayedMeasure) {
+			Note note = noteTriple.getThird();
+			int pitch = note.pitch;
+			if (pitch >= 0) {
+				total += note.pitch/12.0;
+				count++;
+			}
+		}
+		
+		return (int) (total/count);
 	}
 
 }

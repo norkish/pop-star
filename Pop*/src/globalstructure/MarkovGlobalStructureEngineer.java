@@ -5,27 +5,22 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import org.tc33.jheatchart.HeatChart;
-
-import condition.ExactUnaryMatch;
-
 import java.util.Random;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.tc33.jheatchart.HeatChart;
+
+import condition.ExactUnaryMatch;
 import constraint.Constraint;
 import data.MusicXMLModel;
 import data.MusicXMLModelLearner;
 import data.ParsedMusicXMLObject;
-import data.MusicXMLModel.ValueThenKeyComparator;
-import data.MusicXMLParser.Harmony;
 import markov.SparseNHMM;
 import markov.SparseSingleOrderMarkovModel;
 import utils.Pair;

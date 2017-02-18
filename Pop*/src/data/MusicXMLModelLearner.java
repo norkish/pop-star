@@ -63,7 +63,7 @@ public class MusicXMLModelLearner {
 	
 	private static void trainModelsOnWholeDataset(Collection<MusicXMLModel> models) {
 		for (File file : files) {
-//			 if (!file.getName().equals("Billy Joel - Just The Way You Are.mxl"))
+//			 if (!file.getName().equals(" Elton John, Bernie Taupin - Goodbye, Yellow Brick Road.mxl"))
 //			 continue;
 			// if (file.getName().charAt(0) < 'T') {
 			// continue;
@@ -75,7 +75,7 @@ public class MusicXMLModelLearner {
 			MusicXMLParser musicXMLParser = null;
 			try {
 				final Document xml = MusicXMLSummaryGenerator.mxlToXML(file);
-//				MusicXMLSummaryGenerator.printDocument(xml, System.out);
+				MusicXMLSummaryGenerator.printDocument(xml, System.out);
 
 				musicXMLParser = new MusicXMLParser(file.getName(), xml);
 			} catch (Exception e) {

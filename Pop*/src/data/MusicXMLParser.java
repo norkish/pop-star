@@ -256,7 +256,7 @@ public class MusicXMLParser {
 
 	public static class Note {
 
-		public static final int REST = -2;
+		public static final Integer REST = -2;
 		
 		public int pitch;
 		public int duration;
@@ -1928,7 +1928,7 @@ public class MusicXMLParser {
 		if (newRootStep < 0) {
 			newRootStep += 12;
 		} else if (newRootStep >= 12) {
-			newRootStep -= 12;
+			newRootStep %= 12;
 		}
 		Root newRoot = new Root(newRootStep);
 		
@@ -1954,9 +1954,9 @@ public class MusicXMLParser {
 		if (pitch < 0 || currKey == null) return pitch;
 		
 		int modification = (7*currKey.fifths + 144) % 12;
-		if (modification > 6) {
-			modification -= 12;
-		}
+//		if (modification > 6) {
+//			modification -= 12;
+//		}
 		return (pitch - modification);
 	}
 
