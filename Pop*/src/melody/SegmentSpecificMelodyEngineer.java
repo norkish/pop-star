@@ -1,6 +1,7 @@
 package melody;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -489,6 +490,9 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 			chart.setXAxisLabel("Next Note Duration (beats)");
 			chart.setXValues(xValues);
 			chart.setYValues(yValues);
+			chart.setAxisLabelsFont(MusicXMLModel.CHART_LABEL_FONT);
+			chart.setAxisValuesFont(MusicXMLModel.CHART_AXIS_FONT);
+			chart.setCellSize(new Dimension(30,30));
 			
 			try {
 				chart.saveToFile(new File(GRAPH_DIR + "/melody_rhythm.jpeg"));

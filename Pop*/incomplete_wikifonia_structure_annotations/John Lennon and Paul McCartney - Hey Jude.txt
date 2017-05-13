@@ -1,0 +1,107 @@
+CHORUS	1	1	Hey	-1
+
+rhyme
+bad	3	1
+sad	4	1
+
+rhyme
+bet	5	1
+bet	8	1
+
+rhyme
+ter	5	1
+ter	9	1
+
+rhyme
+heart,	7	1
+start	7	1
+
+exactBinaryMatch
+Hey	1	1
+ter	9	1
+
+VERSE	9	1	Hey	-1
+
+rhyme
+fraid,	11	1
+made	12	1
+
+rhyme
+get	13	1
+bet	17	1
+
+rhyme
+her,	13	1
+ter	17	1
+
+rhyme
+skin	15	1
+gin	15	1
+
+rhyme
+pain	18	1
+frain	19	1
+
+rhyme
+shoul	21	1
+cold	26	1
+
+rhyme
+ders	22	1
+der,	27	1
+
+rhyme
+fool	23	1
+cool	24	1
+
+INTERLUDE	27	1	Da	-1
+
+VERSE	30	1	Hey	-1
+
+rhyme
+down,	11	2
+found	12	2
+
+rhyme
+get	13	2
+bet	17	2
+
+rhyme
+her,	13	2
+ter	17	2
+
+rhyme
+heart,	15	2
+start	15	2
+
+rhyme
+in	18	2
+gin	19	2
+
+rhyme
+you,	23	2
+do	24	2
+
+INTERLUDE	27	2	Da	-1
+
+CHORUS	31	1	Hey	-1
+
+rhyme
+bad	33	1
+sad	34	1
+
+rhyme
+bet	35	1
+bet	38	1
+
+rhyme
+ter	35	1
+ter	39	1	1
+
+rhyme
+skin,	37	1
+gin	37	1
+
+exactBinaryMatch
+Hey	31	1
+ter	39	1	1

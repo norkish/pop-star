@@ -1,0 +1,152 @@
+INTRO	1	1	0.0	0
+
+VERSE	1	1	Oh	-1
+
+rhyme
+now,	2	1
+sour;	3	1
+tower;	5	1
+
+rhyme
+self	4	1	1
+self	4	1	2
+
+rhyme
+top	6	1
+off	7	1
+
+rhyme
+to	8	1	1
+who	8	1
+
+rhyme
+lurch	10	1
+church	10	1
+
+rhyme
+say	11	1
+main	13	1
+
+rhyme
+ing	11	1
+ing	13	1
+
+rhyme
+tough,	12	1
+up,"	12	1
+
+rhyme
+home!	14	1
+own;	15	1
+
+CHORUS	15	1	A	-1
+
+exactBinaryMatch
+A	15	1
+ly.	17	1
+
+VERSE	17	1	To	-1
+
+rhyme
+day,	2	2
+gay;	3	2
+play;	5	2
+
+rhyme
+to	4	2
+do	4	2
+
+rhyme
+down,	6	2
+round,	7	2
+
+rhyme
+much	8	2
+touch	8	2
+
+rhyme
+doubt	10	2
+bout	10	2
+
+rhyme
+mer	11	2
+sert	13	2
+
+rhyme
+cy,	11	2
+me?	13	2
+
+rhyme
+need	14	2
+deed	15	2
+
+CHORUS	15	2	A	-1
+
+exactBinaryMatch
+A	15	2
+ly.	18	1
+
+BRIDGE	18	1	It	-1
+
+rhyme
+mend	20	1
+tend	21	1
+
+rhyme
+ed	21	1
+ed;	22	1
+
+exactBinaryMatch
+what	22	1
+do?	22	1
+
+exactBinaryMatch
+What	23	1
+do?	23	1
+
+VERSE	24	1	Now	-1
+
+rhyme
+years	2	3
+pears;	3	3
+tears;	5	3
+
+rhyme
+cried,	4	3
+died,	4	3
+
+rhyme
+old,	6	3
+soul,	7	3
+
+rhyme
+stand	8	3
+man	8	3
+
+rhyme
+start	10	3
+heart	10	3
+
+rhyme
+bro	11	3
+spo	13	3
+
+rhyme
+ken,	11	3
+ken;	13	3
+
+rhyme
+way	14	3
+day;	15	3
+
+CHORUS	15	3	A	-1
+
+exactBinaryMatch
+A	15	3
+ly	25	1
+
+CHORUS	25	1	A	-1
+
+exactBinaryMatch
+A	25	1
+ly.	27	1

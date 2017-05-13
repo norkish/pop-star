@@ -3,13 +3,14 @@ package inspiration;
 import java.util.Random;
 import java.util.Scanner;
 
+import config.SongConfiguration;
 import main.ProgramArgs;
 
 public class Inspiration {
 	//Ekman (1993): happiness, surprise, anger, sadness, fear, disgust
 	public static final String[] ARRAY_OF_EMOTIONS = new String[]{"happy","surprised","angry","sad","afraid","disgusted"};
 	private float[] emotions = new float[]{0,0,0,0,0,0}; // sum should be <= 1.0
-	private static final Random RAND = new Random();
+	private static final Random RAND = new Random(SongConfiguration.randSeed);
 	private String explaination;
 	
 	public Inspiration(InspirationSource source) {

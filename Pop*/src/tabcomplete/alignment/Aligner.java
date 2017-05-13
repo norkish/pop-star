@@ -1,16 +1,6 @@
 package tabcomplete.alignment;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
 import tabcomplete.alignment.SequencePair.AlignmentBuilder;
-import tabcomplete.rawsheet.LyricSheet;
-import tabcomplete.rawsheet.RawDataLoader;
-import tabcomplete.utils.StopWatch;
-import tabcomplete.utils.Utils;
 
 /*
  * This is a generic, banded, linear-time, linear-space, pairwise aligner
@@ -326,7 +316,11 @@ public class Aligner{
 		}
 		
 		alnBldr.reverse();
-		return alnBldr.renderAlignment();
+		final Alignment renderedAlignment = alnBldr.renderAlignment();
+		if (sequences.saveMatrix()) {
+			renderedAlignment.matrix = matrix;
+		}
+		return renderedAlignment;
 	}
 
 	/**

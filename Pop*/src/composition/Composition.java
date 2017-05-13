@@ -114,4 +114,8 @@ public class Composition {
 	public Score getScore() {
 		return score;
 	}
+
+	public GlobalStructure getGlobalStructure() {
+		return globalStructure;
+	}
 }

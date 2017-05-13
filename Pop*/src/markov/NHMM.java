@@ -7,6 +7,7 @@ import java.util.Random;
 import java.util.Set;
 
 import condition.ConstraintCondition;
+import config.SongConfiguration;
 import constraint.Constraint;
 import utils.MathUtils;
 import utils.Pair;
@@ -19,7 +20,7 @@ public class NHMM<T> extends AbstractMarkovModel<T>{
 	int[][] inSupport; // first matrix represents the number of non-zero transition probabilities to the ith state at pos 1 in the seq 
 	int[][] outSupport; // first matrix represents the number of non-zero transition probabilities from the ith state at pos 0 in the seq
 	Map<T, Integer> stateIndex;
-	Random rand = new Random();
+	Random rand = new Random(SongConfiguration.randSeed);
 	
 	public NHMM(SingleOrderMarkovModel<T> model, int length, List<Pair<Integer, Constraint<T>>> constraints) {
 		this.states = model.states;

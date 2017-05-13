@@ -1,0 +1,39 @@
+INTRO	1	1	0.0	0
+
+VERSE	3	1	0.0	0
+
+rhyme
+try.	6	1
+sky.	10	1
+
+VERSE	15	1	0.0	0
+
+rhyme
+do.	17	1
+too.	22	1
+
+CHORUS	27	1	0.0	0
+
+rhyme
+one.	29	1
+one.	34	1
+
+exactBinaryMatch
+You	27	1
+one.	34	1
+
+VERSE	15	2	0.0	0
+
+rhyme
+can.	17	2
+man.	22	2
+
+CHORUS	27	2	0.0	0
+
+rhyme
+one.	29	2
+one.	35	1
+
+exactBinaryMatch
+You	27	2
+one.	35	1

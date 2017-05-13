@@ -1,0 +1,77 @@
+INTRO	1	1	0.0	0
+
+VERSE	5	1	Just	0
+
+rhyme
+gone.	6	1
+song;	10	1
+
+rhyme
+you.	8	1
+to.	12	1
+
+CHORUS	13	1	I've	0	1
+
+rhyme
+rain.	13	1
+end.	15	1
+friend,	17	1
+gain.	19	1
+
+exactBinaryMatch
+I've	13	1	1
+gain.	19	1
+
+VERSE	21	1	Won't	-1
+
+rhyme
+stand.	23	1
+hand.	27	1
+
+rhyme
+day.	25	1
+way.	29	1
+
+CHORUS	30	1	I've	0	1
+
+rhyme
+rain.	30	1
+end.	33	1
+friend.	35	1
+gain.	36	1
+
+exactBinaryMatch
+I've	30	1	1
+gain.	36	1
+
+VERSE	38	1	Been	-1
+
+rhyme
+sun.	40	1
+come.	44	1
+
+rhyme
+round.	42	1
+ground.	46	1
+
+rhyme
+time	43	1
+line	43	1
+
+rhyme
+dreams	45	1
+chines	45	1
+
+CHORUS	47	1	I've	0	1
+
+rhyme
+rain.	47	1
+end.	50	1
+friend.	51	1
+gain	54	1
+
+exactBinaryMatch
+I've	47	1	1
+gain	54	1
+
+OUTRO	55	1	Thought	-1

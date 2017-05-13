@@ -3,16 +3,12 @@ package tabcomplete.alignment;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 import data.MusicXMLParser.Harmony;
 import data.MusicXMLParser.Note;
 import data.MusicXMLParser.NoteLyric;
-import data.MusicXMLParser.Time;
 import data.ParsedMusicXMLObject;
-import utils.Triple;
-import utils.Utils;
+import globalstructureinference.GlobalStructureInferer.GlobalStructureAlignmentParameterization;
 
 public class MusicXMLPair extends SequencePair {
 
@@ -66,29 +62,24 @@ public class MusicXMLPair extends SequencePair {
 		}
 	}
 
-	private SortedMap<Integer, SortedMap<Integer, Note>> notesByMeasure1;
-	private SortedMap<Integer, SortedMap<Integer, Note>> notesByMeasure2;
-	private double identityWeight, lyricWeight, harmonyWeight, melodyWeight;
-	private SortedMap<Integer, SortedMap<Integer, Harmony>> harmonyByMeasure1;
-	private SortedMap<Integer, SortedMap<Integer, Harmony>> harmonyByMeasure2;
-	private ParsedMusicXMLObject musicXML1;
-	private ParsedMusicXMLObject musicXML2;
+	private List<ParsedMusicXMLObject.MusicXMLAlignmentEvent> musicXML1Events, musicXML2Events;
 	
-	public MusicXMLPair(ParsedMusicXMLObject musicXML, ParsedMusicXMLObject musicXML2, 
-			double identityWeight, double lyricWeight, double harmonyWeight, double melodyWeight) {
+	private GlobalStructureAlignmentParameterization scoringValues;
+	private int seq1Length, seq2Length;
+	
+	public MusicXMLPair(ParsedMusicXMLObject musicXML1, ParsedMusicXMLObject musicXML2, 
+			GlobalStructureAlignmentParameterization globalStructureAlignmentParameterization) {
+		PERCEPTRON_ERROR_TOTAL = 0.0;
+		PERCEPTRON_ERROR_COUNT = 0;
 		
-		this.notesByMeasure1 = musicXML1.getNotesByPlayedMeasureAsMap();
-		this.notesByMeasure2 = musicXML2.getNotesByPlayedMeasureAsMap();
+		System.out.println("Aligning mxl: " + musicXML1.filename + " and " + musicXML2.filename + " at " + globalStructureAlignmentParameterization.eventsPerBeat + " events/beat intervals");
 		
-		this.harmonyByMeasure1 = musicXML1.getUnoverlappingHarmonyByPlayedMeasureAsMap();
-		this.harmonyByMeasure2 = musicXML2.getUnoverlappingHarmonyByPlayedMeasureAsMap();
+		this.musicXML1Events = musicXML1.getAlignmentEvents(globalStructureAlignmentParameterization.eventsPerBeat);
+		this.musicXML2Events = musicXML2.getAlignmentEvents(globalStructureAlignmentParameterization.eventsPerBeat);
 		
-		this.identityWeight = identityWeight;
-		this.lyricWeight = lyricWeight;
-		this.harmonyWeight = harmonyWeight;
-		this.melodyWeight = melodyWeight;
-		this.musicXML1 = musicXML;
-		this.musicXML2 = musicXML2;
+		this.scoringValues = globalStructureAlignmentParameterization;
+		seq1Length = (int) (musicXML1.getDurationInBeats() * globalStructureAlignmentParameterization.eventsPerBeat);
+		seq2Length = (int) (musicXML2.getDurationInBeats() * globalStructureAlignmentParameterization.eventsPerBeat);
 	}
 
 	@Override
@@ -101,128 +92,111 @@ public class MusicXMLPair extends SequencePair {
 	 * Return the score of aligning the elements in measure number mXML1MsrNo in musicXML1 with the elements 
 	 * in mXML2MsrNo in musicXML2, using the various element weights given in the constructor. 
 	 */
-	public double matchScore(int mXML1MsrNo, int mXML2MsrNo) {
-//		return matchScoreViaElementAlignment(mXML1MsrNo, mXML2MsrNo);
-		return matchScoreViaDivComparison(mXML1MsrNo, mXML2MsrNo);
+	public double matchScore(int mXML1EventNo, int mXML2EventNo) {
+		//TODO
+		
+//		System.out.println("Computing match score for mXML1EventNo " + mXML1EventNo + " and mXML2EventNo " + mXML2EventNo);
+		
+		ParsedMusicXMLObject.MusicXMLAlignmentEvent musicXML1AlignmentEvent = musicXML1Events.get(mXML1EventNo);
+		ParsedMusicXMLObject.MusicXMLAlignmentEvent musicXML2AlignmentEvent = musicXML2Events.get(mXML2EventNo);
+		
+//		Pair<Integer, Double> mXML1MeasureBeat = musicXML1.getMeasureAndBeatForEvent(mXML1EventNo, scoringValues.eventsPerBeat);
+//		final Integer mXML1Measure = mXML1MeasureBeat.getFirst();
+//		final Double mXML1Beat = mXML1MeasureBeat.getSecond();
+//		assert(mXML1Beat == musicXML1AlignmentEvent.beat);
+//		
+//		Pair<Integer, Double> mXML2MeasureBeat = musicXML2.getMeasureAndBeatForEvent(mXML2EventNo, scoringValues.eventsPerBeat);
+//		final Integer mXML2Measure = mXML2MeasureBeat.getFirst();
+//		final Double mXML2Beat = mXML2MeasureBeat.getSecond();
+//		assert(mXML2Beat == musicXML2AlignmentEvent.beat);
+
+		Note mXML1Note = musicXML1AlignmentEvent.note;
+		Note mXML2Note = musicXML2AlignmentEvent.note;
+		
+		int mXML1Pitch = mXML1Note.pitch;
+		boolean mXML1PitchOnset = musicXML1AlignmentEvent.noteOnset;
+		int mXML2Pitch = mXML2Note.pitch;
+		boolean mXML2PitchOnset = musicXML2AlignmentEvent.noteOnset;
+		
+		Harmony mXML1Harmony = musicXML1AlignmentEvent.harmony;
+		boolean mXML1HarmonyOnset = musicXML1AlignmentEvent.harmonyOnset;
+		Harmony mXML2Harmony =  musicXML2AlignmentEvent.harmony;
+		boolean mXML2HarmonyOnset = musicXML2AlignmentEvent.harmonyOnset;
+		
+		NoteLyric mXML1Lyric =  musicXML1AlignmentEvent.lyric;
+		boolean mXML1LyricOnset =  musicXML1AlignmentEvent.lyricOnset;
+		NoteLyric mXML2Lyric = musicXML2AlignmentEvent.lyric;
+		boolean mXML2LyricOnset = musicXML2AlignmentEvent.lyricOnset;
+
+//		System.out.println("\tThis corresponds to m " + mXML1Measure + ", b " + mXML1Beat + ":");
+//		System.out.println("\t\tpitch:" + Pitch.getPitchName((mXML1Pitch+3)%12) + (mXML1PitchOnset?" ONSET":""));
+//		System.out.println("\t\tharmony:" + mXML1Harmony + (mXML1HarmonyOnset?" ONSET":""));
+//		System.out.println("\t\tlyric:" + mXML1Lyric + (mXML1LyricOnset?" ONSET":""));
+//		System.out.println("\tand m " + mXML2Measure + ", b " + mXML2Beat + ":");
+//		System.out.println("\t\tpitch:" + Pitch.getPitchName((mXML2Pitch+3)%12) + (mXML2PitchOnset?" ONSET":""));
+//		System.out.println("\t\tharmony:" + mXML2Harmony + (mXML2HarmonyOnset?" ONSET":""));
+//		System.out.println("\t\tlyric:" + mXML2Lyric + (mXML2LyricOnset?" ONSET":""));
+		
+		
+		//features
+		int pitchesEqual = (mXML1Pitch == mXML2Pitch ? 1 : 0);
+		int bothRests = (mXML1Pitch == Note.REST && mXML2Pitch == Note.REST? 1 : 0);
+		int oneRests = ((mXML1Pitch != mXML2Pitch && (mXML1Pitch == Note.REST || mXML2Pitch == Note.REST))? 1 : 0);
+		int neitherRests = ((mXML1Pitch != Note.REST && mXML2Pitch != Note.REST)? 1 : 0);
+		int bothPitchesOnset = (mXML1PitchOnset && mXML2PitchOnset ? 1 : 0);
+		int bothPitchesNotOnset = (!mXML1PitchOnset && !mXML2PitchOnset ? 1 : 0);
+		int onePitchOnsetOneNot = (mXML1PitchOnset != mXML2PitchOnset ? 1 : 0);
+		int pitchDifference = Math.abs(mXML1Pitch - mXML2Pitch);
+		
+		int harmonyEqual = (mXML1Harmony.equals(mXML2Harmony) ? 1 : 0);
+		int bothHarmoniesOnset = (mXML1HarmonyOnset && mXML2HarmonyOnset ? 1 : 0);
+		int bothHarmoniesNotOnset = (!mXML1HarmonyOnset && !mXML2HarmonyOnset ? 1 : 0);
+		int oneHarmonyOnsetOneNot = (mXML1HarmonyOnset != mXML2HarmonyOnset ? 1 : 0);
+		int harmonyDifference;
+		
+		int lyricsEqual = ((mXML1Lyric == null && mXML2Lyric == null) || (mXML1Lyric != null && mXML1Lyric.equals(mXML2Lyric)) ? 1 : 0);
+		int bothLyricsOnset = (mXML1LyricOnset && mXML2LyricOnset ? 1 : 0);
+		int bothLyricsNotOnset = (!mXML1LyricOnset && !mXML2LyricOnset ? 1 : 0);
+		int oneLyricOnsetOneNot = (mXML1LyricOnset != mXML2LyricOnset ? 1 : 0);
+		
+		// calculate output
+		double y = 0.;
+//		y = pitchesEqual * scoringValues.pitchesEqual * PERCEPTRON_LEARNING_RATE;
+//		y += bothRests * scoringValues.bothRests * PERCEPTRON_LEARNING_RATE;
+//		y += oneRests * scoringValues.oneRests * PERCEPTRON_LEARNING_RATE;
+//		y += neitherRests * scoringValues.neitherRests * PERCEPTRON_LEARNING_RATE;
+//		y += bothPitchesOnset * scoringValues.bothPitchesOnset * PERCEPTRON_LEARNING_RATE;
+//		y += bothPitchesNotOnset * scoringValues.bothPitchesNotOnset * PERCEPTRON_LEARNING_RATE;
+//		y += onePitchOnsetOneNot * scoringValues.onePitchOnsetOneNot * PERCEPTRON_LEARNING_RATE;
+//		y += pitchDifference * scoringValues.pitchDifference * PERCEPTRON_LEARNING_RATE;
+//		y += harmonyEqual * scoringValues.harmonyEqual * PERCEPTRON_LEARNING_RATE;
+//		y += bothHarmoniesOnset * scoringValues.bothHarmoniesNotOnset * PERCEPTRON_LEARNING_RATE;
+//		y += bothHarmoniesNotOnset * scoringValues.bothHarmoniesNotOnset * PERCEPTRON_LEARNING_RATE;
+//		y += oneHarmonyOnsetOneNot * scoringValues.oneHarmonyOnsetOneNot * PERCEPTRON_LEARNING_RATE;
+		y += lyricsEqual * scoringValues.lyricsEqual;
+//		y += bothLyricsOnset * scoringValues.bothLyricsOnset * PERCEPTRON_LEARNING_RATE;
+//		y += bothLyricsNotOnset * scoringValues.bothLyricsNotOnset * PERCEPTRON_LEARNING_RATE;
+//		y += oneLyricOnsetOneNot * scoringValues.oneLyricOnsetOneNot * PERCEPTRON_LEARNING_RATE;
+		
+		return y;
 	}
-
-	private double matchScoreViaDivComparison(int mXML1MsrNo, int mXML2MsrNo) {
-		double score = 0.0;
-		
-		if (identityWeight == 0.0 && mXML1MsrNo == mXML2MsrNo) {
-			return score;
-		}
-		
-		SortedMap<Integer, Note> notesfor1Measure = notesByMeasure1.get(mXML1MsrNo);
-		SortedMap<Integer, Note> notesfor2Measure = notesByMeasure2.get(mXML2MsrNo);
-		SortedMap<Integer, Harmony> harmoniesfor1Measure = harmonyByMeasure1.get(mXML1MsrNo);
-		SortedMap<Integer, Harmony> harmoniesfor2Measure = harmonyByMeasure2.get(mXML2MsrNo);
-
-		Time time1 = musicXML1.getTimeForMeasure(mXML1MsrNo);
-		int beatsIn1Msr = time1.beats;
-		Time time2 = musicXML2.getTimeForMeasure(mXML2MsrNo);
-		int beatsIn2Msr = time2.beats;
-		int comparableBeats = Math.min(beatsIn1Msr, beatsIn2Msr);
-
-		double divsPerBeatIn1Msr = musicXML1.getDivsPerQuarterForAbsoluteMeasure(mXML1MsrNo) * (4.0/time1.beatType);
-		double divsPerBeatIn2Msr = musicXML2.getDivsPerQuarterForAbsoluteMeasure(mXML2MsrNo) * (4.0/time2.beatType);
-		
-		// max number of divs we consider is 12
-		double comparableDivs = Math.min(4.0, Math.max(divsPerBeatIn1Msr, divsPerBeatIn2Msr));
-		double divs1PerComparedDiv = divsPerBeatIn1Msr/comparableDivs;
-		double divs2PerComparedDiv = divsPerBeatIn2Msr/comparableDivs;
-		System.err.println("Comparing measures " + mXML1MsrNo + " and " + mXML2MsrNo);
-//		System.err.println("divsPerBeatIn1Msr = " + divsPerBeatIn1Msr);
-//		System.err.println("divsPerBeatIn2Msr = " + divsPerBeatIn2Msr);
-//		System.err.println("ComparableDivs = " + comparableDivs);
-		// for each comparable beat
-		double divsOffset1 = 0;
-		double divsOffset2 = 0;
-
-		double lyricScore = 0.0;
-		double melodyScore = 0.0;
-		double harmonyScore = 0.0;
-		
-		
-		//note that all pitches and harmonies are already normalized to the key for the measure, which we are ignoring (measures that are identical but in different keys—we count them as identical)
-		for (int beat = 0; beat < comparableBeats; beat++) {
-			for (int div = 0; div < comparableDivs; div++) {
-				// Calculate divs offset for both measures
-				if (lyricWeight != 0.0 || melodyWeight != 0.0) { 
-//					System.err.println("ComparbleDiv #" + (beat * comparableDivs + div));
-					Note note1 = Utils.valueForKeyBeforeOrEqualTo((int) divsOffset1,notesfor1Measure);
-					Note note2 = Utils.valueForKeyBeforeOrEqualTo((int) divsOffset2,notesfor2Measure);
-//					System.err.println("Note1 (divOffset " + divsOffset1 + "):" + note1);
-//					System.err.println("Note2 (divOffset " + divsOffset2 + "):" + note2);
-					
-					// calculate the subscore for lyrics
-					if (lyricWeight != 0.0) {
-						NoteLyric note1Lyric = note1.getLyric(false);
-						NoteLyric note2Lyric = note2.getLyric(false);
-						if (note1Lyric == null && note2Lyric == null || note1Lyric !=null && note1Lyric.equals(note2Lyric)) {
-							lyricScore += SequencePair.MATCH_SCORE;
-						} else {
-							lyricScore += SequencePair.MISMATCH_SCORE;
-						}
-					}
-					
-					// calculate the subscore for melody
-					if (melodyWeight != 0.0 && note1.pitch == note2.pitch) {
-						melodyScore += SequencePair.MATCH_SCORE;
-					} else {
-						melodyScore += SequencePair.MISMATCH_SCORE;
-					}
-				}
-				
-				// calculate the subscore for harmony
-				if (harmonyWeight != 0.0) {
-					Harmony harmony1, harmony2;
-					
-					if (harmoniesfor1Measure == null) harmony1 = Utils.valueForKeyBeforeOrEqualTo(mXML1MsrNo,(int) divsOffset1,harmonyByMeasure1);
-					else harmony1 = Utils.valueForKeyBeforeOrEqualTo((int) divsOffset1,harmoniesfor1Measure);
-
-					if (harmoniesfor2Measure == null) harmony2 = Utils.valueForKeyBeforeOrEqualTo(mXML2MsrNo,(int) divsOffset2,harmonyByMeasure2);
-					else harmony2 = Utils.valueForKeyBeforeOrEqualTo((int) divsOffset2,harmoniesfor2Measure);
-					
-//					System.err.println("Harmony1 (divOffset " + divsOffset1 + "):" + harmony1);
-//					System.err.println("Harmony2 (divOffset " + divsOffset2 + "):" + harmony2);
-					
-					if (harmony1 == null && harmony2 == null || harmony1 != null && harmony1.equals(harmony2)) {
-						harmonyScore += SequencePair.MATCH_SCORE;
-					} else {
-						harmonyScore += SequencePair.MISMATCH_SCORE;
-					}
-				}
-				
-				divsOffset1 += divs1PerComparedDiv;
-				divsOffset2 += divs2PerComparedDiv;
-			}
-		}
-		
-		score += lyricWeight * lyricScore;
-		score += melodyWeight * melodyScore;
-		score += harmonyWeight * harmonyScore;
-
-		score /= (comparableBeats*comparableDivs);
-		System.err.println("Normalized score for lyrics:" + lyricWeight * lyricScore);
-		System.err.println("Normalized score for melody:" + melodyWeight * melodyScore);
-		System.err.println("Normalized score for harmony:" + harmonyWeight * harmonyScore);
-		System.err.println("Normalized score for measure:" + score);
-		
-		if (mXML1MsrNo == mXML2MsrNo)
-			return identityWeight * score;
-		else
-			return score;
-	}
-
+	
+	public static double PERCEPTRON_ERROR_TOTAL = -1.0;
+	public static int PERCEPTRON_ERROR_COUNT = 0;
+	
 	@Override
 	public int seq1length() {
-		return musicXML1.getMeasureCount();
+		return seq1Length;
 	}
 
 	@Override
 	public int seq2length() {
-		return musicXML2.getMeasureCount();
+		return seq2Length;
 	}
-
+	
+	@Override
+	public boolean saveMatrix() {
+		System.out.println("STORING MATRIX");
+		return true;
+	}
 }

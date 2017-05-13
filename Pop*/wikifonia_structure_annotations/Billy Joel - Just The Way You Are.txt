@@ -10,6 +10,8 @@ rhyme
 far	26	1
 are	34	1
 
+TAGCHORUS	33	1	0.0	0
+
 exactBinaryMatch
 just	33	1
 are	34	1
@@ -33,6 +35,8 @@ care	52	1
 rhyme
 hard	60	1
 are	68	1
+
+TAGCHORUS	67	1	0.0	0
 
 exactBinaryMatch
 just	67	1
@@ -64,6 +68,8 @@ rhyme
 heart	94	1
 are	102	1
 
+TAGCHORUS	101	1	0.0	0
+
 exactBinaryMatch
 just	101	1
 are	102	1
@@ -75,6 +81,8 @@ VERSE	89	2	0.0	0
 rhyme
 hard	116	1
 are	124	1
+
+TAGCHORUS	123	1	0.0	0
 
 exactBinaryMatch
 just	123	1

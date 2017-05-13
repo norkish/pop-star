@@ -120,6 +120,10 @@ public class DistributionalGlobalStructureEngineer extends GlobalStructureEngine
 			CategoryPlot plot = barChart.getCategoryPlot();
 			plot.setBackgroundPaint(Color.WHITE);
 			plot.setOutlineVisible(false);
+			plot.getDomainAxis().setLabelFont(MusicXMLModel.CHART_LABEL_FONT);
+			plot.getDomainAxis().setTickLabelFont(MusicXMLModel.CHART_AXIS_FONT);
+			plot.getRangeAxis().setLabelFont(MusicXMLModel.CHART_LABEL_FONT);
+			plot.getRangeAxis().setTickLabelFont(MusicXMLModel.CHART_AXIS_FONT);
 
 			BarRenderer renderer = (BarRenderer) plot.getRenderer();
 			renderer.setBarPainter(new StandardBarPainter());
@@ -129,7 +133,7 @@ public class DistributionalGlobalStructureEngineer extends GlobalStructureEngine
 
 			rangeAxis.setTickUnit(new NumberTickUnit(tickUnit));
 			
-			int width = 640; /* Width of the image */
+			int width = 1280; /* Width of the image */
 			int height = 480; /* Height of the image */
 			File BarChart = new File(GRAPH_DIR + "/global_structure.jpeg");
 			if (BarChart.exists())

@@ -1,0 +1,155 @@
+\begin{thebibliography}{}
+
+\bibitem[\protect\citeauthoryear{Bodily, Bay, and
+  Ventura}{2017}]{bodily2017ICCC}
+Bodily, P.; Bay, B.; and Ventura, D.
+\newblock 2017.
+\newblock Computational creativity via human-level concept learning.
+\newblock To Appear in Proceedings of the Eighth International Conference on
+  Computational Creativity.
+
+\bibitem[\protect\citeauthoryear{Chuan and Chew}{2011}]{chuan2011generating}
+Chuan, C.-H., and Chew, E.
+\newblock 2011.
+\newblock Generating and evaluating musical harmonizations that emulate style.
+\newblock {\em Computer Music Journal} 35(4):64--82.
+
+\bibitem[\protect\citeauthoryear{Conklin and
+  Witten}{1995}]{conklin1995multiple}
+Conklin, D., and Witten, I.~H.
+\newblock 1995.
+\newblock Multiple viewpoint systems for music prediction.
+\newblock {\em Journal of New Music Research} 24(1):51--73.
+
+\bibitem[\protect\citeauthoryear{Cope}{1989}]{cope1989experiments}
+Cope, D.
+\newblock 1989.
+\newblock Experiments in musical intelligence ({EMI}): Non-linear
+  linguistic-based composition.
+\newblock {\em Journal of New Music Research} 18(1-2):117--139.
+
+\bibitem[\protect\citeauthoryear{Dixon, Mauch, and
+  Anglade}{2010}]{dixon2010probabilistic}
+Dixon, S.; Mauch, M.; and Anglade, A.
+\newblock 2010.
+\newblock Probabilistic and logic-based modelling of harmony.
+\newblock In {\em Proceedings of the Seventh International Symposium on
+  Computer Music Modeling and Retrieval},  1--19.
+\newblock Springer.
+
+\bibitem[\protect\citeauthoryear{Hofstadter}{1980}]{hofstadter1980godel}
+Hofstadter, D.~H.
+\newblock 1980.
+\newblock {\em G{\"o}del, Escher, Bach: An Eternal Golden Braid;[a Metaphoric
+  Fugue on Minds and Machines in the Spirit of Lewis Carroll].}
+\newblock Penguin Books.
+
+\bibitem[\protect\citeauthoryear{Hyer}{2001}]{hyer2001}
+Hyer, B.
+\newblock 2001.
+\newblock Tonality.
+\newblock In Sadie, S., and Tyrrell, J., eds., {\em The New Grove Dictionary of
+  Music and Musicians}. London: Macmillan Publishers, 2 edition.
+
+\bibitem[\protect\citeauthoryear{Lake, Salakhutdinov, and
+  Tenenbaum}{2015}]{lake2015human}
+Lake, B.~M.; Salakhutdinov, R.; and Tenenbaum, J.~B.
+\newblock 2015.
+\newblock Human-level concept learning through probabilistic program induction.
+\newblock {\em Science} 350(6266):1332--1338.
+
+\bibitem[\protect\citeauthoryear{Meyer}{2008}]{meyer2008emotion}
+Meyer, L.~B.
+\newblock 2008.
+\newblock {\em Emotion and Meaning in Music}.
+\newblock University of Chicago Press.
+
+\bibitem[\protect\citeauthoryear{Monteith, Martinez, and
+  Ventura}{2012}]{monteith2012automatic}
+Monteith, K.; Martinez, T.; and Ventura, D.
+\newblock 2012.
+\newblock Automatic generation of melodic accompaniments for lyrics.
+\newblock In {\em Proceedings of the International Conference on Computational
+  Creativity},  87--94.
+
+\bibitem[\protect\citeauthoryear{Pachet and Roy}{2014}]{pachet2014imitative}
+Pachet, F., and Roy, P.
+\newblock 2014.
+\newblock Imitative leadsheet generation with user constraints.
+\newblock In {\em Proceedings of the Twenty-first European Conference on
+  Artificial Intelligence},  1077--1078.
+\newblock IOS Press.
+
+\bibitem[\protect\citeauthoryear{Pachet \bgroup et al\mbox.\egroup
+  }{2011}]{pachet2001finite}
+Pachet, F.; Roy, P.; Barbieri, G.; and Paris, S.~C.
+\newblock 2011.
+\newblock Finite-length {M}arkov processes with constraints.
+\newblock In {\em Proceedings of the Twenty-Second International Joint
+  Conference on Artificial Intelligence},  635--642.
+
+\bibitem[\protect\citeauthoryear{Pachet}{1991}]{pachet1991representing}
+Pachet, F.
+\newblock 1991.
+\newblock Representing knowledge used by jazz musicians.
+\newblock In {\em Proceedings of the International Computer Music Conference},
+  285--285.
+\newblock International Computer Music Association.
+
+\bibitem[\protect\citeauthoryear{Paiement, Eck, and
+  Bengio}{2005}]{paiement2005chord}
+Paiement, J.-F.; Eck, D.; and Bengio, S.
+\newblock 2005.
+\newblock Chord representations for probabilistic models.
+\newblock Technical report, IDIAP.
+
+\bibitem[\protect\citeauthoryear{Papadopoulos and
+  Wiggins}{1999}]{papadopoulos1999ai}
+Papadopoulos, G., and Wiggins, G.
+\newblock 1999.
+\newblock {AI} methods for algorithmic composition: A survey, a critical view
+  and future prospects.
+\newblock In {\em Proceedings of the AISB Symposium on Musical Creativity},
+  110--117.
+\newblock Edinburgh, UK.
+
+\bibitem[\protect\citeauthoryear{Ramakrishnan~A, Kuppan, and
+  Devi}{2009}]{ramakrishnan2009automatic}
+Ramakrishnan~A, A.; Kuppan, S.; and Devi, S.~L.
+\newblock 2009.
+\newblock Automatic generation of {T}amil lyrics for melodies.
+\newblock In {\em Proceedings of the Workshop on Computational Approaches to
+  Linguistic Creativity},  40--46.
+\newblock Association for Computational Linguistics.
+
+\bibitem[\protect\citeauthoryear{Scirea \bgroup et al\mbox.\egroup
+  }{2015}]{scirea2015smug}
+Scirea, M.; Barros, G.~A.; Shaker, N.; and Togelius, J.
+\newblock 2015.
+\newblock {SMUG}: Scientific music generator.
+\newblock In {\em Proceedings of the Sixth International Conference on
+  Computational Creativity June},  204--211.
+
+\bibitem[\protect\citeauthoryear{Steedman}{1984}]{steedman1984generative}
+Steedman, M.~J.
+\newblock 1984.
+\newblock A generative grammar for jazz chord sequences.
+\newblock {\em Music Perception: An Interdisciplinary Journal} 2(1):52--77.
+
+\bibitem[\protect\citeauthoryear{Toivanen \bgroup et al\mbox.\egroup
+  }{2013}]{toivanen2013automatical}
+Toivanen, J.~M.; Toivonen, H.; Valitutti, A.; et~al.
+\newblock 2013.
+\newblock Automatical composition of lyrical songs.
+\newblock In {\em Proceedings of the Fourth International Conference on
+  Computational Creativity},  87--91.
+
+\bibitem[\protect\citeauthoryear{van~den Oord \bgroup et al\mbox.\egroup
+  }{2016}]{van2016wavenet}
+van~den Oord, A.; Dieleman, S.; Zen, H.; Simonyan, K.; Vinyals, O.; Graves, A.;
+  Kalchbrenner, N.; Senior, A.; and Kavukcuoglu, K.
+\newblock 2016.
+\newblock Wavenet: A generative model for raw audio.
+\newblock ArXiv e-prints 1609.03499.
+
+\end{thebibliography}

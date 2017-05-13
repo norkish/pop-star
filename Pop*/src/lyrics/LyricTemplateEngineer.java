@@ -16,6 +16,7 @@ import java.util.TreeMap;
 import composition.Measure;
 import composition.Score;
 import condition.Rhyme;
+import config.SongConfiguration;
 import data.MusicXMLModel;
 import data.MusicXMLModelLearner;
 import data.MusicXMLParser.Note;
@@ -100,7 +101,7 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 			return str.toString();
 		}
 
-		private static Random rand = new Random();
+		private static Random rand = new Random(SongConfiguration.randSeed);
 		/**
 		 * returned template may contain nulls to pad to phraseLength if no template can be found that perfectly matches phraseLength 
 		 * @param phraseLength
@@ -274,8 +275,8 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 	}
 
 	private void printTemplateForLyrist(Inspiration inspiration, List<Triple<SegmentType, List<List<NoteLyric>>, List<Integer>>> templatesBySegment) {
-		File lyricFile = new File("externalLyrics.txt");
-//		File lyricFile = new File("lyricTemplate.txt");
+//		File lyricFile = new File("externalLyrics.txt");
+		File lyricFile = new File("lyricTemplate.txt");
 //		File rhymeFile = new File("rhymeTemplate.txt");
 		PrintWriter lyricFileWriter = null;
 		try {
@@ -299,16 +300,34 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 			for (int i = 0; i < templatePhrasesForSegment.size(); i++) {
 				List<NoteLyric> templatePhrase = templatePhrasesForSegment.get(i);
 				Integer rhymeGroupNumber = rhymeGroupLabels.get(i);
-				char rhymeGroupLabel = (char) (rhymeGroupNumber == null?' ':'A' + rhymeGroupNumber);
-				lyricFileWriter.print(rhymeGroupLabel + "\t");
+				if (rhymeGroupNumber != null) lyricFileWriter.print(rhymeGroupNumber + 1);
+				lyricFileWriter.print("\t");
 				for (NoteLyric noteLyric : templatePhrase) {
 					if (noteLyric == null) {
-						lyricFileWriter.print("null ");
+						lyricFileWriter.print("[[buffer]] ");
 					} else {
-						lyricFileWriter.print(noteLyric.text + (noteLyric.syllabic == Syllabic.SINGLE || noteLyric.syllabic == Syllabic.END?' ':'•'));
+						switch (noteLyric.syllabic) {
+						case SINGLE:
+						case END:
+							lyricFileWriter.print(noteLyric.text + ' ');
+							break;
+						case BEGIN:
+						case MIDDLE:
+						case TRAILING_HYPHENATION:
+							lyricFileWriter.print(noteLyric.text + '•');
+							break;
+						case LEADING_HYPHENATION:
+							lyricFileWriter.print('•' + noteLyric.text);
+							break;
+						case LEADING_AND_TRAILING_HYPHENATION:
+							lyricFileWriter.print('•' + noteLyric.text + '•');
+							break;
+						default:
+							break;
+						}
 					}
 				}
-				lyricFileWriter.println(".");
+				lyricFileWriter.println();
 			}
 			lyricFileWriter.println();
 		}
@@ -436,8 +455,8 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 		List<Triple<SegmentType, List<List<NoteLyric>>, List<Integer>>> externalLyrics = new ArrayList<Triple<SegmentType, List<List<NoteLyric>>, List<Integer>>>();
 		
 		Scanner sysScan = new Scanner(System.in);
-		System.out.println("Press enter when ready to load lyrics from file:");
-		sysScan.nextLine();
+		System.out.println("Press enter when ready to load lyrics from externalLyrics.txt file:");
+//		sysScan.nextLine();
 		sysScan.close();
 		
 		Scanner fileScan = null;

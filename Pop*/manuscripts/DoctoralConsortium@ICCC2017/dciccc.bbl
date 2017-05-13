@@ -1,0 +1,83 @@
+\begin{thebibliography}{}
+
+\bibitem[\protect\citeauthoryear{Bodily and Ventura}{2017}]{bodily2017Mume}
+Bodily, P., and Ventura, D.
+\newblock 2017.
+\newblock Musical metacreation using the hierarchical {B}ayesian program
+  learning framework.
+\newblock Submitted to MUME2017.
+
+\bibitem[\protect\citeauthoryear{Bodily, Bay, and
+  Ventura}{2017}]{bodily2017ICCC}
+Bodily, P.; Bay, B.; and Ventura, D.
+\newblock 2017.
+\newblock Computational creativity via human-level concept learning.
+\newblock To Appear in Proceedings of the Eighth International Conference on
+  Computational Creativity.
+
+\bibitem[\protect\citeauthoryear{Colton and
+  Wiggins}{2012}]{colton2012computational}
+Colton, S., and Wiggins, G.~A.
+\newblock 2012.
+\newblock Computational creativity: The final frontier?
+\newblock In {\em Proceedings of the 20th European conference on artificial
+  intelligence},  21--26.
+\newblock IOS Press.
+
+\bibitem[\protect\citeauthoryear{Gon{\c{c}}alo~Oliveira}{2015}]{gonccalo2015tra}
+Gon{\c{c}}alo~Oliveira, H.
+\newblock 2015.
+\newblock Tra-la-lyrics 2.0: Automatic generation of song lyrics on a semantic
+  domain.
+\newblock {\em Journal of Artificial General Intelligence} 6(1):87--110.
+
+\bibitem[\protect\citeauthoryear{Lake, Salakhutdinov, and
+  Tenenbaum}{2015}]{lake2015human}
+Lake, B.~M.; Salakhutdinov, R.; and Tenenbaum, J.~B.
+\newblock 2015.
+\newblock Human-level concept learning through probabilistic program induction.
+\newblock {\em Science} 350(6266):1332--1338.
+
+\bibitem[\protect\citeauthoryear{Monteith, Martinez, and
+  Ventura}{2012}]{monteith2012automatic}
+Monteith, K.; Martinez, T.; and Ventura, D.
+\newblock 2012.
+\newblock Automatic generation of melodic accompaniments for lyrics.
+\newblock In {\em Proceedings of the International Conference on Computational
+  Creativity},  87--94.
+
+\bibitem[\protect\citeauthoryear{Papadopoulos, Roy, and
+  Pachet}{2016}]{papadopoulos2016assisted}
+Papadopoulos, A.; Roy, P.; and Pachet, F.
+\newblock 2016.
+\newblock Assisted lead sheet composition using flowcomposer.
+\newblock In {\em Proceedings of the International Conference on Principles and
+  Practice of Constraint Programming},  769--785.
+\newblock Springer.
+
+\bibitem[\protect\citeauthoryear{Ramakrishnan~A, Kuppan, and
+  Devi}{2009}]{ramakrishnan2009automatic}
+Ramakrishnan~A, A.; Kuppan, S.; and Devi, S.~L.
+\newblock 2009.
+\newblock Automatic generation of {T}amil lyrics for melodies.
+\newblock In {\em Proceedings of the Workshop on Computational Approaches to
+  Linguistic Creativity},  40--46.
+\newblock Association for Computational Linguistics.
+
+\bibitem[\protect\citeauthoryear{Scirea \bgroup et al.\egroup
+  }{2015}]{scirea2015smug}
+Scirea, M.; Barros, G.~A.; Shaker, N.; and Togelius, J.
+\newblock 2015.
+\newblock {SMUG}: Scientific music generator.
+\newblock In {\em Proceedings of the Sixth International Conference on
+  Computational Creativity June},  204--211.
+
+\bibitem[\protect\citeauthoryear{Toivanen \bgroup et al.\egroup
+  }{2013}]{toivanen2013automatical}
+Toivanen, J.~M.; Toivonen, H.; Valitutti, A.; et~al.
+\newblock 2013.
+\newblock Automatical composition of lyrical songs.
+\newblock In {\em Proceedings of the Fourth International Conference on
+  Computational Creativity},  87--91.
+
+\end{thebibliography}

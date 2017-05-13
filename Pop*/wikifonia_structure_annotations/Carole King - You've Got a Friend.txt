@@ -26,8 +26,15 @@ friend	34	1
 
 INTERLUDE	35	1	0.0	0
 
-VERSE	38	1	2.If	-1
-// missing lyrics
+VERSE	38	1	If	-1
+
+rhyme
+blow	10	2
+door	18	2
+
+rhyme
+clouds	7	2
+loud	15	2
 
 CHORUS	20	2	You	-1
 

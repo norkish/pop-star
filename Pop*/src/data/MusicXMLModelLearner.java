@@ -1,6 +1,7 @@
 package data;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -24,7 +25,7 @@ import tabcomplete.main.TabDriver;
 
 public class MusicXMLModelLearner {
 	private static final File[] files = new File(
-			TabDriver.dataDir + "/Wikifonia").listFiles();
+			TabDriver.dataDir + "/Wikifonia_edited_xmls").listFiles();
 
 	private static Map<Class,MusicXMLModel> trainedModels = null;
 
@@ -63,7 +64,7 @@ public class MusicXMLModelLearner {
 	
 	private static void trainModelsOnWholeDataset(Collection<MusicXMLModel> models) {
 		for (File file : files) {
-//			 if (!file.getName().equals(" Elton John, Bernie Taupin - Goodbye, Yellow Brick Road.mxl"))
+//			 if (!file.getName().equals(" Elton John, Bernie Taupin - Goodbye, Yellow Brick Road.xml"))
 //			 continue;
 			// if (file.getName().charAt(0) < 'T') {
 			// continue;
@@ -74,20 +75,21 @@ public class MusicXMLModelLearner {
 			System.out.println(file.getName());
 			MusicXMLParser musicXMLParser = null;
 			try {
-				final Document xml = MusicXMLSummaryGenerator.mxlToXML(file);
-				MusicXMLSummaryGenerator.printDocument(xml, System.out);
+//				final Document xml = MusicXMLSummaryGenerator.mxlToXML(file);
+				final Document xml = MusicXMLSummaryGenerator.parseXML(new FileInputStream(file));
+//				MusicXMLSummaryGenerator.printDocument(xml, System.out);
 
 				musicXMLParser = new MusicXMLParser(file.getName(), xml);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			WikifoniaCorrection.applyManualCorrections(musicXMLParser, file.getName());
+//			WikifoniaCorrection.applyManualCorrections(musicXMLParser, file.getName());
 			ParsedMusicXMLObject musicXML = musicXMLParser.parse(true);
 			if (musicXML == null) {
 				System.err.println("musicXML was null for " + file.getName());
 				continue;
 			}
-			System.out.println(musicXML);
+//			System.out.println(musicXML);
 			try {
 				StructureExtractor.annotateStructure(musicXML);
 	

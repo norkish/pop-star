@@ -1,0 +1,77 @@
+INTRO	1	1	0.0	0
+
+VERSE	8	1	You're	-1
+
+rhyme
+star	9	1
+car	10	1
+far	12	1
+
+rhyme	
+day	14	1
+say	15	1
+
+rhyme
+cute	18	1
+do	20	1
+
+rhyme
+true	22	1
+you	23	1
+
+CHORUS	24	1	and	-1
+
+rhyme
+swing	29	1
+thing	32	1
+
+exactBinaryMatch
+and	24	1
+thing	32	1
+
+INTERLUDE	33	1	1.0	0
+
+VERSE	36	1	You're	-1
+
+rhyme
+sel	37	1
+well	38	1
+bell	40	1
+
+rhyme
+space	42	1
+day	43	1
+
+rhyme
+man	46	1
+can	48	1
+
+rhyme
+through	50	1
+do.	51	1
+
+CHORUS	52	1	and	-1
+
+rhyme
+swing	57	1
+thing	60	1
+
+exactBinaryMatch
+and	52	1
+thing	60	1
+
+INTERLUDE	61	1	0.0	0
+
+BRIDGE	65	1	So	-1
+
+CHORUS	73	1	and	-1
+
+rhyme
+swing	78	1
+thing	82	1
+
+exactBinaryMatch
+and	73	1
+thing	82	1
+
+OUTRO	82	1	2.0	0

@@ -1,6 +1,7 @@
 package globalstructure;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,9 +15,11 @@ import java.util.Random;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.apache.commons.lang3.StringUtils;
 import org.tc33.jheatchart.HeatChart;
 
 import condition.ExactUnaryMatch;
+import config.SongConfiguration;
 import constraint.Constraint;
 import data.MusicXMLModel;
 import data.MusicXMLModelLearner;
@@ -85,7 +88,7 @@ public class MarkovGlobalStructureEngineer extends GlobalStructureEngineer {
 			}
 		}
 
-		Random rand = new Random();
+		Random rand = new Random(SongConfiguration.randSeed);
 		public int sampleMeasureCountForSegmentType() {
 			int offsetIntoDistribution = rand.nextInt(structureTotal);
 			
@@ -179,8 +182,8 @@ public class MarkovGlobalStructureEngineer extends GlobalStructureEngineer {
 			double[][] chartValues = new double[chartYDimension][chartXDimension];
 			
 			// set axis labels
-			yValues[0] = "START";
-			xValues[chartXDimension-1] = "END";
+			yValues[0] = "Start";
+			xValues[chartXDimension-1] = "End";
 			
 			int i = 0;
 			for (SegmentType type : statesByIndexSorted.keySet()) {
@@ -190,12 +193,12 @@ public class MarkovGlobalStructureEngineer extends GlobalStructureEngineer {
 					break;
 				
 				if (i < chartXDimension) {
-					xValues[i] = type.toString();
+					xValues[i] = StringUtils.capitalize(StringUtils.lowerCase(type.toString()));
 					Double prior = priors.get(typeID);
 					chartValues[0][i] = prior == null ? 0.0 : prior;
 				}
 				if (i < chartYDimension) {
-					yValues[i+1] = type.toString();
+					yValues[i+1] = StringUtils.capitalize(StringUtils.lowerCase(type.toString()));
 				}
 				i++;
 			}
@@ -240,13 +243,17 @@ public class MarkovGlobalStructureEngineer extends GlobalStructureEngineer {
 			chart.setXAxisLabel("Next Segment Type");
 			chart.setXValues(xValues);
 			chart.setYValues(yValues);
+			chart.setAxisLabelsFont(MusicXMLModel.CHART_LABEL_FONT);
+			chart.setAxisValuesFont(MusicXMLModel.CHART_AXIS_FONT);
+			chart.setCellSize(new Dimension(50,50));
 			
 			try {
 				chart.saveToFile(new File(GRAPH_DIR + "/segment_transitions.jpeg"));
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}		}
+			}		
+		}
 
 		private void segmentCountPerStructureDistributionToGraph() {
 //			Map<Integer, Integer> segmentCountPerStructureDistribution;
@@ -278,8 +285,16 @@ public class MarkovGlobalStructureEngineer extends GlobalStructureEngineer {
 			HeatChart chart = new HeatChart(chartValues);
 			chart.setHighValueColour(Color.RED);
 			chart.setLowValueColour(Color.BLUE);
+			chart.setAxisLabelsFont(MusicXMLModel.CHART_LABEL_FONT);
+			chart.setAxisValuesFont(MusicXMLModel.CHART_AXIS_FONT);
+			chart.setCellSize(new Dimension(50,50));
 			
 			chart.setShowYAxisValues(false);
+			Integer[] xVals = new Integer[chartValues[0].length];
+			for (int i = 0; i < xVals.length; i++) {
+				xVals[i] = i;
+			}
+			chart.setXValues(xVals);
 			chart.setXAxisLabel("Segment Count");
 			
 			try {

@@ -1,0 +1,49 @@
+This is BibTeX, Version 0.99d (TeX Live 2016)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: dciccc.aux
+The style file: iccc.bst
+Database file #1: ../all.bib
+Warning--empty journal in bodily2017Mume
+Warning--empty journal in bodily2017ICCC
+You've used 10 entries,
+            2568 wiz_defined-function locations,
+            637 strings with 6693 characters,
+and the built_in function-call counts, 4643 in all, are:
+= -- 509
+> -- 169
+< -- 6
++ -- 56
+- -- 56
+* -- 346
+:= -- 719
+add.period$ -- 53
+call.type$ -- 10
+change.case$ -- 67
+chr.to.int$ -- 10
+cite$ -- 12
+duplicate$ -- 196
+empty$ -- 335
+format.name$ -- 78
+if$ -- 998
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 10
+newline$ -- 66
+num.names$ -- 30
+pop$ -- 64
+preamble$ -- 1
+purify$ -- 77
+quote$ -- 0
+skip$ -- 163
+stack$ -- 0
+substring$ -- 259
+swap$ -- 64
+text.length$ -- 6
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 80
+warning$ -- 2
+while$ -- 41
+width$ -- 13
+write$ -- 146
+(There were 2 warnings)

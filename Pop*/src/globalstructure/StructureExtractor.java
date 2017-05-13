@@ -124,7 +124,7 @@ public class StructureExtractor {
 		
 		// First load contents of file
 		Scanner scan;
-		String filename = musicXML.filename.replaceFirst("mxl(\\.[\\d])?", "txt");
+		String filename = musicXML.filename.replaceFirst("xml(\\.[\\d])?", "txt");
 		try {
 			scan = new Scanner(new File(STRUCTURE_ANNOTATIONS_DIR + "/" + filename));
 		} catch (FileNotFoundException e) {
@@ -209,7 +209,7 @@ public class StructureExtractor {
 						offsetNote = findNoteInMeasureWithLyric(notesMap.get(measure), tokens[0], currType.mustHaveDifferentLyricsOnRepeats(), occurrence);
 					} catch (Exception ex) {
 						System.err.println("AT LINE " + lineNum + ": In measure " + measure + " in " + filename);
-						throw new RuntimeException(e);
+						throw new RuntimeException(ex);
 					}
 					double offsetInBeats = musicXML.divsToBeats(offsetNote.getFirst(), measure);
 					// add it to constrained Notes
@@ -265,6 +265,7 @@ public class StructureExtractor {
 			}
 		} else if (conditionClass == ExactBinaryMatch.class) {
 			// if it's an exact match, we place a constraint on all of the positions
+			assert constrainedNotes.size() == 2; // first is start, second is end (inclusive)
 			for (Triple<Integer,Double,Note> triple : constrainedNotes) {
 				Constraint<NoteLyric> constraint = new Constraint<NoteLyric>(new ExactBinaryMatch<NoteLyric>(ExactBinaryMatch.PREV_VERSE, ExactBinaryMatch.PREV_VERSE), true);
 				enumeratedConstraints.add(new Triple<Integer, Double, Constraint<NoteLyric>>(triple.getFirst(), triple.getSecond(), constraint));
@@ -302,7 +303,8 @@ public class StructureExtractor {
 	}
 
 	public static boolean annotationsExistForFile(File MusicXMLFile) {
-		String filename = MusicXMLFile.getName().replaceFirst("mxl(\\.[\\d])?", "txt");
+		String filename = MusicXMLFile.getName().replaceFirst("\\.xml", ".txt");
+		if (filename.equals(".DS_Store")) return false;
 		File file =  new File(STRUCTURE_ANNOTATIONS_DIR + "/" + filename);
 		return file.exists();
 	}

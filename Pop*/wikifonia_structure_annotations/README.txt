@@ -16,7 +16,7 @@ MEASURE is the 1-based measure number as shown in the mxl file in a file viewer.
 
 MEASURE_REPEAT is the 1-based number representing which iteration of the measure is being referenced. For example, if it is the first time the measure has been seen (e.g., the first verse), this value would be 1. If the measure is only seen once, the value is 1. This makes it very easy to annotate multiple choruses that simply repeat measures by simply copying and pasting the annotations from the previous verse and incrementing the MEASURE_REPEAT value.
 
-LYRIC can be used to specify a lyric in the measure that represents the segment starting boundary. Alternatively a 0-based decimal can be given representing the offset into the measure.
+LYRIC can be used to specify a lyric in the measure that represents the segment starting boundary. Alternatively a 0-based decimal can be given representing the offset into the measure. The lyric must be the exact syllable string including parentheses on which the segment starts.
 
 The DELTA_FROM_FORM_START is a 0-based integer used to denote where the downbeat of the segment form actually begins relative to the MEASURE (for example if the prev defined token is a pickup or offset from the segment downbeat). This allows the annotator to annotate segments where, e.g., there are pickup notes with lyrics that belong in the chorus, but that begin before the actual downbeat of the chorus. If the specified token occurs within the first full measure of the form, the value is 0. Pickups would be -1 (or e.g., -2 if more than a measure of pickups). Full measure of rest would make this value 1, etc. 
 

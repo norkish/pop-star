@@ -1,7 +1,7 @@
 package globalstructure;
 
 public enum SegmentType {
-	INTRO, VERSE, PRECHORUS, CHORUS, BRIDGE, OUTRO, INTERLUDE;
+	INTRO, VERSE, PRECHORUS, CHORUS, BRIDGE, OUTRO, INTERLUDE, TAGCHORUS;
 
 	public static SegmentType valueOf(Character key) {
 		switch(key){
@@ -11,6 +11,8 @@ public enum SegmentType {
 			return VERSE;
 		case 'C':
 			return CHORUS;
+		case 'T':
+			return TAGCHORUS;
 		case 'B':
 			return BRIDGE;
 		case 'O':

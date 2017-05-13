@@ -1,0 +1,48 @@
+VERSE	1	1	0.0	0
+
+rhyme
+trees	13	1
+breeze	16	1
+
+CHORUS	17	1	coun	-1
+
+rhyme
+roads	18	1
+home	20	1
+
+rhyme
+home	30	1
+roads	32	1
+
+VERSE	34	1	0.0	0
+
+rhyme
+sky	13	2
+eye	16	2
+
+CHORUS	17	2	coun	-1
+
+rhyme
+roads	18	2
+home	20	2
+
+rhyme
+home	30	2
+roads	32	2
+
+BRIDGE	35	1	0.0	0
+
+rhyme
+way	42	1
+day	47	1
+
+CHORUS	50	1	coun	-1
+rhyme
+roads	18	3
+home	20	3
+
+rhyme
+home	30	3
+roads	51	1
+
+OUTRO	52	1	take	-1

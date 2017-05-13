@@ -1,0 +1,49 @@
+This is BibTeX, Version 0.99d (TeX Live 2016)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: mume_paper.aux
+The style file: MUME.bst
+Database file #1: ../all.bib
+Warning--empty journal in bodily2017ICCC
+Warning--empty journal in van2016wavenet
+You've used 20 entries,
+            2568 wiz_defined-function locations,
+            704 strings with 8483 characters,
+and the built_in function-call counts, 8800 in all, are:
+= -- 957
+> -- 327
+< -- 9
++ -- 109
+- -- 108
+* -- 660
+:= -- 1381
+add.period$ -- 107
+call.type$ -- 20
+change.case$ -- 132
+chr.to.int$ -- 20
+cite$ -- 22
+duplicate$ -- 369
+empty$ -- 642
+format.name$ -- 144
+if$ -- 1873
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 21
+newline$ -- 128
+num.names$ -- 62
+pop$ -- 124
+preamble$ -- 1
+purify$ -- 152
+quote$ -- 0
+skip$ -- 302
+stack$ -- 0
+substring$ -- 469
+swap$ -- 110
+text.length$ -- 9
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 152
+warning$ -- 2
+while$ -- 77
+width$ -- 21
+write$ -- 289
+(There were 2 warnings)

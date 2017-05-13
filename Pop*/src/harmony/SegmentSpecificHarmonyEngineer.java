@@ -1,6 +1,7 @@
 package harmony;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import org.tc33.jheatchart.HeatChart;
 
 import composition.Measure;
 import composition.Score;
+import config.SongConfiguration;
 import constraint.Constraint;
 import data.MusicXMLModel;
 import data.MusicXMLModelLearner;
@@ -297,7 +299,7 @@ public class SegmentSpecificHarmonyEngineer extends HarmonyEngineer {
 			throw new RuntimeException("No next state for any offset from " + prevHarmony);
 		}
 
-		private static Random rand = new Random();
+		private static Random rand = new Random(SongConfiguration.randSeed);
 		private Double sampleNextDuration(Map<Double, Map<Double, Integer>> durationPriorCountsByOffset,
 				Map<Double, Integer> durationTotalCountsByOffset, double currBeatOffset) {
 			Map<Double, Integer> durationPriorCountsForOffset;
@@ -393,7 +395,7 @@ public class SegmentSpecificHarmonyEngineer extends HarmonyEngineer {
 			double[][] chartValues = new double[chartYDimension + 1][chartXDimension];
 			
 			// set axis labels
-			yValues[0] = "START";
+			yValues[0] = "Start";
 			
 			int i = 0;
 			for (Harmony harmony : statesByIndexSorted.keySet()) {
@@ -402,12 +404,13 @@ public class SegmentSpecificHarmonyEngineer extends HarmonyEngineer {
 					break;
 				
 				if (i < chartXDimension) {
-					xValues[i] = harmony.toString();
+					xValues[i] = harmony.toShortString();
+					System.out.println(harmony.toString() + " ==? " + harmony.toShortString());
 					Double prior = priors.get(harmonyId);
 					chartValues[0][i] = prior == null ? 0.0 : prior;
 				}
 				if (i < chartYDimension) {
-					yValues[i+1] = harmony.toString();
+					yValues[i+1] = harmony.toShortString();
 				}
 				i++;
 			}
@@ -442,6 +445,10 @@ public class SegmentSpecificHarmonyEngineer extends HarmonyEngineer {
 			HeatChart chart = new HeatChart(chartValues);
 			chart.setHighValueColour(Color.RED);
 			chart.setLowValueColour(Color.BLUE);
+			chart.setAxisLabelsFont(MusicXMLModel.CHART_LABEL_FONT);
+			chart.setAxisValuesFont(MusicXMLModel.CHART_AXIS_FONT);
+			chart.setCellSize(new Dimension(30,30));
+			
 			
 			chart.setYAxisLabel("Previous Chord");
 			chart.setXAxisLabel("Next Chord");

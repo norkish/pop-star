@@ -1,0 +1,51 @@
+INTRO	1	1	0.0	0
+
+VERSE	8	1	I'm	-1
+
+rhyme
+ground.	10	1
+sound.	14	1
+down,	18	1
+round	22	1
+
+rhyme
+wait.	19	1
+say	23	1
+
+CHORUS	24	1	it's	-1
+
+exactBinaryMatch
+it's	24	1
+late,	31	1
+
+INTERLUDE	33	1	0.0	0
+
+VERSE	36	1	I'd	-1
+
+rhyme
+you.	38	1
+new,	42	1
+blue,	47	1
+you.	50	1
+
+CHORUS	52	1	it's	-1
+
+exactBinaryMatch
+it's	52	1
+late,	59	1
+
+INTERLUDE	65	1	0.0	0
+
+CHORUS	69	1	It's	-1
+
+exactBinaryMatch
+It's	69	1
+late.	76	1
+
+CHORUS	77	1	it's	-1
+
+exactBinaryMatch
+it's	77	1
+yeah.	83	1
+
+OUTRO	85	1	I'm	-1

@@ -1,11 +1,15 @@
 package data;
 
+import java.awt.Font;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
 public abstract class MusicXMLModel {
+
+	public static final Font CHART_LABEL_FONT = new Font("Times", Font.BOLD, 28);
+	public static final Font CHART_AXIS_FONT = new Font("Times", Font.PLAIN, 24);
 
 	public abstract void trainOnExample(ParsedMusicXMLObject musicXML);
 

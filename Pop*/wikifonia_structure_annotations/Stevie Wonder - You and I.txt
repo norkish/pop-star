@@ -1,0 +1,45 @@
+VERSE	1	1	0.0	0
+
+rhyme
+true.	6	1
+you.	8	1
+
+INTERLUDE	9	1	0.0	0
+
+VERSE	10	1	0.0	0
+
+rhyme
+stay	10	1
+say	12	1
+
+rhyme
+through	15	1
+through?	17	1
+
+INTERLUDE	18	1	0.0	0
+
+CHORUS	18	1	Well,	-1
+
+exactBinaryMatch
+in	19	1
+I	25	1
+
+INTERLUDE	26	1	0.0	0
+
+VERSE	29	1	0.0	0
+
+rhyme
+through	34	1
+you	36	1
+
+CHORUS	37	1	'Cause	-1
+
+exactBinaryMatch
+in	38	1
+I.	45	1
+
+CHORUS	46	1	0.0	0
+
+exactBinaryMatch
+In	46	1
+I.	52	1

@@ -31,7 +31,7 @@ public class PopDriver {
 		Files.write(Paths.get("./compositions/newSongOrchestrated.xml"), newSong.toString().getBytes());
 	}
 
-	private static void annotateSysOutErrCalls() {
+	public static void annotateSysOutErrCalls() {
 		System.setOut(createAnnotatedPrintStream(System.out));
 		System.setErr(createAnnotatedPrintStream(System.err));
 	}

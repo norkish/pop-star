@@ -1,22 +1,27 @@
 package segmentstructure;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.NumberTickUnit;
 import org.jfree.chart.plot.CategoryPlot;
@@ -30,6 +35,7 @@ import composition.Measure;
 import condition.ConstraintCondition;
 import condition.DelayedConstraintCondition;
 import condition.Rhyme;
+import config.SongConfiguration;
 import constraint.Constraint;
 import data.MusicXMLModel;
 import data.MusicXMLModelLearner;
@@ -49,7 +55,7 @@ public class DistributionalSegmentStructureEngineer extends SegmentStructureEngi
 		private Map<SegmentType, Integer> measureCountDistributionTotals = new EnumMap<SegmentType, Integer>(SegmentType.class); 
 		// for a segment of a given length, a list of possible segment structures of that length, each defined as a list of constraints 
 		private SortedMap<Integer, List<List<Triple<Integer, Double, Constraint<NoteLyric>>>>> lyricConstraintDistribution = new TreeMap<Integer, List<List<Triple<Integer, Double, Constraint<NoteLyric>>>>>();
-		private Random rand = new Random();
+		private Random rand = new Random(SongConfiguration.randSeed);
 		
 		public DistributionalSegmentStructureEngineerMusicXMLModel() {
 			for(SegmentType segType: SegmentType.values()) {
@@ -190,7 +196,7 @@ public class DistributionalSegmentStructureEngineer extends SegmentStructureEngi
 		@Override
 		public void toGraph() {
 			measureCountDistributionToGraph();
-			lyricConstraintDistributionToGraph();
+			lyricConstraintMarginalizedDistributionToGraph();
 		}
 
 		private void measureCountDistributionToGraph() {
@@ -215,7 +221,7 @@ public class DistributionalSegmentStructureEngineer extends SegmentStructureEngi
 			// set axis labels
 			int i = 0;
 			for (SegmentType segmentType : measureCountDistribution.keySet()) {
-				yValues[i++] = segmentType.toString();
+				yValues[i++] = StringUtils.capitalize(StringUtils.lowerCase(segmentType.toString()));
 			}
 			// x-axis labels set automatically 0 to n-1
 			
@@ -236,9 +242,19 @@ public class DistributionalSegmentStructureEngineer extends SegmentStructureEngi
 			HeatChart chart = new HeatChart(chartValues);
 			chart.setHighValueColour(Color.RED);
 			chart.setLowValueColour(Color.BLUE);
+			chart.setAxisLabelsFont(MusicXMLModel.CHART_LABEL_FONT);
+			chart.setAxisValuesFont(MusicXMLModel.CHART_AXIS_FONT);
+			chart.setCellSize(new Dimension(30,30));
 			
 			chart.setYAxisLabel("Segment Type");
-			chart.setXAxisLabel("Segment Length");
+			chart.setXAxisLabel("Segment Length (measures)");
+			
+			Integer[] xVals = new Integer[chartValues[0].length];
+			for (int j = 0; j < xVals.length; j++) {
+				xVals[j] = j;
+			}
+			chart.setXValues(xVals);
+			
 			chart.setYValues(yValues);
 			
 			try {
@@ -247,8 +263,77 @@ public class DistributionalSegmentStructureEngineer extends SegmentStructureEngi
 				e.printStackTrace();
 			}
 		}
-
+		
 		private void lyricConstraintDistributionToGraph() {
+//			Map<SegmentType, Map<Integer, Integer>> measureCountDistribution;
+			int maxLength = 0;
+			Map<Integer,Map<String, Integer>> rhymeSchemeDistribution = new HashMap<Integer, Map<String,Integer>>();
+			Set<String> allRhymeSchemes = new HashSet<String>();
+			for (Integer measureCount : lyricConstraintDistribution.keySet()) {
+				for (List<Triple<Integer, Double, Constraint<NoteLyric>>> segmentStructure : lyricConstraintDistribution.get(measureCount)) {
+					String rhymeScheme = summarizeRhymeScheme(segmentStructure);
+					if (rhymeScheme != null && !rhymeScheme.isEmpty()) {
+						Utils.incrementValueForKeys(rhymeSchemeDistribution, measureCount, rhymeScheme);
+						allRhymeSchemes.add(rhymeScheme);
+					}
+				}
+				if (measureCount > maxLength) {
+					maxLength = measureCount;
+				}
+			}
+			
+			int chartXDimension = allRhymeSchemes.size(); 
+			int chartYDimension = maxLength / 5; 
+
+			String[] xValues = new String[chartXDimension];
+			String[] yValues = new String[chartYDimension];
+			double[][] chartValues = new double[chartYDimension][chartXDimension];
+			
+			// populate heatchart
+			// set axis labels
+			for (int i = 1; i <= maxLength; i++) {
+				int j = 0;
+				Map<String, Integer> rhymeSchemeDistributionForLength = rhymeSchemeDistribution.get(i);
+				for (String rhymeScheme : allRhymeSchemes) {
+					if (rhymeSchemeDistributionForLength!=null  && rhymeSchemeDistributionForLength.containsKey(rhymeScheme)) {
+						chartValues[(i-1)/5][j] += rhymeSchemeDistributionForLength.get(rhymeScheme);
+					}
+					if (i == 1) { // set x-axis label
+						xValues[j] = rhymeScheme;
+					}
+					j++;
+				}
+				
+				//set y-axis label
+				if (i % 5 == 1) {
+					yValues[(i-1)/5] = "" + i + "-" + (i+4);
+				}
+			}
+			// x-axis labels set automatically 0 to n-1
+			
+			Utils.normalizeByFirstDimension(chartValues);
+
+			HeatChart chart = new HeatChart(chartValues);
+			chart.setHighValueColour(Color.RED);
+			chart.setLowValueColour(Color.BLUE);
+			chart.setAxisLabelsFont(MusicXMLModel.CHART_LABEL_FONT);
+			chart.setAxisValuesFont(MusicXMLModel.CHART_AXIS_FONT);
+			chart.setCellSize(new Dimension(40,40));
+			
+			chart.setYAxisLabel("Length (measures)");
+			chart.setXAxisLabel("Segment Structure");
+			
+			chart.setXValues(xValues);
+			chart.setYValues(yValues);
+			
+			try {
+				chart.saveToFile(new File(GRAPH_DIR + "/segment_structure_by_len.jpeg"));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		private void lyricConstraintMarginalizedDistributionToGraph() {
 			final DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 			//			SortedMap<Integer, List<List<Triple<Integer, Double, Constraint<NoteLyric>>>>> lyricConstraintDistribution;
 			
@@ -290,7 +375,12 @@ public class DistributionalSegmentStructureEngineer extends SegmentStructureEngi
 			CategoryPlot plot = barChart.getCategoryPlot();
 			plot.setOutlineVisible(false);
 			plot.setBackgroundPaint(Color.WHITE);
-
+			plot.getDomainAxis().setCategoryLabelPositions(CategoryLabelPositions.UP_45);
+			plot.getDomainAxis().setLabelFont(MusicXMLModel.CHART_LABEL_FONT);
+			plot.getDomainAxis().setTickLabelFont(MusicXMLModel.CHART_AXIS_FONT);
+			plot.getRangeAxis().setLabelFont(MusicXMLModel.CHART_LABEL_FONT);
+			plot.getRangeAxis().setTickLabelFont(MusicXMLModel.CHART_AXIS_FONT);
+			
 			BarRenderer renderer = (BarRenderer) plot.getRenderer();
 			renderer.setBarPainter(new StandardBarPainter());
 			renderer.setSeriesPaint(0,Color.BLUE);
@@ -299,8 +389,8 @@ public class DistributionalSegmentStructureEngineer extends SegmentStructureEngi
 
 			rangeAxis.setTickUnit(new NumberTickUnit(tickUnit));
 			
-			int width = 640; /* Width of the image */
-			int height = 480; /* Height of the image */
+			int width = 720; /* Width of the image */
+			int height = 320; /* Height of the image */
 			File BarChart = new File(GRAPH_DIR + "/segment_structure.jpeg");
 			if (BarChart.exists())
 				BarChart.delete();

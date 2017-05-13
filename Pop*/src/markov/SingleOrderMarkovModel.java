@@ -5,13 +5,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import config.SongConfiguration;
+
 public class SingleOrderMarkovModel<T> extends AbstractMarkovModel<T>{
 
 	T[] states;
 	double[] logPriors;
 	double[][] logTransitions;
 	Map<T, Integer> stateIndex = new HashMap<T, Integer>();
-	Random rand = new Random();
+	Random rand = new Random(SongConfiguration.randSeed);
 
 	/*
 	 * Makes deep copy of all input params for new instance of Markov Model
