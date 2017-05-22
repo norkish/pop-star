@@ -3,7 +3,7 @@ package segmentstructure;
 import java.util.List;
 
 import composition.Measure;
-import condition.ExactBinaryMatch;
+import condition.BinaryMatch;
 import condition.Rhyme;
 import condition.StrongResolution;
 import constraint.Constraint;
@@ -48,7 +48,7 @@ public class FixedSegmentStructureEngineer extends SegmentStructureEngineer {
 		segmentStructure.addKey(0,0,KeyMode.MAJOR);
 		segmentStructure.addTime(0,4,4);
 		
-		segmentStructure.addConstraint(2, Constraint.ALL_POSITIONS, new Constraint<Harmony>( new ExactBinaryMatch<Harmony>(0, Constraint.ALL_POSITIONS), true));
+		segmentStructure.addConstraint(2, Constraint.ALL_POSITIONS, new Constraint<Harmony>( new BinaryMatch<Harmony>(0, Constraint.ALL_POSITIONS), true));
 		
 		return segmentStructure;
 	}
@@ -67,8 +67,8 @@ public class FixedSegmentStructureEngineer extends SegmentStructureEngineer {
 		
 		// harmony and melody
 		for (int i = 8; i < 14; i++) {
-			segmentStructure.addConstraint(i, Constraint.ALL_POSITIONS, new Constraint<Harmony>(new ExactBinaryMatch<Harmony>(i-8, Constraint.ALL_POSITIONS), true));
-			segmentStructure.addConstraint(i, Constraint.ALL_POSITIONS, new Constraint<Note>(new ExactBinaryMatch<Note>(i-8, Constraint.ALL_POSITIONS), true));
+			segmentStructure.addConstraint(i, Constraint.ALL_POSITIONS, new Constraint<Harmony>(new BinaryMatch<Harmony>(i-8, Constraint.ALL_POSITIONS), true));
+			segmentStructure.addConstraint(i, Constraint.ALL_POSITIONS, new Constraint<Note>(new BinaryMatch<Note>(i-8, Constraint.ALL_POSITIONS), true));
 		}
 		
 		return segmentStructure;
@@ -82,7 +82,7 @@ public class FixedSegmentStructureEngineer extends SegmentStructureEngineer {
 		segmentStructure.addKey(0,0,KeyMode.MAJOR);
 		segmentStructure.addTime(0,4,4);
 		
-		segmentStructure.addConstraint(2, Constraint.ALL_POSITIONS, new Constraint<Harmony>(new ExactBinaryMatch<Harmony>(0, Constraint.ALL_POSITIONS), true));
+		segmentStructure.addConstraint(2, Constraint.ALL_POSITIONS, new Constraint<Harmony>(new BinaryMatch<Harmony>(0, Constraint.ALL_POSITIONS), true));
 		segmentStructure.addConstraint(3, Constraint.ALL_POSITIONS, new Constraint<Harmony>(new StrongResolution<Harmony>(), true));
 		// TODO:Extrasegmental matching ? Outro should match the intro somewhat
 		
@@ -98,7 +98,7 @@ public class FixedSegmentStructureEngineer extends SegmentStructureEngineer {
 		segmentStructure.addKey(0,0,KeyMode.MAJOR);
 		segmentStructure.addTime(0,4,4);
 		
-		segmentStructure.addConstraint(2, Constraint.ALL_POSITIONS, new Constraint<Harmony>(new ExactBinaryMatch<Harmony>(0, Constraint.ALL_POSITIONS), true));
+		segmentStructure.addConstraint(2, Constraint.ALL_POSITIONS, new Constraint<Harmony>(new BinaryMatch<Harmony>(0, Constraint.ALL_POSITIONS), true));
 		
 		return segmentStructure;
 	}
@@ -118,8 +118,8 @@ public class FixedSegmentStructureEngineer extends SegmentStructureEngineer {
 		
 		// harmony and melody
 		for (int i = 8; i < 12; i++) {
-			segmentStructure.addConstraint(i, Constraint.ALL_POSITIONS, new Constraint<Harmony>(new ExactBinaryMatch<Harmony>(i-8, Constraint.ALL_POSITIONS), true));
-			segmentStructure.addConstraint(i, Constraint.ALL_POSITIONS, new Constraint<Note>(new ExactBinaryMatch<Note>(i-8, Constraint.ALL_POSITIONS), true));
+			segmentStructure.addConstraint(i, Constraint.ALL_POSITIONS, new Constraint<Harmony>(new BinaryMatch<Harmony>(i-8, Constraint.ALL_POSITIONS), true));
+			segmentStructure.addConstraint(i, Constraint.ALL_POSITIONS, new Constraint<Note>(new BinaryMatch<Note>(i-8, Constraint.ALL_POSITIONS), true));
 		}
 		segmentStructure.addConstraint(15, Constraint.ALL_POSITIONS, new Constraint<Harmony>(new StrongResolution<Harmony>(), true));
 		

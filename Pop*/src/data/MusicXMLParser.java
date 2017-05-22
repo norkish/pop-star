@@ -28,6 +28,8 @@ import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
 import data.MusicXMLParser.Barline.RepeatDirection;
+import data.MusicXMLParser.Harmony;
+import data.MusicXMLParser.Quality;
 import pitch.Pitch;
 import syllabify.Syllabifier;
 import tabcomplete.rhyme.Phonetecizer;
@@ -438,6 +440,10 @@ public class MusicXMLParser {
 		public boolean isPlayedNoteOnset() {
 			if (pitch == REST)
 				return false;
+			return isOnset();
+		}
+
+		boolean isOnset() {
 			if (tie == NoteTie.STOP)
 				return false;
 			return true;
@@ -1312,6 +1318,42 @@ public class MusicXMLParser {
 				builder.append('/').append(bass);
 			}
 			return builder.toString();
+		}
+
+		public double fractionOfSimilarToTotalNotes(Harmony other) {
+			boolean[] thisRelativePitches = this.quality.getPitches();
+			boolean[] otherRelativePitches = other.quality.getPitches();
+			int thisRootStep = this.root.rootStep;
+			int otherRootStep = other.root.rootStep;
+			
+			int totalNotes = 2;
+			int similarNotes = 0;
+			Set<Integer> thisAbsolutePitches = new HashSet<Integer>();
+			thisAbsolutePitches.add(thisRootStep);
+			for (int i = 0; i < thisRelativePitches.length; i++) {
+				if (thisRelativePitches[i]) {
+					thisAbsolutePitches.add((thisRootStep + Quality.HARMONY_CONSTANT_INTERVALS[i])%12);
+					totalNotes++;
+				}
+			}
+
+			Set<Integer> otherAbsolutePitches = new HashSet<Integer>();
+			otherAbsolutePitches.add(otherRootStep);
+			for (int i = 0; i < otherRelativePitches.length; i++) {
+				if (otherRelativePitches[i]) {
+					otherAbsolutePitches.add((otherRootStep + Quality.HARMONY_CONSTANT_INTERVALS[i])%12);
+					totalNotes++;
+				}
+			}
+			
+			for (Integer pitch : otherAbsolutePitches) {
+				if (thisAbsolutePitches.contains(pitch)) {
+					similarNotes += 2;
+				}
+			}
+			
+			
+			return 1.0 * similarNotes / totalNotes;
 		}
 	}
 

@@ -3,7 +3,7 @@ package segmentstructure;
 import java.util.List;
 
 import composition.Measure;
-import condition.ExactBinaryMatch;
+import condition.BinaryMatch;
 import condition.ExactUnaryMatch;
 import condition.Rhyme;
 import condition.StrongResolution;
@@ -37,10 +37,10 @@ public class TestSegmentStructureEngineer extends SegmentStructureEngineer {
 		
 		segmentStructure.addConstraint(8, 2.0, new Constraint<NoteLyric>(new ExactUnaryMatch<NoteLyric>(new NoteLyric[]{new NoteLyric(null, "There's", false, false)}), true));
 		for (int i = 9; i < 13; i++) {
-			segmentStructure.addConstraint(i, 0.0, new Constraint<Chord>(new ExactBinaryMatch<Chord>(0,i), true));
+			segmentStructure.addConstraint(i, 0.0, new Constraint<Chord>(new BinaryMatch<Chord>(0,i), true));
 		}
 		for (int i = 13; i < 17; i++) {
-			segmentStructure.addConstraint(i, 0.0, new Constraint<Pitch>(new ExactBinaryMatch<Pitch>(0, i), true));
+			segmentStructure.addConstraint(i, 0.0, new Constraint<Pitch>(new BinaryMatch<Pitch>(0, i), true));
 		}
 		
 		segmentStructure.addConstraint(12, 2.0, new Constraint<NoteLyric>(new ExactUnaryMatch<NoteLyric>(new NoteLyric[]{new NoteLyric(null, "Making", false, false)}), true));

@@ -95,7 +95,7 @@ public class DistributionalSegmentStructureEngineer extends SegmentStructureEngi
 			SegmentType currSegType,prevSegType = null;
 			List<Triple<Integer, Double, Constraint<NoteLyric>>> currentSegmentLyricConstraints = null;
 			SortedMap<Integer, SortedMap<Integer, Note>> notesMap = musicXML.getNotesByPlayedMeasureAsMap();
-			SortedMap<Integer, SortedMap<Double, List<Constraint<NoteLyric>>>> manuallyAnnotatedConstraints = musicXML.segmentStructure;
+			SortedMap<Integer, SortedMap<Double, List<Constraint<NoteLyric>>>> manuallyAnnotatedConstraints = musicXML.segmentLyricStructure;
 			
 			int currentSegmentStartMeasure = 0;
 			int measureIdxInSegment;

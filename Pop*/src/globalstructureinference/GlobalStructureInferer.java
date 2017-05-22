@@ -33,13 +33,10 @@ import org.w3c.dom.Document;
 import config.SongConfiguration;
 import data.MusicXMLParser;
 import data.MusicXMLParser.Note;
-import data.MusicXMLParser.NoteLyric;
 import data.MusicXMLSummaryGenerator;
 import data.ParsedMusicXMLObject;
-import data.WikifoniaCorrection;
 import globalstructure.SegmentType;
 import globalstructure.StructureExtractor;
-import main.PopDriver;
 import tabcomplete.main.TabDriver;
 import utils.Pair;
 import utils.Triple;
@@ -220,6 +217,8 @@ public class GlobalStructureInferer {
 				this.distanceFromDiagonalInBeats += (rand.nextBoolean()?1:-1) * rand.nextInt(MAX_MUTATION_STEP);
 				if (this.distanceFromDiagonalInBeats > 20) {
 					this.distanceFromDiagonalInBeats = 20;
+				} else if (this.distanceFromDiagonalInBeats < 0) {
+					this.distanceFromDiagonalInBeats = 0;
 				}
 			}
 //			if (rand.nextDouble() < MUTATION_RATE)
@@ -285,7 +284,8 @@ public class GlobalStructureInferer {
 	public static void main(String[] args) {
 		// create/load initial population of x parameterizations and their accuracy scores when used to
 		List<Pair<Double, GlobalStructureAlignmentParameterization>> population = loadInitialPopulation(TYPE);
-
+		System.out.println("Previous Best Accuracy: " + prevBestAccuracy);
+		
 		for (int i = 0; i < TOTAL_GENERATIONS; i++) {
 			generation++;
 			// cross-over and mutate the scores, possible modifying just one score at a time?
@@ -307,9 +307,9 @@ public class GlobalStructureInferer {
 			final Pair<Double, GlobalStructureAlignmentParameterization> best = population.get(0);
 			if (best.getFirst() > prevBestAccuracy) {
 				prevBestAccuracy = best.getFirst();
-				System.out.println("New Best Accuracy:" + prevBestAccuracy);
 //				scoreParameterization(best.getSecond(), TYPE, true); // save best heatmap
 			}
+			System.out.println(i + "\t" + prevBestAccuracy);
 
 			// print top y parameterizations
 			savePopulationToFile(population);
@@ -443,34 +443,6 @@ public class GlobalStructureInferer {
 				ParsedMusicXMLObject.MusicXMLAlignmentEvent musicXML2AlignmentEvent = events.get(col-1);
 				
 				matchScore = 0.0;
-				//TODO: FIX THIS!
-				
-				pitch1 = musicXML1AlignmentEvent.note.pitch;
-				pitch2 = musicXML2AlignmentEvent.note.pitch;
-				if (pitch1 == Note.REST) {
-					if (pitch2 == Note.REST) {
-						matchScore += globalStructureAlignmentParameterization.bothRests;
-					} else {
-						matchScore += globalStructureAlignmentParameterization.oneRests;
-					}
-				} else {
-					if (pitch2 == Note.REST) {
-						matchScore += globalStructureAlignmentParameterization.oneRests;
-					} else if (pitch1 == pitch2){
-						matchScore += globalStructureAlignmentParameterization.pitchesEqual;
-					} else {
-						matchScore += globalStructureAlignmentParameterization.neitherRests;
-						matchScore += globalStructureAlignmentParameterization.pitchDifference;
-					}
-				}
-				
-//				// harmony weights
-//				harmonyEqual;
-//				public double harmonyDifference;
-//				public double chordMatchOnsetScore;
-//				public double bothHarmoniesNotOnset;
-//				public double oneHarmonyOnsetOneNot;
-		//
 				
 				mXML1Lyric =  musicXML1AlignmentEvent.strippedLyricLCText;
 				mXML2Lyric = musicXML2AlignmentEvent.strippedLyricLCText;
@@ -1045,7 +1017,7 @@ public class GlobalStructureInferer {
 			 
 			if (actualChorus == inferredChorus) {
 				 correct++;
- }
+			}
 		}
 		
 		return 1.0 * correct / songEvents.size();
@@ -1153,7 +1125,6 @@ public class GlobalStructureInferer {
 					}
 				}
 			}
-			prevBestAccuracy = population.get(0).getFirst();
 			fileScanner.close();
 		} catch (FileNotFoundException e) {
 			System.out.println("Initializing population of parameterizations");
@@ -1165,9 +1136,9 @@ public class GlobalStructureInferer {
 					str.append(var1);
 					str.append(", ");
 				}
-				str.append((int) Math.pow(2,rand.nextInt(2)));
+				str.append(rand.nextInt(5)+6); // distance from diagonal
 				str.append(", ");
-				str.append(rand.nextInt(5)+4);
+				str.append((int) Math.pow(2,rand.nextInt(2))); // events per beat
 				final GlobalStructureAlignmentParameterization globalStructureAlignmentParameterization = new GlobalStructureAlignmentParameterization(str.toString());
 				System.out.println("\tScoring initial parameterization:" + globalStructureAlignmentParameterization.toString());
 				final double score = scoreParameterization(globalStructureAlignmentParameterization, targetSegment, false);
@@ -1186,7 +1157,8 @@ public class GlobalStructureInferer {
 
 			savePopulationToFile(population);
 		}
-		
+		prevBestAccuracy = population.get(0).getFirst();
+
 		return population;
 	}
 
