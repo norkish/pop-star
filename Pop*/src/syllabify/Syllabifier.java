@@ -226,8 +226,9 @@ public class Syllabifier {
 			}
 
 			wordSyls[i] = sylBldr.toString();
-			if (wordSyls[i].length() == 0) 
+			if (wordSyls[i].length() == 0) { 
 				System.err.println("Warning: empty syllable for input " + alnWord);
+			}
 			sylBldr = new StringBuilder();
 		}
 		

@@ -1,6 +1,7 @@
 package data;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -267,42 +268,46 @@ public class MusicXMLSummaryGenerator {
 	public static Document mxlToXML(File file)
 			throws ZipException, IOException, ParserConfigurationException, SAXException, TransformerException {
 		ZipFile zf = new ZipFile(file);
-		Document document = null;
 		for (Enumeration<? extends ZipEntry> e = zf.entries(); e.hasMoreElements();) {
 			ZipEntry ze = e.nextElement();
 			String name = ze.getName();
 			if (name.endsWith(".xml")) {
 				InputStream in = zf.getInputStream(ze);
-				DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-				// dbf.setValidating(false);
-				// dbf.setNamespaceAware(true);
-				// dbf.setFeature("http://xml.org/sax/features/namespaces", false);
-				// dbf.setFeature("http://xml.org/sax/features/validation", false);
-				// dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
-				dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-				DocumentBuilder builder = dbf.newDocumentBuilder();
-				builder.setEntityResolver(new EntityResolver() {
-					@Override
-					public InputSource resolveEntity(String publicId, String systemId)
-							throws SAXException, IOException {
-						if (systemId.contains("foo.dtd")) {
-							return new InputSource(new StringReader(""));
-						} else {
-							return null;
-						}
-					}
-				});
-				document = builder.parse(in);
-				// System.out.println(document.getDocumentElement().getNodeName());
-				// printDocument(document, System.out);
-				// NodeList elementsByTagName = document.getElementsByTagName("part-list");
-				// assert elementsByTagName.getLength() != 0;
-				// printNode(elementsByTagName.item(0), System.out);
-				return document;
+				return parseXML(in);
 			}
 		}
 		zf.close();
 		return null;
+	}
+
+	public static Document parseXML(InputStream in) throws ParserConfigurationException, SAXException, IOException {
+		Document document;
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		// dbf.setValidating(false);
+		// dbf.setNamespaceAware(true);
+		// dbf.setFeature("http://xml.org/sax/features/namespaces", false);
+		// dbf.setFeature("http://xml.org/sax/features/validation", false);
+		// dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
+		dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+		DocumentBuilder builder = dbf.newDocumentBuilder();
+		builder.setEntityResolver(new EntityResolver() {
+			@Override
+			public InputSource resolveEntity(String publicId, String systemId)
+					throws SAXException, IOException {
+				if (systemId.contains("foo.dtd")) {
+					return new InputSource(new StringReader(""));
+				} else {
+					return null;
+				}
+			}
+		});
+		document = builder.parse(in);
+		// System.out.println(document.getDocumentElement().getNodeName());
+		// printDocument(document, System.out);
+		// NodeList elementsByTagName = document.getElementsByTagName("part-list");
+		// assert elementsByTagName.getLength() != 0;
+		// printNode(elementsByTagName.item(0), System.out);
+		return document;
 	}
 
 	public static void main(String[] args)
@@ -384,10 +389,10 @@ public class MusicXMLSummaryGenerator {
 		int totalTallies = 0;
 		
 		for (File file : files) {
-//			 if (!file.getName().equals("Ahmad Jamal - Poinciana.mxl"))
+//			 if (!file.getName().equals("Ahmad Jamal - Poinciana.xml"))
 //			 continue;
 			System.out.println(file.getAbsolutePath());
-			MusicXMLParser musicXML = new MusicXMLParser(file.getName(),mxlToXML(file));
+			MusicXMLParser musicXML = new MusicXMLParser(file.getName(),parseXML(new FileInputStream(file)));
 			try {
 
 				String scoreVersion = getScoreVersion(musicXML);
@@ -690,5 +695,10 @@ public class MusicXMLSummaryGenerator {
 		}
 		System.out.println("Total songs with missing artists represented in dataset:" + missingSongCount);
 		System.out.println("Total artists represented in dataset:" + (songsByArtistDistribution.size() - (songsWithMissingArtist == null ? 0 : 1)));
+	}
+
+	public static Document loadXML(File file) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

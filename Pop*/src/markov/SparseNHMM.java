@@ -10,8 +10,10 @@ import java.util.Random;
 import java.util.Set;
 
 import condition.ConstraintCondition;
+import config.SongConfiguration;
 import constraint.Constraint;
 import utils.MathUtils;
+import utils.Pair;
 
 public class SparseNHMM<T> extends AbstractMarkovModel<T>{
 
@@ -20,9 +22,9 @@ public class SparseNHMM<T> extends AbstractMarkovModel<T>{
 	List<Map<Integer, Map<Integer,Double>>> logTransitions; // first 2d matrix represents transitions from first to second position
 	List<Map<Integer, Integer>> inSupport; // first matrix represents the number of non-zero transition probabilities to the ith state at pos 1 in the seq 
 	Map<T, Integer> stateIndex;
-	Random rand = new Random();
+	Random rand = new Random(SongConfiguration.randSeed);
 	
-	public SparseNHMM(SparseSingleOrderMarkovModel<T> model, int length, List<Constraint<T>> constraints) {
+	public SparseNHMM(SparseSingleOrderMarkovModel<T> model, int length, List<Pair<Integer, Constraint<T>>> constraints) {
 		this.states = model.states;
 		this.stateIndex = model.stateIndex;
 		this.logPriors = model.logPriors;
@@ -87,7 +89,7 @@ public class SparseNHMM<T> extends AbstractMarkovModel<T>{
 			}
 		}
 		
-		for (Constraint<T> constraint : constraints) {
+		for (Pair<Integer, Constraint<T>> constraint : constraints) {
 			constrain(constraint);
 			if(!satisfiable())
 			{
@@ -463,9 +465,10 @@ public class SparseNHMM<T> extends AbstractMarkovModel<T>{
 		return logTransitions.size();
 	}
 
-	public void constrain(Constraint<T> constraint) {
+	public void constrain(Pair<Integer, Constraint<T>> positionedConstraint) {
 		Set<PositionedState> posStateToRemove = new HashSet<PositionedState>();
-		int position = constraint.getPosition();
+		int position = positionedConstraint.getFirst();
+		Constraint<T> constraint = positionedConstraint.getSecond();
 		position = (position == Constraint.FINAL_POSITION ? logTransitions.size() : position);
 		ConstraintCondition<T> condition = constraint.getCondition();
 		boolean desiredConditionState = constraint.getDesiredConditionState();

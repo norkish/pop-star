@@ -1,0 +1,212 @@
+\begin{thebibliography}{10}
+
+\bibitem{ames1989markov}
+Charles Ames.
+\newblock The {M}arkov process as a compositional model: a survey and tutorial.
+\newblock {\em Leonardo}, pages 175--187, 1989.
+
+\bibitem{boden2004creative}
+Margaret~A Boden.
+\newblock {\em The Creative Mind: Myths and Mechanisms}.
+\newblock Psychology Press, 2004.
+
+\bibitem{chi2009power}
+Chung~Yi Chi, Ying~Shian Wu, Wei~Rong Chu, Daniel~C Wu~Jr, Richard Tzong~Han
+  Tsai, et~al.
+\newblock The power of words: Enhancing music mood estimation with textual
+  input of lyrics.
+\newblock In {\em Proceedings of the International Conference on Affective
+  Computing and Intelligent Interaction and Workshops}, pages 1--6. IEEE, 2009.
+
+\bibitem{chuan2011generating}
+Ching-Hua Chuan and Elaine Chew.
+\newblock Generating and evaluating musical harmonizations that emulate style.
+\newblock {\em Computer Music Journal}, 35(4):64--82, 2011.
+
+\bibitem{colton2012computational}
+Simon Colton and Geraint~A Wiggins.
+\newblock Computational creativity: the final frontier?
+\newblock In {\em Proceedings of the European Conference on Artificial
+  Intelligence}, volume~12, pages 21--26, 2012.
+
+\bibitem{conklin1995multiple}
+Darrell Conklin and Ian~H Witten.
+\newblock Multiple viewpoint systems for music prediction.
+\newblock {\em Journal of New Music Research}, 24(1):51--73, 1995.
+
+\bibitem{cope1996experiments}
+David Cope.
+\newblock {\em Experiments in Musical Intelligence}, volume~12.
+\newblock AR editions Madison, WI, 1996.
+
+\bibitem{dowling1978scale}
+W~Jay Dowling.
+\newblock Scale and contour: Two components of a theory of memory for melodies.
+\newblock {\em Psychological Review}, 85(4):341--354, 1978.
+
+\bibitem{ebciouglu1988expert}
+Kemal Ebcio{\u{g}}lu.
+\newblock An expert system for harmonizing four-part chorales.
+\newblock In {\em Proceedings of the Association for the Advancement of
+  Artificial Intelligence}, pages 784--788, 1986.
+
+\bibitem{eigenfeldt2012evaluating}
+Arne Eigenfeldt, Adam Burnett, and Philippe Pasquier.
+\newblock Evaluating musical metacreation in a live performance context.
+\newblock In {\em Proceedings of the Third International Conference on
+  Computational Creativity}, pages 140--144, 2012.
+
+\bibitem{ekman1993facial}
+Paul Ekman.
+\newblock Facial expression and emotion.
+\newblock {\em American Psychologist}, 48(4):384--392, 1993.
+
+\bibitem{foote2000automatic}
+Jonathan Foote.
+\newblock Automatic audio segmentation using a measure of audio novelty.
+\newblock In {\em Proceedings of the IEEE International Conference on
+  Multimedia and Expo}, volume~1, pages 452--455. IEEE, 2000.
+
+\bibitem{gabrielsson2001emotions}
+Alf Gabrielsson.
+\newblock Emotions in strong experiences with music.
+\newblock In Patrik~N. Juslin and John~A. Sloboda, editors, {\em Music and
+  Emotion: Theory and Research}, pages 431--449. Oxford University Press, New
+  York, 2001.
+
+\bibitem{johnson1991jazz}
+Philip~N Johnson-Laird.
+\newblock Jazz improvisation: A theory at the computational level.
+\newblock In Peter Howell, Robert West, and Ian Cross, editors, {\em
+  Representing Musical Structure}, pages 291--325. Academic Press, London,
+  1991.
+
+\bibitem{keller2013automating}
+Robert Keller, Alexandra Schofield, August Toman-Yih, Zachary Merritt, and John
+  Elliott.
+\newblock Automating the explanation of jazz chord progressions using idiomatic
+  analysis.
+\newblock {\em Computer Music Journal}, 37(4):54--69, 2013.
+
+\bibitem{Lake11122015}
+Brenden~M. Lake, Ruslan Salakhutdinov, and Joshua~B. Tenenbaum.
+\newblock Human-level concept learning through probabilistic program induction.
+\newblock {\em Science}, 350(6266):1332--1338, 2015.
+
+\bibitem{lebaron2015intelligent}
+Dean~M LeBaron, Logan~A Mitchell, and Dan Ventura.
+\newblock Intelligent content generation via abstraction, evolution and
+  reinforcement.
+\newblock In {\em Proceedings of the Artificial Intelligence and Interactive
+  Digital Entertainment Conference}, pages 36--41, 2015.
+
+\bibitem{meyer2008emotion}
+Leonard~B Meyer.
+\newblock {\em Emotion and Meaning in Music}.
+\newblock University of Chicago Press, 2008.
+
+\bibitem{mihalcea2012lyrics}
+Rada Mihalcea and Carlo Strapparava.
+\newblock Lyrics, music, and emotions.
+\newblock In {\em Proceedings of the Joint Conference on Empirical Methods in
+  Natural Language Processing and Computational Natural Language Learning},
+  pages 590--599. Association for Computational Linguistics, 2012.
+
+\bibitem{monteith2010automatic}
+Kristine Monteith, Tony Martinez, and Dan Ventura.
+\newblock Automatic generation of music for inducing emotive response.
+\newblock In {\em Proceedings of the International Conference on Computational
+  Creativity}, pages 140--149, 2010.
+
+\bibitem{monteith2012automatic}
+Kristine Monteith, Tony Martinez, and Dan Ventura.
+\newblock Automatic generation of melodic accompaniments for lyrics.
+\newblock In {\em Proceedings of the International Conference on Computational
+  Creativity}, pages 87--94, 2012.
+
+\bibitem{murray2012algorithmically}
+Skyler~James Murray and Dan Ventura.
+\newblock Algorithmically flexible style composition through multi-objective
+  fitness functions.
+\newblock In {\em Proceedings of the International Workshop on Musical
+  Metacreation}, pages 55--62, 2012.
+
+\bibitem{norton2015accounting}
+David Norton, Derrall Heath, and Dan Ventura.
+\newblock Accounting for bias in the evaluation of creative computational
+  systems: An assessment of {DARCI}.
+\newblock In {\em Proceedings of the International Conference on Computational
+  Creativity}, pages 31--38, 2015.
+
+\bibitem{nunes2015power}
+Joseph~C Nunes, Andrea Ordanini, and Francesca Valsesia.
+\newblock The power of repetition: repetitive lyrics in a song increase
+  processing fluency and drive market success.
+\newblock {\em Journal of Consumer Psychology}, 25(2):187--199, 2015.
+
+\bibitem{pachet1991representing}
+Fran{\c{c}}ois Pachet.
+\newblock Representing knowledge used by jazz musicians.
+\newblock In {\em Proceedings of the International Computer Music Conference},
+  pages 285--285, 1991.
+
+\bibitem{pachet2014imitative}
+Fran{\c{c}}ois Pachet and Pierre Roy.
+\newblock Imitative leadsheet generation with user constraints.
+\newblock In {\em Frontiers in Artificial Intelligence and Applications},
+  volume 263, pages 1077--1078. IOS Press, 2014.
+
+\bibitem{papadopoulos1999ai}
+George Papadopoulos and Geraint Wiggins.
+\newblock {AI} methods for algorithmic composition: A survey, a critical view
+  and future prospects.
+\newblock In {\em Proceedings of the AISB Symposium on Musical Creativity},
+  pages 110--117. Edinburgh, UK, 1999.
+
+\bibitem{parrott2001emotions}
+W~Gerrod Parrott.
+\newblock {\em Emotions in Social Psychology: Essential Readings}.
+\newblock Psychology Press, 2001.
+
+\bibitem{ramalho1994simulating}
+Geber Ramalho and Jean-Gabriel Ganascia.
+\newblock Simulating creativity in jazz performance.
+\newblock In {\em Proceedings of the Association for the Advancement of
+  Artificial Intelligence}, volume~94, pages 108--113, 1994.
+
+\bibitem{ritchie2007some}
+Graeme Ritchie.
+\newblock Some empirical criteria for attributing creativity to a computer
+  program.
+\newblock {\em Minds and Machines}, 17(1):67--99, 2007.
+
+\bibitem{scirea2015smug}
+Marco Scirea, Gabriella~AB Barros, Noor Shaker, and Julian Togelius.
+\newblock {SMUG}: Scientific music generator.
+\newblock In {\em Proceedings of the International Conference on Computational
+  Creativity}, pages 204--211, 2015.
+
+\bibitem{steedman1984generative}
+Mark~J Steedman.
+\newblock A generative grammar for jazz chord sequences.
+\newblock {\em Music Perception}, 2(1):52--77, 1984.
+
+\bibitem{togelius2011search}
+Julian Togelius, Georgios~N Yannakakis, Kenneth~O Stanley, and Cameron Browne.
+\newblock Search-based procedural content generation: A taxonomy and survey.
+\newblock {\em Computational Intelligence and AI in Games, IEEE Transactions
+  on}, 3(3):172--186, 2011.
+
+\bibitem{toivanen2012corpus}
+Jukka Toivanen, Hannu Toivonen, Alessandro Valitutti, Oskar Gross, et~al.
+\newblock Corpus-based generation of content and form in poetry.
+\newblock In {\em Proceedings of the International Conference on Computational
+  Creativity}, pages 175--179, 2012.
+
+\bibitem{toivanen2013automatical}
+Jukka~M Toivanen, Hannu Toivonen, Alessandro Valitutti, et~al.
+\newblock Automatical composition of lyrical songs.
+\newblock In {\em Proceedings of the International Conference on Computational
+  Creativity}, pages 87--91, 2013.
+
+\end{thebibliography}

@@ -14,8 +14,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
+import java.util.TreeMap;
 
 import data.MusicXMLParser.Harmony;
+import data.MusicXMLParser.Note;
+import data.MusicXMLParser.NoteLyric;
 
 public class Utils {
 
@@ -150,23 +153,98 @@ public class Utils {
 	}
 
 	public static <S extends Comparable<S>, T> T valueForKeyBeforeOrEqualTo(Integer outerKey, S innerKey, SortedMap<Integer, SortedMap<S, T>> tokens) {
+		T returnVal = null;
+		
 		if (tokens.containsKey(outerKey)) {
-			return valueForKeyBeforeOrEqualTo(innerKey, tokens.get(outerKey));
-		} else {
+			returnVal = valueForKeyBeforeOrEqualTo(innerKey, tokens.get(outerKey));
+		} 
+		
+		if (returnVal != null) 
+			return returnVal;
+		
+		outerKey--;
+		while (!tokens.containsKey(outerKey) && outerKey >= 0) {
 			outerKey--;
-			while (!tokens.containsKey(outerKey) && outerKey >= 0) {
-				outerKey--;
-			}
-			
-			SortedMap<S, T> innerMap = tokens.get(outerKey);
-			
-			if (innerMap == null) {
-				return null;
-			} else {
-				return innerMap.get(innerMap.lastKey());
-			}
-			
+		}
+		
+		SortedMap<S, T> innerMap = tokens.get(outerKey);
+		
+		if (innerMap == null) {
+			return null;
+		} else {
+			return innerMap.get(innerMap.lastKey());
 		}
 	}
 
+	public static void normalizeByFirstDimension(double[][] matrix) {
+		for (double[] row : matrix) {
+			//compute sum
+			double max = 0.0;
+			for (double colVal : row) {
+				if (colVal > max) {
+					max = colVal;
+				}
+			}
+			
+			//normalize
+			for (int i = 0; i < row.length; i++) {
+				row[i] /= max;
+			}
+		}
+	}
+
+	public static NoteLyric getLyricBeingSungAtMeasureDivs(Integer measure, Integer div,
+			SortedMap<Integer, SortedMap<Integer, Note>> notesByMeasureAndDiv) {
+		int currMeasure = measure;
+
+		SortedMap<Integer,Note> notesByMeasure;
+		final Integer firstKey = notesByMeasureAndDiv.firstKey();
+		while(currMeasure >= firstKey) {
+			notesByMeasure = notesByMeasureAndDiv.get(currMeasure);
+			if (notesByMeasure != null) {
+				// iterate backwards over notes in the measure.
+				SortedMap<Integer, Note> reverseMap = new TreeMap<Integer, Note>(Collections.reverseOrder());
+				reverseMap.putAll(notesByMeasure);
+				for (Entry<Integer, Note> divAndNote : reverseMap.entrySet()) {
+					int currDiv = divAndNote.getKey();
+					if (currMeasure != measure || currDiv <= div) {
+						// this is a note we are considering
+						Note note = divAndNote.getValue();
+						// if it's a rest
+						if (note.pitch == Note.REST) {
+							return null;
+						}
+						
+						NoteLyric noteLyric = note.getLyric(true);
+						if (noteLyric != null) {
+							return noteLyric;
+						} 
+					}
+				}
+			}
+			currMeasure--;
+		}
+		
+		return null;
+	}
+
+	public static void normalizeByMaxVal(double[][] matrix) {
+		double max = 0.0;
+		for (double[] row : matrix) {
+			for (double colVal : row) {
+				if (colVal > max) {
+					max = colVal;
+				}
+			}
+		}		
+
+		if (max == 0)
+			return;
+		//normalize
+		for (double[] row : matrix) {
+			for (int i = 0; i < row.length; i ++) {
+				row[i] /= max;
+			}
+		}	
+	}
 }

@@ -1,0 +1,84 @@
+INTRO	1	1	0.0	0
+
+VERSE	3	1	If	0
+
+rhyme
+find.	4	1
+blind.	8	1
+
+rhyme
+live.	5	1
+give.	9	1
+
+CHORUS	11	1	Hon	0
+
+rhyme
+word.	12	1
+heard.	16	1
+
+rhyme
+true.	13	1
+you.	17	1
+
+exactBinaryMatch
+Hon	11	1
+you.	17	1
+
+VERSE	3	2	I	0
+
+rhyme
+thize.	4	2
+lies.	8	2
+
+rhyme
+sleeve.	5	2
+lieve.	9	2
+
+CHORUS	11	2	Hon	0
+
+rhyme
+word.	12	2
+heard.	16	2
+
+rhyme
+true.	13	2
+you.	17	2
+
+exactBinaryMatch
+Hon	11	2
+you.	17	2
+
+INTERLUDE	19	1	0.0	0
+
+BRIDGE	21	1	I	0
+
+rhyme
+friend.	22	1
+end.	24	1
+gain.	26	1
+
+VERSE	3	3	When	0
+
+rhyme
+cerned.	4	3
+turn?	8	3
+
+rhyme
+gone.	5	3
+on.	9	3
+
+CHORUS	11	3	Hon	0
+
+rhyme
+word.	12	3
+heard.	16	3
+
+rhyme
+true.	13	3
+you.	17	3
+
+exactBinaryMatch
+Hon	11	3
+you.	17	3
+
+OUTRO	30	1	0.0	0

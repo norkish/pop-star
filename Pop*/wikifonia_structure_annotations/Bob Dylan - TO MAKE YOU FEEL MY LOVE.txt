@@ -1,0 +1,66 @@
+VERSE	1	1	0.0	0
+
+rhyme
+face	2	1
+case	4	1
+brace	6	1
+
+TAGCHORUS	7	1	0.0	0
+
+exactBinaryMatch
+to	7	1
+love	7	1
+
+VERSE	9	1	When	0
+
+rhyme
+pear	10	1
+tears	12	1
+years	14	1
+
+TAGCHORUS	15	1	0.0	0
+
+exactBinaryMatch
+to	15	1
+love	15	1
+
+BRIDGE	17	1	I	0
+
+rhyme
+yet	18	1
+met	22	1
+
+rhyme
+wrong	20	1
+long	24	1
+
+VERSE	25	1	I'd	0	1
+
+rhyme
+blue	26	1
+ue	28	1
+do	30	1
+
+exactBinaryMatch
+There's	29	1
+do	30	1
+
+TAGCHORUS	31	1	0.0	0
+
+exactBinaryMatch
+to	31	1
+love	31	1
+
+OUTRO	33	1	There's	0
+
+exactBinaryMatch
+There's	33	1
+do	34	1
+
+TAGCHORUS	35	1	0.0	0
+
+exactBinaryMatch
+to	35	1
+love	35	1
+
+

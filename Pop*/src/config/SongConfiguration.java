@@ -19,5 +19,6 @@ public class SongConfiguration {
 	public RhythmSource rhythmSource = RhythmSource.UNSET;
 	public PitchSource pitchSource = PitchSource.UNSET;
 	public MelodySource melodySource = MelodySource.UNSET;
-
+	
+	public static long randSeed = 0;
 }

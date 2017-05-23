@@ -72,4 +72,7 @@ public abstract class SequencePair {
 		GAP_EXTEND_SCORE = gap_extend;
 	}
 
+	public boolean saveMatrix() {
+		return false;
+	}
 }

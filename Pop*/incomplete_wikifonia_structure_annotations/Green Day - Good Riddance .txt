@@ -1,0 +1,69 @@
+INTRO	1	1	0.0	0
+
+VERSE	9	1	Another	0
+
+rhyme
+road	11	1
+go	15	1
+
+rhyme
+why	19	1
+time	23	1
+
+CHORUS	25	1	It's	-1
+
+rhyme
+right	27	1
+life.	31	1
+
+exactBinaryMatch
+It's	24	1
+life.	31	1
+
+INTERLUDE	31	1	0	0
+
+VERSE	39	1	So	0
+
+rhyme
+mind	41	1
+time	45	1
+
+rhyme
+trial	49	1
+while	53	1
+
+CHORUS	55	1	It's	-1
+
+rhyme
+right.	57	1
+life.	61	1
+
+exactBinaryMatch
+It's	54	1
+life.	61	1
+
+VERSE	61	1	0.0	0
+
+CHORUS	85	1	It's	-1
+
+rhyme
+right	87	1
+life	91	1
+
+exactBinaryMatch
+It's	84	1
+life.	91	1
+
+INTERLUDE	31	2	0	0
+
+CHORUS	99	1	It's	-1
+
+rhyme
+right	101	1
+life	105	1
+
+exactBinaryMatch
+It's	98	1
+life.	105	1
+
+OUTRO	105	1	0	0

@@ -1,0 +1,28 @@
+INTRO	1	1	0.0	0
+
+VERSE	5	1	Just	0
+
+rhyme
+girl	6	1
+world	8	1
+
+exactBinaryMatch
+took	9	1
+where	11	1
+
+rhyme
+boy	14	1
+troit	16	1
+
+exactBinaryMatch
+took	17	1
+where	19	1
+
+VERSE	25	1	A	0
+
+rhyme
+room	26	1
+fume	28	1
+
+PRECHORUS	33	1	Strang	0
+

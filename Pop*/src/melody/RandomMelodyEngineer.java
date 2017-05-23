@@ -6,6 +6,7 @@ import java.util.TreeMap;
 
 import composition.Measure;
 import composition.Score;
+import config.SongConfiguration;
 import data.MusicXMLParser.Key;
 import data.MusicXMLParser.Note;
 import data.MusicXMLParser.Time;
@@ -14,7 +15,7 @@ import inspiration.Inspiration;
 
 public class RandomMelodyEngineer extends MelodyEngineer {
 
-	Random rand = new Random();
+	Random rand = new Random(SongConfiguration.randSeed);
 	
 	@Override
 	public void addMelody(Inspiration inspiration, Score score) {

@@ -1,6 +1,7 @@
 package data;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,10 +13,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.zip.ZipException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -28,12 +27,9 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
-import data.MusicXMLParser.DirectionType;
-import data.MusicXMLParser.Harmony;
-import data.MusicXMLParser.Note;
-import data.MusicXMLParser.NoteLyric;
 import data.MusicXMLParser.Barline.RepeatDirection;
-import data.WikifoniaCorrection.CorrectionType;
+import data.MusicXMLParser.Harmony;
+import data.MusicXMLParser.Quality;
 import pitch.Pitch;
 import syllabify.Syllabifier;
 import tabcomplete.rhyme.Phonetecizer;
@@ -43,6 +39,10 @@ import utils.Triple;
 
 public class MusicXMLParser {
 
+	final private static int DEBUG = 0; 
+	final private static int SYLLABLE = 5; 
+	final private static int ENDINGS = 4; 
+	
 	public enum DirectionType {
 		DS_AL_CODA1, AL_CODA1, CODA1, DS_AL_CODA2, AL_CODA2, CODA2, SEGNO, IGNORE, DS_AL_FINE, FINE, DC_AL_FINE, DC_AL_CODA1;
 		
@@ -82,7 +82,7 @@ public class MusicXMLParser {
 							!words.equals("repeat4timesthendsalfine") && !words.equals("4xfine") && !words.equals("lasttimetocoda")) { 
 						throw new RuntimeException("catchall:" + words);
 					} else {
-						System.err.println("Unknown text content of words node in direction:" + words);
+//						System.err.println("Unknown text content of words node in direction:" + words);
 					}
 				} else if (childName.equals("segno")) {
 					return DirectionType.SEGNO;
@@ -176,7 +176,7 @@ public class MusicXMLParser {
 	}
 
 	public enum Syllabic {
-		SINGLE, BEGIN, MIDDLE, END;
+		SINGLE, BEGIN, MIDDLE, END, LEADING_HYPHENATION, TRAILING_HYPHENATION, LEADING_AND_TRAILING_HYPHENATION;
 
 		public static Syllabic parse(String text) {
 			if (text.equals("single")) {
@@ -198,7 +198,7 @@ public class MusicXMLParser {
 
 		@Override
 		public String toString() {
-			return "NoteLyric [" + text + "]";
+			return "\"" + text + "\"";
 		}
 
 		final public Syllabic syllabic;
@@ -263,7 +263,7 @@ public class MusicXMLParser {
 
 	public static class Note {
 
-		public static final int REST = -2;
+		public static final Integer REST = -2;
 		
 		public int pitch;
 		public int duration;
@@ -440,6 +440,10 @@ public class MusicXMLParser {
 		public boolean isPlayedNoteOnset() {
 			if (pitch == REST)
 				return false;
+			return isOnset();
+		}
+
+		boolean isOnset() {
 			if (tie == NoteTie.STOP)
 				return false;
 			return true;
@@ -457,7 +461,6 @@ public class MusicXMLParser {
 			this.lyric = lyric;
 			this.lyricVerseMatchesRepeatCount = lyricVerseMatchesRepeatCount;
 		}
-		
 	}
 
 	
@@ -661,6 +664,7 @@ public class MusicXMLParser {
 				notesOn[FLAT_SEVENTHi] = true;
 				text = text.substring(8);
 				kind = DOMINANT;
+				kindInterval = SEVENTH;
 				if (text.equals("") || text.equals("-seventh")) {
 					return true;
 				} else if (text.equals("-ninth")) {
@@ -1019,6 +1023,67 @@ public class MusicXMLParser {
 			}
 			throw new RuntimeException("Illegal scale step:" + scaleStep);
 		}
+
+		public String toShortString() {
+			StringBuilder builder = new StringBuilder();
+			if (kind != null && (kind != MAJOR || kindInterval != null)) {
+				builder.append(getShortKind(kind));
+			}
+			if (kindInterval != null)
+				builder.append(getShortInterval(kindInterval));
+			if (degreeType != null)
+				builder.append(degreeType);
+			if (degreeValue > 0)
+				builder.append(degreeValue);
+			return builder.toString();
+		}
+
+		private static String getShortInterval(String interval) {
+			if (interval == SECOND)
+				return "2";
+			else if (interval ==  FOURTH)
+				return "4";
+			else if (interval == SIXTH)
+				return "6";
+			else if (interval == SEVENTH)
+				return "7";
+			else if (interval == NINTH) 
+				return "9"; 
+			else if (interval == ELEVENTH)
+				return "11";
+			else if (interval == THIRTEENTH)
+				return "13";
+
+ 			throw new RuntimeException("Shouldn't reach here");
+		}
+
+		private static String getShortKind(String kind) {
+			if (kind == MAJOR) {
+				return "M";
+			} else if (kind == MINOR) {
+				return "m";
+			} else if (kind == MINOR_MAJOR) {
+				return "mM";
+			} else if (kind == DOMINANT) {
+				return "";
+			} else if (kind == HALF_DIMINISHED) {
+				return "ø";
+			} else if (kind == DIMINISHED) {
+				return "°";
+			} else if (kind == AUGMENTED) {
+				return "+";
+			} else if (kind == SUSPENDED) {
+				return "sus";
+			} else if (kind == POWER) {
+				return "5";
+			} else if (kind == NO_CHORD) {
+				return "";
+			} else if (kind == PEDAL) {
+				return "ped";
+			}
+				
+ 			throw new RuntimeException("Shouldn't reach here");
+		}
 	}
 
 	public static class Bass {
@@ -1245,6 +1310,51 @@ public class MusicXMLParser {
 		public int getIntervalForScaleStep(int step) {
 			return quality.getIntervalForScaleStep(step);
 		}
+
+		public String toShortString() {
+			StringBuilder builder = new StringBuilder();
+			builder.append(root).append(quality.toShortString());
+			if (bass != null) {
+				builder.append('/').append(bass);
+			}
+			return builder.toString();
+		}
+
+		public double fractionOfSimilarToTotalNotes(Harmony other) {
+			boolean[] thisRelativePitches = this.quality.getPitches();
+			boolean[] otherRelativePitches = other.quality.getPitches();
+			int thisRootStep = this.root.rootStep;
+			int otherRootStep = other.root.rootStep;
+			
+			int totalNotes = 2;
+			int similarNotes = 0;
+			Set<Integer> thisAbsolutePitches = new HashSet<Integer>();
+			thisAbsolutePitches.add(thisRootStep);
+			for (int i = 0; i < thisRelativePitches.length; i++) {
+				if (thisRelativePitches[i]) {
+					thisAbsolutePitches.add((thisRootStep + Quality.HARMONY_CONSTANT_INTERVALS[i])%12);
+					totalNotes++;
+				}
+			}
+
+			Set<Integer> otherAbsolutePitches = new HashSet<Integer>();
+			otherAbsolutePitches.add(otherRootStep);
+			for (int i = 0; i < otherRelativePitches.length; i++) {
+				if (otherRelativePitches[i]) {
+					otherAbsolutePitches.add((otherRootStep + Quality.HARMONY_CONSTANT_INTERVALS[i])%12);
+					totalNotes++;
+				}
+			}
+			
+			for (Integer pitch : otherAbsolutePitches) {
+				if (thisAbsolutePitches.contains(pitch)) {
+					similarNotes += 2;
+				}
+			}
+			
+			
+			return 1.0 * similarNotes / totalNotes;
+		}
 	}
 
 	public static class Root {
@@ -1455,7 +1565,7 @@ public class MusicXMLParser {
 		boolean barMarkedBeforeNotes = false;
 		int playedMeasureIdx = 0;
 		for (int absoluteMeasureIdx = 0; absoluteMeasureIdx < measures.size(); absoluteMeasureIdx = (nextMeasure != -1 ? nextMeasure : absoluteMeasureIdx + 1)) {
-//			System.err.println("Now parsing measure " + i);
+			if (DEBUG >= 1) System.err.println("Now parsing measure " + absoluteMeasureIdx);
 			loops++;
 			if (loops > 1000) {
 				throw new RuntimeException("Excessive loops");
@@ -1479,6 +1589,7 @@ public class MusicXMLParser {
 						try {
 							barline = parseBarline(mChild);
 						} catch (NumberFormatException e) {
+							System.err.println(e.getMessage());
 							return null;
 						}
 						RepeatDirection direction = barline.getRepeatDirection();
@@ -1500,13 +1611,13 @@ public class MusicXMLParser {
 								} else {
 									takeRepeat = measureOffsetInfo.get(absoluteMeasureIdx).get(0).getFirst() == 1 ? LAST_TIME : 0;
 								}
-								if (takeRepeat > 0) System.err.println("Repeating at measure " + absoluteMeasureIdx);
+								if (DEBUG == ENDINGS && takeRepeat > 0) System.err.println("Repeating at measure " + absoluteMeasureIdx);
 							} else {
 								int ending = measureOffsetInfo.get(prevPlayedMeasure).get(0).getFirst();
-								System.err.println("Seen prev measure (" + prevPlayedMeasure + ") " + ending + " times");
+								if (DEBUG == ENDINGS) System.err.println("Seen prev measure (" + prevPlayedMeasure + ") " + ending + " times");
 								for (int k = 0; k < numbers.length; k++) {
 									if (ending == numbers[k]) {
-										System.err.println("Repeating at ending " + k);
+										if (DEBUG == ENDINGS) System.err.println("Repeating at ending " + k);
 										takeRepeat = (k == numbers.length - 1 ? LAST_TIME : 1);
 										break;
 									}
@@ -1514,7 +1625,7 @@ public class MusicXMLParser {
 							}
 							if (takeRepeat > 0) {
 								if (forwardRepeatMeasures.size() > 1) {
-									System.err.println("Multiple forward repeats on stack");
+									if (DEBUG == ENDINGS) System.err.println("Multiple forward repeats on stack");
 								}
 								Integer lastForwardRepeat = forwardRepeatMeasures.isEmpty() ? 0 : (takeRepeat == LAST_TIME ? forwardRepeatMeasures.pop() : forwardRepeatMeasures.peek());
 								nextMeasure = lastForwardRepeat;
@@ -1523,19 +1634,19 @@ public class MusicXMLParser {
 							}
 						} else if (direction == RepeatDirection.NO_REPEAT) {
 							if (numbers != null) { // ending
-								System.err.println("Encountered endings " + Arrays.toString(numbers) + " in measure " + absoluteMeasureIdx);
+								if (DEBUG == ENDINGS) System.err.println("Encountered endings " + Arrays.toString(numbers) + " in measure " + absoluteMeasureIdx);
 								int ending = measureOffsetInfo.get(prevPlayedMeasure).get(0).getFirst();
-								System.err.println("Seen prev measure (" + prevPlayedMeasure + ") " + ending + " times");
+								if (DEBUG == ENDINGS) System.err.println("Seen prev measure (" + prevPlayedMeasure + ") " + ending + " times");
 								skippingEnding = true;
 								for (int k : numbers) {
 									if (ending == k) {
-										System.err.println("Taking ending " + k);
+										if (DEBUG == ENDINGS) System.err.println("Taking ending " + k);
 										skippingEnding = false;
 										break;
 									}
 								}
 								if (skippingEnding) {
-									System.err.println("Skipping this ending");
+//									System.err.println("Skipping this ending");
 									break;
 								}
 							}
@@ -1552,7 +1663,7 @@ public class MusicXMLParser {
 							if (gNodeName.equals("divisions")) {
 								currDivisionsPerQuarterNote = Integer.parseInt(mGrandchild.getTextContent());
 								divsPerQuarterByAbsoluteMeasure.put(absoluteMeasureIdx, currDivisionsPerQuarterNote);
-								System.err.println("Divs per quarter note:" +currDivisionsPerQuarterNote);
+//								System.err.println("Divs per quarter note:" +currDivisionsPerQuarterNote);
 							} else if (gNodeName.equals("key")) {
 								currKey = parseKey(mGrandchild);
 								if (currKey.mode == null) {
@@ -1561,7 +1672,7 @@ public class MusicXMLParser {
 								keyByAbsoluteMeasure.put(absoluteMeasureIdx, currKey);
 							} else if (gNodeName.equals("time")) {
 								currTime = parseTime(mGrandchild);
-								System.err.println("Current time sig:" +currTime);
+//								System.err.println("Current time sig:" +currTime);
 								timeByAbsoluteMeasure.put(absoluteMeasureIdx, currTime);
 							} else if (gNodeName.equals("clef")) {
 								// do nothing
@@ -1592,28 +1703,28 @@ public class MusicXMLParser {
 										throw new RuntimeException("Detected loop (found D.S. twice without al coda");
 									}
 									nextMeasure = (segno == -1 ? 0 : segno);
-									System.err.println("Found D.S. al Coda — skipping back to measure " + nextMeasure + " (coda=" + coda1 + ")");
+									if (DEBUG == ENDINGS) System.err.println("Found D.S. al Coda — skipping back to measure " + nextMeasure + " (coda=" + coda1 + ")");
 									followCoda1 = true;
 								} else if (type == DirectionType.DS_AL_CODA2) {
 									if (followCoda2) {
 										throw new RuntimeException("Detected loop (found D.S. al Coda 2 twice without al coda");
 									}
 									nextMeasure = (segno == -1 ? 0 : segno);
-									System.err.println("Found D.S. al Coda 2 — skipping back to measure " + nextMeasure);
+									if (DEBUG == ENDINGS) System.err.println("Found D.S. al Coda 2 — skipping back to measure " + nextMeasure);
 									followCoda2 = true;
 								} else if (type == DirectionType.DS_AL_FINE) {
 									if (endAtFine) {
 										throw new RuntimeException("Detected loop (found D.S. twice without al coda");
 									}
 									nextMeasure = (segno == -1 ? 0 : segno);
-									System.err.println("Found D.S. al Fine — skipping back to measure " + nextMeasure);
+									if (DEBUG == ENDINGS) System.err.println("Found D.S. al Fine — skipping back to measure " + nextMeasure);
 									endAtFine = true;
 								} else if (type == DirectionType.DC_AL_FINE) {
 									if (endAtFine) {
 										throw new RuntimeException("Detected loop (found D.C. twice without al coda");
 									}
 									nextMeasure = 0;
-									System.err.println("Found D.C. al Fine — skipping back to measure " + nextMeasure);
+									if (DEBUG == ENDINGS) System.err.println("Found D.C. al Fine — skipping back to measure " + nextMeasure);
 									endAtFine = true;
 								}  else if (type == DirectionType.DC_AL_CODA1) {
 									if (followCoda1) {
@@ -1621,19 +1732,19 @@ public class MusicXMLParser {
 									}
 									if (nextMeasure == -1) {
 										nextMeasure = 0;
-										System.err.println("Found D.C. al Coda in measure " + absoluteMeasureIdx + " — skipping back to measure " + nextMeasure);
+										if (DEBUG == ENDINGS) System.err.println("Found D.C. al Coda in measure " + absoluteMeasureIdx + " — skipping back to measure " + nextMeasure);
 										followCoda1 = true;
 									}
 								} else if (type == DirectionType.SEGNO) {
 									segno = absoluteMeasureIdx;
-									System.err.println("Found segno at measure " + segno);
+//									System.err.println("Found segno at measure " + segno);
 								} else if (type == DirectionType.IGNORE) { 
 									// do nothing
 								} else if (type == DirectionType.AL_CODA1) { 
 									// skip to coda
 									if (followCoda1) {
 										nextMeasure = coda1;
-										System.err.println("Found coda at measure " + absoluteMeasureIdx + ", skipping to " + nextMeasure);
+										if (DEBUG == ENDINGS) System.err.println("Found coda at measure " + absoluteMeasureIdx + ", skipping to " + nextMeasure);
 										followCoda1 = false;
 									}
 								} else if (type == DirectionType.CODA1) { 
@@ -1641,12 +1752,12 @@ public class MusicXMLParser {
 									if (followCoda1 || followCoda2) {
 										throw new RuntimeException("Missing Al coda; found coda instead at " + absoluteMeasureIdx);
 									}
-									System.err.println("Entered coda 1 at measure " + absoluteMeasureIdx);
+									if (DEBUG == ENDINGS) System.err.println("Entered coda 1 at measure " + absoluteMeasureIdx);
 								} else if (type == DirectionType.AL_CODA2) { 
 									// skip to coda
 									if (followCoda2) {
 										nextMeasure = coda2;
-										System.err.println("Found coda 2 at measure " + absoluteMeasureIdx + ", skipping to " + nextMeasure);
+										if (DEBUG == ENDINGS) System.err.println("Found coda 2 at measure " + absoluteMeasureIdx + ", skipping to " + nextMeasure);
 										followCoda1 = false;
 									}
 								} else if (type == DirectionType.CODA2) { 
@@ -1654,12 +1765,12 @@ public class MusicXMLParser {
 									if (followCoda1 || followCoda2) {
 										throw new RuntimeException("Missing al coda 2; found coda 2 instead");
 									}
-									System.err.println("Entered coda 2 at absolute measure " + absoluteMeasureIdx);
+									if (DEBUG == ENDINGS) System.err.println("Entered coda 2 at absolute measure " + absoluteMeasureIdx);
 								} else if (type == DirectionType.FINE) { 
 									// skip to coda
 									if (endAtFine) {
 										nextMeasure = measures.size();
-										System.err.println("Found fine at absolute measure " + absoluteMeasureIdx + ", skipping to " + nextMeasure);
+										if (DEBUG == ENDINGS) System.err.println("Found fine at absolute measure " + absoluteMeasureIdx + ", skipping to " + nextMeasure);
 									}
 								} else {
 									//throw new RuntimeException("Unhandled direction type:" + type);
@@ -1678,6 +1789,7 @@ public class MusicXMLParser {
 						Pair<Integer, Harmony> offsetHarmony = parseHarmony(mChild);
 						if (offsetHarmony == null) {
 							unparseableHarmonies ++;
+							System.err.println("Unparseable Harmony at measure " + absoluteMeasureIdx);
 							return null;
 						}
 						int divisionsOffset = offsetHarmony.getFirst();
@@ -1709,7 +1821,7 @@ public class MusicXMLParser {
 						if (currMeasurePositionInDivisions == calculateTotalDivisionsInMeasure(currTime, currDivisionsPerQuarterNote)) {
 							break;
 						} else {
-//							throw new RuntimeException("backup occurred mid-measure, which we don't handle");
+							System.err.println("backup occurred mid-measure, which we don't handle");
 							return null;
 						}
 					} else if (nodeName.equals("forward")) {
@@ -1719,7 +1831,7 @@ public class MusicXMLParser {
 						if (currMeasurePositionInDivisions == calculateTotalDivisionsInMeasure(currTime, currDivisionsPerQuarterNote)) {
 							break;
 						} else {
-//							throw new RuntimeException("backup occurred mid-measure, which we don't handle");
+							System.err.println("backup occurred mid-measure at measure " + absoluteMeasureIdx + ", which we don't handle");
 							return null;
 						}
 					} else {
@@ -1731,20 +1843,20 @@ public class MusicXMLParser {
 					throw new RuntimeException("measure introduces second instrument");
 				} else if (!skippingEnding && absoluteMeasureIdx != 0 && absoluteMeasureIdx != measures.size()-1 && currMeasurePositionInDivisions != calculateTotalDivisionsInMeasure(currTime, currDivisionsPerQuarterNote)) {
 //					MusicXMLAnalyzer.printNode(measure, System.err);
-//					throw new RuntimeException("events in measure " + i + " fill " + currMeasurePositionInDivisions + " of " + calculateTotalDivisionsInMeasure(currTime, currDivisionsPerQuarterNote) + " divisions");
+					System.err.println("events in measure " + absoluteMeasureIdx + " fill " + currMeasurePositionInDivisions + " of " + calculateTotalDivisionsInMeasure(currTime, currDivisionsPerQuarterNote) + " divisions");
 //					System.err.println("Current Time Signature = " + currTime);
 					return null;
 				}
 			} catch (RuntimeException e) {
 				MusicXMLSummaryGenerator.printNode(measure, System.out);
-				System.err.println("In absolute measure number " + absoluteMeasureIdx);
+				if (DEBUG >= 2) System.err.println("In absolute measure number " + absoluteMeasureIdx);
 				throw e;
 			}
 			if (!skippingEnding){ // I assume this means that we "played" this measure
 				prevPlayedMeasure = absoluteMeasureIdx;
 				musicXML.playedToAbsoluteMeasureNumberMap.add(absoluteMeasureIdx);
 				if (absoluteMeasureIdx >= musicXML.absoluteToPlayedMeasureNumbersMap.size()) {
-					SortedSet<Integer> newSet = new TreeSet<Integer>();
+					List<Integer> newSet = new ArrayList<Integer>();
 					newSet.add(playedMeasureIdx);
 					musicXML.absoluteToPlayedMeasureNumbersMap.add(newSet);
 				} else {
@@ -1754,7 +1866,7 @@ public class MusicXMLParser {
 			}
 			if (!skippingEnding && absoluteMeasureIdx == dsalcoda) {
 				nextMeasure = (segno == -1 ? 0 : segno);
-				System.err.println("Found D.S. al Coda in absolute measure " + absoluteMeasureIdx + " — skipping back to measure " + nextMeasure);
+				if (DEBUG >= 1) System.err.println("Found D.S. al Coda in absolute measure " + absoluteMeasureIdx + " — skipping back to measure " + nextMeasure);
 				followCoda1 = true;
 			}
 		}
@@ -1824,13 +1936,13 @@ public class MusicXMLParser {
 						currNoteLyric.addSyllableStress(syllables.get(0));
 						totalSyllablesWithStress++;
 					} else {
-						System.err.println("Multiple syllables for note with lyric \"" + currNoteLyric.text + "\"");
+						if (DEBUG > 2) System.err.println("Multiple syllables for note with lyric \"" + currNoteLyric.text + "\"");
 					}
 				} else {
 					if (phones.isEmpty()) {
 						musicXML.lyricsWithoutStress.add(currNoteLyric.text);
 					} else 
-						System.err.println("" + phones.size() + " entries in phone dict for \"" + currNoteLyric.text + "\"");
+						if (DEBUG > 2) System.err.println("" + phones.size() + " entries in phone dict for \"" + currNoteLyric.text + "\"");
 				}
 				currentWordNotes = null;
 				continue;
@@ -1864,13 +1976,13 @@ public class MusicXMLParser {
 						}
 					} else {
 						musicXML.lyricsWithDifferentSyllableCountThanAssociatedNotes.add(new Pair<List<NoteLyric>, List<Triple<String, StressedPhone[], Integer>>>(currentWordNotes,syllables));
-						System.err.println("" + currentWordNotes.size() + " notes mismatch with " + syllables.size() + " syllables:" + word);
+						if (DEBUG > 2) System.err.println("" + currentWordNotes.size() + " notes mismatch with " + syllables.size() + " syllables:" + word);
 					}
 				} else {
 					if (phones.isEmpty()) {
 						musicXML.lyricsWithoutStress.add(word);
 					} else 
-						System.err.println("" + phones.size() + " entries with different stresses in phone dict for multi-syllable \"" + word + "\"");
+						if (DEBUG > 2) System.err.println("" + phones.size() + " entries with different stresses in phone dict for multi-syllable \"" + word + "\"");
 				}
 				currentWordNotes = null;
 				break;
@@ -1888,13 +2000,13 @@ public class MusicXMLParser {
 						currNoteLyric.addSyllableStress(syllables.get(0));
 						totalSyllablesWithStress++;
 					} else {
-						System.err.println("Multiple syllables for note with lyric \"" + currNoteLyric.text + "\"");
+						if (DEBUG > 2) System.err.println("Multiple syllables for note with lyric \"" + currNoteLyric.text + "\"");
 					}
 				} else {
 					if (phones.isEmpty()) {
 						musicXML.lyricsWithoutStress.add(currNoteLyric.text);
 					} else 
-						System.err.println("" + phones.size() + " entries in phone dict for \"" + currNoteLyric.text + "\"");
+						if (DEBUG > 2) System.err.println("" + phones.size() + " entries in phone dict for \"" + currNoteLyric.text + "\"");
 				}
 				if (currentWordNotes != null) {
 					musicXML.syllablesNotLookedUp.addAll(currentWordNotes);
@@ -1907,7 +2019,7 @@ public class MusicXMLParser {
 			
 			}
 		}
-		System.err.println("For " + notesByMeasure.size() + " notes with " + totalSyllables + " syllables, " + totalSyllablesWithStress + " had stress info from phone dict");
+		if (DEBUG == SYLLABLE) System.err.println("For " + notesByMeasure.size() + " notes with " + totalSyllables + " syllables, " + totalSyllablesWithStress + " had stress info from phone dict");
 		musicXML.totalSyllables = totalSyllables;
 		musicXML.totalSyllablesWithStressFromEnglishDictionary = totalSyllablesWithStress;
 	}
@@ -1935,7 +2047,7 @@ public class MusicXMLParser {
 		if (newRootStep < 0) {
 			newRootStep += 12;
 		} else if (newRootStep >= 12) {
-			newRootStep -= 12;
+			newRootStep %= 12;
 		}
 		Root newRoot = new Root(newRootStep);
 		
@@ -1961,9 +2073,9 @@ public class MusicXMLParser {
 		if (pitch < 0 || currKey == null) return pitch;
 		
 		int modification = (7*currKey.fifths + 144) % 12;
-		if (modification > 6) {
-			modification -= 12;
-		}
+//		if (modification > 6) {
+//			modification -= 12;
+//		}
 		return (pitch - modification);
 	}
 
@@ -2002,7 +2114,7 @@ public class MusicXMLParser {
 								} 
 							} catch (Exception e) {
 								MusicXMLSummaryGenerator.printNode(measure, System.out);
-								System.err.println("In measure number " + i);
+								if (DEBUG >= 2) System.err.println("In measure number " + i);
 								throw e;
 							}
 						} 
@@ -2026,10 +2138,15 @@ public class MusicXMLParser {
 				String direction = child.getAttributes().getNamedItem("direction").getTextContent();
 				barline.addRepeatDirection(RepeatDirection.parse(direction));
 			} else if (childName.equals("ending")) { 
-				final String textContent = child.getAttributes().getNamedItem("number").getTextContent().trim();
-				if (textContent.isEmpty())
+				final String numberContent = child.getAttributes().getNamedItem("number").getTextContent().trim();
+				Node typeItem = child.getAttributes().getNamedItem("type");
+				final String typeContent = typeItem == null?null:typeItem.getTextContent().trim();
+				
+				if (numberContent.isEmpty() || typeContent != null && typeContent.equals("discontinue"))
 					continue;
-				String[] numberStrings = textContent.split("\\s*[,.]\\s*");
+				if (typeContent != null && typeContent.equals("discontinue"))
+					throw new RuntimeException("What ending type is this? " + typeContent);
+				String[] numberStrings = numberContent.split("\\s*[,.]\\s*");
 				int[] numbers = new int[numberStrings.length];
 				for (int j = 0; j < numberStrings.length; j++) {
 					numbers[j] = Integer.parseInt(numberStrings[j]);
@@ -2444,6 +2561,26 @@ public class MusicXMLParser {
 			throw new RuntimeException("Note lyric missing text or extend");
 		}
 		
+		if (text.matches("\\d\\..*")) {
+			text = text.substring(2);
+		}
+		
+		// Handle hyphenated lyrics that aren't marked as being beginning or middle or end
+		if (text.startsWith("-")) {
+			text = text.substring(1);
+			if (syllabic == Syllabic.SINGLE) {
+				syllabic = Syllabic.LEADING_HYPHENATION;
+			}
+		}
+		if (text.endsWith("-")) {
+			text = text.substring(0,text.length()-1);
+			if (syllabic == Syllabic.SINGLE) {
+				syllabic = Syllabic.TRAILING_HYPHENATION;
+			} else if (syllabic == Syllabic.LEADING_HYPHENATION) {
+				syllabic = Syllabic.LEADING_AND_TRAILING_HYPHENATION;
+			} 
+		}
+		
 		return new NoteLyric(syllabic, text, extend, elision);
 	}
 
@@ -2637,7 +2774,7 @@ public class MusicXMLParser {
 			throw new RuntimeException("Key node missing fifths");
 		}
 		if (mode == null) {
-			System.err.println("Key node missing mode. Fifths = " + fifths);
+			if (DEBUG > 2) System.err.println("Key node missing mode. Fifths = " + fifths);
 		}
 		
 		return new Key(fifths, mode);
@@ -2675,17 +2812,17 @@ public class MusicXMLParser {
 		int unrecoverableXML = 0;
 		File[] files = new File("/Users/norkish/Archive/2017_BYU/ComputationalCreativity/data/Wikifonia").listFiles();
 		for (File file : files) {
-			 if (!file.getName().equals("Billy Joel - Just The Way You Are.mxl"))
+			 if (!file.getName().equals("Billy Joel - Just The Way You Are.xml"))
 				 continue;
 //			if (file.getName().charAt(0) < 'T') {
 //				continue;
 //			}
-//			if (file.getName().compareTo("Astor Piazzolla - Oblivion.mxl") < 0) {
+//			if (file.getName().compareTo("Astor Piazzolla - Oblivion.xml") < 0) {
 //				continue;
 //			}
 			 System.out.println(file.getName());
-			 MusicXMLParser musicXMLParser = new MusicXMLParser(file.getName(),MusicXMLSummaryGenerator.mxlToXML(file));
-			 WikifoniaCorrection.applyManualCorrections(musicXMLParser, file.getName());
+			 MusicXMLParser musicXMLParser = new MusicXMLParser(file.getName(),MusicXMLSummaryGenerator.parseXML(new FileInputStream(file)));
+//			 WikifoniaCorrection.applyManualCorrections(musicXMLParser, file.getName());
 //			 MusicXMLSummaryGenerator.printDocument(musicXML.xml, System.out);
 			 ParsedMusicXMLObject parsedObject;
 			 try {

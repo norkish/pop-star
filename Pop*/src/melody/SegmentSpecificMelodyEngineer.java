@@ -1,21 +1,25 @@
 package melody;
 
+import java.awt.Color;
+import java.awt.Dimension;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.SortedMap;
-import java.util.TreeMap;
+
+import org.tc33.jheatchart.HeatChart;
 
 import composition.Measure;
 import composition.Score;
 import constraint.Constraint;
 import data.MusicXMLModel;
 import data.MusicXMLModelLearner;
-import data.MusicXMLParser;
-import data.MusicXMLSummaryGenerator;
 import data.MusicXMLParser.Harmony;
 import data.MusicXMLParser.Key;
 import data.MusicXMLParser.Note;
@@ -36,10 +40,11 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 	private static boolean normalizeByHarmony = true;
 	public static class SegmentSpecificMelodyEngineerMusicXMLModel extends MusicXMLModel {
 
-		SparseSingleOrderMarkovModel<Integer> pitchMarkovModel;
+		private static final int DEISRED_AVERAGE_OCTAVE = 4; // in MIDI and MusicXML 4 octave starts with middle C
+		Map<SegmentType,SparseSingleOrderMarkovModel<Integer>> pitchMarkovModelsBySegment;
 		Map<Integer, Integer> pitchStatesByIndex = new HashMap<Integer, Integer>();// states are pitches for now
-		Map<Integer, Integer> pitchPriorCounts = new HashMap<Integer, Integer>();
-		Map<Integer, Map<Integer, Integer>> pitchTransitionCounts = new HashMap<Integer, Map<Integer, Integer>>();
+		Map<SegmentType,Map<Integer, Integer>> pitchPriorCountsBySegment = new EnumMap<SegmentType,Map<Integer, Integer>>(SegmentType.class);
+		Map<SegmentType,Map<Integer, Map<Integer, Integer>>> pitchTransitionCountsBySegment = new EnumMap<SegmentType, Map<Integer, Map<Integer, Integer>>>(SegmentType.class);
 
 		// have a Markov model for each offset position with the markov property applying to the previous duration
 		Map<Time, Map<SegmentType, SparseSingleOrderMarkovModel<Double>>> durationMarkovModelsByOffsetBySegmentByTime = new HashMap<Time, Map<SegmentType,SparseSingleOrderMarkovModel<Double>>>();
@@ -62,13 +67,13 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 
 			// the current markovModel is now obsolete and will be regenerated
 			// when next sampled
-			pitchMarkovModel = null;
+			pitchMarkovModelsBySegment = null;
 
 			Integer prevNotePitchIdx = -1;
 			Harmony currHarmony = null;
 			double prevNoteDurationInBeats = -1.0;
 
-			SortedMap<Integer, SegmentType> globalStructure = musicXML.globalStructure;
+			SortedMap<Integer, SortedMap<Double, SegmentType>> globalStructure = musicXML.getGlobalStructureBySegmentTokenStart();
 			int notesToAdvanceForTies; 
 			int maxNotesToAdvanceForTies = 5;
 			SegmentType prevType = null;
@@ -78,12 +83,13 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 				Note note = measureOffsetNote.getThird();
 				int measure = measureOffsetNote.getFirst();
 				int divsOffset = measureOffsetNote.getSecond();
+				double beatsOffset = musicXML.divsToBeats(divsOffset, measure);
 				currHarmony = Utils.valueForKeyBeforeOrEqualTo(measure, divsOffset, harmonyByMeasure);
 				if (note == null || note.isChordWithPrevious)
 					continue;
 
 				Time currTime = musicXML.getTimeForMeasure(measure);
-				SegmentType currType = Utils.valueForKeyBeforeOrEqualTo(measure, globalStructure);
+				SegmentType currType = Utils.valueForKeyBeforeOrEqualTo(measure, beatsOffset, globalStructure);
 				if (currType != prevType) {
 					prevNoteDurationInBeats = -1.0;
 				}
@@ -97,13 +103,15 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 				if (note.tie == NoteTie.START || note.slur == NoteTie.START) {
 					Note currNote = note;
 					List<Double> noteDurationInBeatsToTie = new ArrayList<Double>();
-					for (int j = 1; j <= maxNotesToAdvanceForTies; j++) {
+					for (int j = 1; j <= maxNotesToAdvanceForTies && i+j < notesByMeasure.size(); j++) {
 						Triple<Integer, Integer, Note> currNoteMeasureOffsetNote = notesByMeasure.get(i+j);
 						currNote = currNoteMeasureOffsetNote.getThird();
 						int currNoteMeasure = currNoteMeasureOffsetNote.getFirst();
-						SegmentType currTiedNoteType = Utils.valueForKeyBeforeOrEqualTo(currNoteMeasure, globalStructure);
+						int currNoteDivsOffset = currNoteMeasureOffsetNote.getSecond();
+						double currNoteBeatsOffset = musicXML.divsToBeats(currNoteDivsOffset, currNoteMeasure);
+						SegmentType currTiedNoteType = Utils.valueForKeyBeforeOrEqualTo(currNoteMeasure, currNoteBeatsOffset, globalStructure);
 
-						NoteLyric lyric = currNote.getLyric(currTiedNoteType != SegmentType.CHORUS);
+						NoteLyric lyric = currNote.getLyric(currTiedNoteType.mustHaveDifferentLyricsOnRepeats());
 						if (currNote.isChordWithPrevious || currNote.pitch != note.pitch || (lyric != null && !lyric.text.isEmpty())) {
 							break;
 						}
@@ -127,6 +135,7 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 						notePitchToken = note.pitch;
 					} else {
 						int octave = note.pitch / 12; // loss of precision to get octave
+						octave += DEISRED_AVERAGE_OCTAVE-musicXML.getAverageOctave();
 						notePitchToken = currHarmony.getScaleStep(note.pitch) + octave * 12;
 					}
 				} else { 
@@ -157,9 +166,24 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 					durationStatesByIndex.put(noteDurationInBeats, noteDurationIdx);
 				}
 
-				if (prevNotePitchIdx == -1) {
+				
+				
+				if (prevNotePitchIdx == -1 || currType != prevType) {
+					Map<Integer, Integer> pitchPriorCounts = pitchPriorCountsBySegment.get(currType);
+					if (pitchPriorCounts == null) {
+						pitchPriorCounts = new HashMap<Integer,Integer>();
+						pitchPriorCountsBySegment.put(currType, pitchPriorCounts);
+					}
+					
 					Utils.incrementValueForKey(pitchPriorCounts, notePitchIdx);
-				} else {
+				} 
+				
+				if (prevNotePitchIdx != -1){
+					Map<Integer, Map<Integer, Integer>> pitchTransitionCounts = pitchTransitionCountsBySegment.get(currType);
+					if (pitchTransitionCounts == null) {
+						pitchTransitionCounts = new HashMap<Integer,Map<Integer,Integer>>();
+						pitchTransitionCountsBySegment.put(currType, pitchTransitionCounts);
+					}
 					Utils.incrementValueForKeys(pitchTransitionCounts, prevNotePitchIdx, notePitchIdx);
 				}
 
@@ -227,14 +251,29 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 			// which depend on the harm sequence
 
 			// generate pitch
-			if (pitchMarkovModel == null) {
-				pitchMarkovModel = buildPitchModel();
+			if (pitchMarkovModelsBySegment == null) {
+				pitchMarkovModelsBySegment = buildPitchModels();
 			}
 			
-			SparseNHMM<Integer> constrainedPitchModel = new SparseNHMM<Integer>(pitchMarkovModel, length,
-					new ArrayList<Constraint<Integer>>());
+			final SparseSingleOrderMarkovModel<Integer> pitchMarkovModel = pitchMarkovModelsBySegment.get(type);
+			List<Integer> pitchList = new ArrayList<Integer>();
 			
-			List<Integer> pitchList = constrainedPitchModel.generate(length);
+			Integer lastPitch = pitchMarkovModel.sampleStartState();
+			Integer nextPitch;
+			pitchList.add(lastPitch);
+			
+			//sample while not done
+			while(pitchList.size() < length) {
+				try {
+					nextPitch = pitchMarkovModel.sampleNextState(lastPitch);
+				} catch (Exception ex) {
+					nextPitch = sampleNextPitchForAnySegment(lastPitch);
+				}
+				
+				pitchList.add(lastPitch);
+				
+				lastPitch = nextPitch;
+			}
 			
 			// generate durations
 			Map<SegmentType, SparseSingleOrderMarkovModel<Double>> durationMarkovModelsByOffsetBySegment = durationMarkovModelsByOffsetBySegmentByTime.get(sequenceTime);
@@ -251,16 +290,42 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 			}
 			
 			SparseNHMM<Double> constrainedDurationModel = new SparseNHMM<Double>(durationMarkovModel, length,
-					new ArrayList<Constraint<Double>>());
+					new ArrayList<Pair<Integer,Constraint<Double>>>());
 			List<Double> durationsAsBeats = constrainedDurationModel.generate(length);
 			List<Pair<Integer,Double>> pitchDurationPairs = new ArrayList<Pair<Integer,Double>>();
 			
 			// combine pitch and durations
+			Double lastDuration = null,nextDuration;
 			for (int i = 0; i < pitchList.size(); i++) {
-				pitchDurationPairs.add(new Pair<Integer,Double>(pitchList.get(i), durationsAsBeats.get(i)));
+				nextPitch = pitchList.get(i);
+				nextDuration = durationsAsBeats.get(i);
+				
+				if (Note.REST == nextPitch && Note.REST == lastPitch) {
+					//combine multiple consecutive rests
+					lastDuration += nextDuration;
+					pitchDurationPairs.get(pitchDurationPairs.size()-1).setSecond(lastDuration);
+				} else {
+					pitchDurationPairs.add(new Pair<Integer,Double>(nextPitch, nextDuration));
+					lastPitch = nextPitch;
+					lastDuration = nextDuration;
+				}
 			}
 			
 			return pitchDurationPairs;
+		}
+
+		private Integer sampleNextPitchForAnySegment(Integer prevPitch) {
+			
+			for (SegmentType type : pitchMarkovModelsBySegment.keySet()) {
+				SparseSingleOrderMarkovModel<Integer> markovModel = pitchMarkovModelsBySegment.get(type);
+				Integer nextPitch;
+				try {
+					nextPitch = markovModel.sampleNextState(prevPitch);
+					return nextPitch;
+				} catch (ArrayIndexOutOfBoundsException ex) {
+				}
+			}
+			throw new RuntimeException("No next state for any offset from " + prevPitch);
 		}
 
 		private SparseSingleOrderMarkovModel<Double> buildDurationModels(Time sequenceTime, SegmentType type) {
@@ -275,72 +340,171 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 				throw new RuntimeException("Model was not trained on any XMLs with time signature " + sequenceTime + " and Segment Type " + type);
 			}
 			
-			Map<Integer, Integer> durationPriorCounts = durationPriorCountsBySegmentByTime.get(sequenceTime).get(type);
-			Map<Integer, Map<Integer, Integer>> durationTransitionCounts = durationTransitionCountsBySegmentByTime.get(sequenceTime).get(type);
-			
-			Map<Integer, Double> priors = new HashMap<Integer, Double>();
-			Map<Integer, Map<Integer, Double>> transitions = new HashMap<Integer, Map<Integer, Double>>();
+			Map<Integer, Double> priors = computeDurationPriors(sequenceTime, type);
 
-			double totalCount = 0;
-			if (durationPriorCounts != null) {
-				for (Integer count : durationPriorCounts.values()) {
-					totalCount += count;
-				}
-				for (Entry<Integer, Integer> entry : durationPriorCounts.entrySet()) {
-					priors.put(entry.getKey(), entry.getValue() / totalCount);
-				}
-			}
-
-			for (Entry<Integer, Map<Integer, Integer>> outerEntry : durationTransitionCounts.entrySet()) {
-				Integer fromIdx = outerEntry.getKey();
-				Map<Integer, Integer> innerMap = outerEntry.getValue();
-
-				Map<Integer, Double> newInnerMap = new HashMap<Integer, Double>();
-				transitions.put(fromIdx, newInnerMap);
-
-				totalCount = 0;
-				for (Integer count : innerMap.values()) {
-					totalCount += count;
-				}
-				for (Entry<Integer, Integer> entry : innerMap.entrySet()) {
-					newInnerMap.put(entry.getKey(), entry.getValue() / totalCount);
-				}
-			}
+			Map<Integer, Map<Integer, Double>> transitions = computeDurationTransitionProbabilities(sequenceTime, type);
 			
 			SparseSingleOrderMarkovModel<Double> durationMarkovModel = new SparseSingleOrderMarkovModel<Double>(durationStatesByIndex, priors, transitions);
 			
 			return durationMarkovModel;
 		}
 
-		private SparseSingleOrderMarkovModel<Integer> buildPitchModel() {
-			Map<Integer, Double> priors = new HashMap<Integer, Double>();
-			Map<Integer, Map<Integer, Double>> transitions = new HashMap<Integer, Map<Integer, Double>>();
+		private Map<Integer, Map<Integer, Double>> computeDurationTransitionProbabilities(Time sequenceTime,
+				SegmentType type) {
+			Map<Integer, Map<Integer, Integer>> durationTransitionCounts = durationTransitionCountsBySegmentByTime.get(sequenceTime).get(type);
+			return computeTransitionProbabilities(durationTransitionCounts);
+		}
 
-			double totalCount = 0;
-			for (Integer count : pitchPriorCounts.values()) {
-				totalCount += count;
+		private Map<Integer, Double> computeDurationPriors(Time sequenceTime, SegmentType type) {
+			Map<Integer, Integer> durationPriorCounts = durationPriorCountsBySegmentByTime.get(sequenceTime).get(type);
+			return computePriors(durationPriorCounts);
+		}
+
+		private Map<SegmentType, SparseSingleOrderMarkovModel<Integer>> buildPitchModels() {
+			Map<SegmentType, SparseSingleOrderMarkovModel<Integer>> models = new EnumMap<SegmentType, SparseSingleOrderMarkovModel<Integer>>(SegmentType.class);
+			
+			for (SegmentType type : pitchTransitionCountsBySegment.keySet()) {
+				Map<Integer, Double> priors = computePriors(pitchPriorCountsBySegment.get(type));
+				Map<Integer, Map<Integer, Double>> transitions = computeTransitionProbabilities(pitchTransitionCountsBySegment.get(type));
+				models.put(type,new SparseSingleOrderMarkovModel<Integer>(pitchStatesByIndex, priors, transitions));
 			}
-			for (Entry<Integer, Integer> entry : pitchPriorCounts.entrySet()) {
-				priors.put(entry.getKey(), entry.getValue() / totalCount);
-			}
 
-			for (Entry<Integer, Map<Integer, Integer>> outerEntry : pitchTransitionCounts.entrySet()) {
-				Integer fromIdx = outerEntry.getKey();
-				Map<Integer, Integer> innerMap = outerEntry.getValue();
+			return models;
+		}
 
-				Map<Integer, Double> newInnerMap = new HashMap<Integer, Double>();
-				transitions.put(fromIdx, newInnerMap);
 
-				totalCount = 0;
-				for (Integer count : innerMap.values()) {
-					totalCount += count;
+		@Override
+		public void toGraph() {
+			durationModelToGraph();
+			pitchModelToGraph();
+		}
+
+		private void durationModelToGraph() {
+			Map<Integer, Double> priors = computeDurationPriors(Time.FOUR_FOUR, SegmentType.VERSE);
+			Map<Integer, Map<Integer, Double>> transitions = computeDurationTransitionProbabilities(Time.FOUR_FOUR, SegmentType.VERSE);
+			int maxXValues = 50;
+			int maxYValues = 10;
+			
+			Map<Double, Integer> statesByIndex = durationStatesByIndexBySegmentByTime.get(Time.FOUR_FOUR).get(SegmentType.VERSE);
+			Map<Integer, Map<Integer, Integer>> transitionCounts = durationTransitionCountsBySegmentByTime.get(Time.FOUR_FOUR).get(SegmentType.VERSE);
+			
+			boolean sortByFrequency = true;
+			//y-axis is from
+			Map<Double, Integer> statesByIndexSorted = null;
+			if (sortByFrequency) {
+				statesByIndexSorted = new LinkedHashMap<Double,Integer>();
+				Map<Integer, Integer> frequencyByID = new HashMap<Integer,Integer>();
+				//initialize frequencies
+				for (Integer harmonyID : statesByIndex.values()) {
+					frequencyByID.put(harmonyID, 0);
 				}
-				for (Entry<Integer, Integer> entry : innerMap.entrySet()) {
-					newInnerMap.put(entry.getKey(), entry.getValue() / totalCount);
+				
+				// count frequencies
+				for (Map<Integer, Integer> toMap : transitionCounts.values()) {
+					for (Integer durationID : toMap.keySet()) {
+						Integer count = toMap.get(durationID);
+						frequencyByID.put(durationID, frequencyByID.get(durationID)+count);
+					}
 				}
+				
+				// sort by counts (and then by ID)
+				List<Map.Entry<Integer, Integer>> harmonyIDSortedByFrequency = new ArrayList<Map.Entry<Integer, Integer>>(frequencyByID.entrySet());
+				Collections.sort(harmonyIDSortedByFrequency, new ValueThenKeyComparator<Integer, Integer>());
+				
+				// get reverse map to create new Harmony-ID map that is sorted by frequency
+				Double[] durationByID = new Double[statesByIndex.size()];
+				for (Double duration : statesByIndex.keySet()) {
+					Integer harmonyID = statesByIndex.get(duration);
+					durationByID[harmonyID] = duration;
+				}
+				
+				for (Map.Entry<Integer, Integer> entry : harmonyIDSortedByFrequency) {
+					statesByIndexSorted.put(durationByID[entry.getKey()], entry.getKey());
+				}
+				
+			} else {
+				statesByIndexSorted = statesByIndex;
 			}
+			
+			
+			// +1 for priors
+			int chartXDimension = Math.min(maxXValues, statesByIndexSorted.size()); 
+			int chartYDimension = Math.min(maxYValues, statesByIndexSorted.size()); 
 
-			return new SparseSingleOrderMarkovModel<Integer>(pitchStatesByIndex, priors, transitions);
+			String[] xValues = new String[chartXDimension];
+			String[] yValues = new String[chartYDimension + 1];
+			double[][] chartValues = new double[chartYDimension + 1][chartXDimension];
+			
+			// set axis labels
+			yValues[0] = "START";
+			
+			int i = 0;
+			for (Double duration : statesByIndexSorted.keySet()) {
+				Integer harmonyId = statesByIndexSorted.get(duration);
+				if (i >= chartXDimension && i >= chartYDimension)
+					break;
+				
+				if (i < chartXDimension) {
+					xValues[i] = duration.toString();
+					Double prior = priors.get(harmonyId);
+					chartValues[0][i] = prior == null ? 0.0 : prior;
+				}
+				if (i < chartYDimension) {
+					yValues[i+1] = duration.toString();
+				}
+				i++;
+			}
+			
+			// populate heatchart
+			
+			int y = 0;
+			for (Double yDuration : statesByIndexSorted.keySet()) {
+				if (y >= chartYDimension) {
+					break;
+				}
+				Integer yDurationId = statesByIndexSorted.get(yDuration);
+				int x = 0;
+				for (Double xDuration : statesByIndexSorted.keySet()) {
+					if (x >= chartXDimension) {
+						break;
+					}
+					Integer xHarmonyId = statesByIndexSorted.get(xDuration);
+					Double prob = null; 
+					Map<Integer, Double> probsFromHarmony = transitions.get(yDurationId);
+					if (probsFromHarmony != null) {
+						prob = probsFromHarmony.get(xHarmonyId);
+					}
+					chartValues[y+1][x] = prob == null ? 0.0 : prob;
+					x++;
+				}
+				y++;
+			}
+			
+			Utils.normalizeByFirstDimension(chartValues);
+
+			HeatChart chart = new HeatChart(chartValues);
+			chart.setHighValueColour(Color.RED);
+			chart.setLowValueColour(Color.BLUE);
+			
+			chart.setYAxisLabel("Previous Note Duration (beats)");
+			chart.setXAxisLabel("Next Note Duration (beats)");
+			chart.setXValues(xValues);
+			chart.setYValues(yValues);
+			chart.setAxisLabelsFont(MusicXMLModel.CHART_LABEL_FONT);
+			chart.setAxisValuesFont(MusicXMLModel.CHART_AXIS_FONT);
+			chart.setCellSize(new Dimension(30,30));
+			
+			try {
+				chart.saveToFile(new File(GRAPH_DIR + "/melody_rhythm.jpeg"));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		private void pitchModelToGraph() {
+			// TODO Auto-generated method stub
+			
 		}
 	}
 

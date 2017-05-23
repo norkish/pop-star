@@ -7,8 +7,10 @@ import java.util.Random;
 import java.util.Set;
 
 import condition.ConstraintCondition;
+import config.SongConfiguration;
 import constraint.Constraint;
 import utils.MathUtils;
+import utils.Pair;
 
 public class NHMM<T> extends AbstractMarkovModel<T>{
 
@@ -18,9 +20,9 @@ public class NHMM<T> extends AbstractMarkovModel<T>{
 	int[][] inSupport; // first matrix represents the number of non-zero transition probabilities to the ith state at pos 1 in the seq 
 	int[][] outSupport; // first matrix represents the number of non-zero transition probabilities from the ith state at pos 0 in the seq
 	Map<T, Integer> stateIndex;
-	Random rand = new Random();
+	Random rand = new Random(SongConfiguration.randSeed);
 	
-	public NHMM(SingleOrderMarkovModel<T> model, int length, List<Constraint<T>> constraints) {
+	public NHMM(SingleOrderMarkovModel<T> model, int length, List<Pair<Integer, Constraint<T>>> constraints) {
 		this.states = model.states;
 		this.stateIndex = model.stateIndex;
 		
@@ -93,7 +95,7 @@ public class NHMM<T> extends AbstractMarkovModel<T>{
 			throw new RuntimeException("Not satisfiable, even before constraining");
 		}
 		
-		for (Constraint<T> constraint : constraints) {
+		for (Pair<Integer, Constraint<T>> constraint : constraints) {
 			constrain(constraint);
 			if(!satisfiable())
 			{
@@ -457,9 +459,10 @@ public class NHMM<T> extends AbstractMarkovModel<T>{
 		return logTransitions.length;
 	}
 
-	public void constrain(Constraint<T> constraint) {
+	public void constrain(Pair<Integer, Constraint<T>> positionedConstraint) {
 		Set<PositionedState> posStateToRemove = new HashSet<PositionedState>();
-		int position = constraint.getPosition();
+		int position = positionedConstraint.getFirst();
+		Constraint<T> constraint = positionedConstraint.getSecond();
 		position = (position == Constraint.FINAL_POSITION ? logTransitions.length : position);
 		ConstraintCondition<T> condition = constraint.getCondition();
 		boolean desiredConditionState = constraint.getDesiredConditionState();

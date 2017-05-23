@@ -202,6 +202,7 @@ public class Score {
 			if (measure.segmentType != prevType) {
 				if (prevType != null) {
 					segmentsLengths.add(new Pair<SegmentType, Integer>(prevType,length));
+					length = 0;
 				}
 				prevType = measure.segmentType;
 			}

@@ -1,0 +1,91 @@
+INTRO	1	1	0.0	0
+
+VERSE	5	1	Don't	0
+
+rhyme
+fore	10	1
+more	19	1
+
+rhyme
+far	26	1
+are	34	1
+
+TAGCHORUS	33	1	0.0	0
+
+exactBinaryMatch
+just	33	1
+are	34	1
+
+INTERLUDE	35	1	0.0	0
+
+VERSE	39	1	Don't	0
+
+rhyme
+fash	41	1
+pas	49	1
+
+rhyme
+ion	42	1
+sion	50	1
+
+rhyme
+hair	44	1
+care	52	1
+
+rhyme
+hard	60	1
+are	68	1
+
+TAGCHORUS	67	1	0.0	0
+
+exactBinaryMatch
+just	67	1
+are	68	1
+
+INTERLUDE	69	1	0.0	0
+
+BRIDGE	73	1	I	0
+
+rhyme
+be	75	1
+me	83	1
+
+rhyme
+know	78	1
+you	86	1
+
+VERSE	88	1	I	-1	
+
+rhyme
+ev	91	1
+bet	100	1
+
+rhyme
+er	92	1
+ter	100	1
+
+rhyme
+heart	94	1
+are	102	1
+
+TAGCHORUS	101	1	0.0	0
+
+exactBinaryMatch
+just	101	1
+are	102	1
+
+INTERLUDE	103	1	0.0	0
+
+VERSE	89	2	0.0	0
+
+rhyme
+hard	116	1
+are	124	1
+
+TAGCHORUS	123	1	0.0	0
+
+exactBinaryMatch
+just	123	1
+are	124	1
+
+OUTRO	125	1	0.0	0

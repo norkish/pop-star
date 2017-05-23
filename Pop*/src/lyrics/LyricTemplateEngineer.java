@@ -1,22 +1,22 @@
 package lyrics;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 import composition.Measure;
 import composition.Score;
 import condition.Rhyme;
+import config.SongConfiguration;
 import data.MusicXMLModel;
 import data.MusicXMLModelLearner;
 import data.MusicXMLParser.Note;
@@ -25,8 +25,8 @@ import data.MusicXMLParser.NoteTie;
 import data.MusicXMLParser.Syllabic;
 import data.ParsedMusicXMLObject;
 import globalstructure.SegmentType;
+import globalstructure.StructureExtractor;
 import inspiration.Inspiration;
-import segmentstructure.SegmentStructureExtractor;
 import utils.Pair;
 import utils.Triple;
 import utils.Utils;
@@ -49,16 +49,17 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 			
 			List<Triple<Integer, Integer, Note>> notes = musicXML.getNotesByPlayedMeasure();
 			SortedMap<Integer, Double> phraseBeginnings = musicXML.phraseBeginnings;
-			SortedMap<Integer, SegmentType> globalStructure = musicXML.globalStructure;
+			SortedMap<Integer, SortedMap<Double, SegmentType>> globalStructure = musicXML.getGlobalStructureBySegmentTokenStart();
 			List<NoteLyric> currPhrase = null;
 			SegmentType currSegment = null;
 			for (Triple<Integer, Integer, Note> triple : notes) {
 				int measure = triple.getFirst();
-				if (globalStructure.containsKey(measure)) {
-					currSegment = globalStructure.get(measure);
-				}
 				int divsOffset = triple.getSecond();
 				double beatsOffset = musicXML.divsToBeats(divsOffset, measure);
+				SortedMap<Double, SegmentType> globalStructureForMeasure = globalStructure.get(measure);
+				if (globalStructureForMeasure != null && globalStructureForMeasure.containsKey(beatsOffset)) {
+					currSegment = globalStructureForMeasure.get(beatsOffset);
+				}
 				Double phraseBeginningInMeasure = phraseBeginnings.get(measure);
 				if (phraseBeginningInMeasure != null && phraseBeginningInMeasure == beatsOffset) {
 					if (currPhrase != null && !currPhrase.isEmpty()) {
@@ -67,7 +68,7 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 					currPhrase = new ArrayList<NoteLyric>();
 				}
 				Note note = triple.getThird();
-				NoteLyric lyric = note.getLyric(currSegment != SegmentType.CHORUS);
+				NoteLyric lyric = note.getLyric(currSegment != null && currSegment.mustHaveDifferentLyricsOnRepeats());
 				if (lyric != null && lyric.text != null) {
 					currPhrase.add(lyric);
 				}
@@ -100,7 +101,7 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 			return str.toString();
 		}
 
-		private static Random rand = new Random();
+		private static Random rand = new Random(SongConfiguration.randSeed);
 		/**
 		 * returned template may contain nulls to pad to phraseLength if no template can be found that perfectly matches phraseLength 
 		 * @param phraseLength
@@ -112,7 +113,7 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 			while(lengthLeftToFill > 0) {
 				List<List<NoteLyric>> templatesForLength = Utils.valueForKeyBeforeOrEqualTo(lengthLeftToFill, templatesBySyllableLength);
 				if (templatesForLength == null) {
-					System.err.println("No lyric templates with syllable count <= " + lengthLeftToFill);
+//					System.err.println("No lyric templates with syllable count <= " + lengthLeftToFill);
 					while(template.size() < phraseLength) {
 						template.add(null);
 					}
@@ -123,6 +124,12 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 				lengthLeftToFill = phraseLength - template.size();
 			}
 			return template;
+		}
+
+		@Override
+		public void toGraph() {
+			// TODO Auto-generated method stub
+			
 		}
 	}
 
@@ -137,17 +144,17 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 		//use score to get constraints and then model to find lyrics that fit constraints
 		List<Measure> measures = score.getMeasures();
 		List<Triple<SegmentType, List<Integer>, List<Integer>>> syllablesPerPhrase = getNoteCountBySegment(score);
-		
+
 		List<Triple<SegmentType, List<List<NoteLyric>>, List<Integer>>> templatesBySegment = new ArrayList<Triple<SegmentType, List<List<NoteLyric>>, List<Integer>>>();
-		boolean chorusTemplateGenerated = false;
 		List<Integer> templateLengths;
 		List<List<NoteLyric>> templates = null;
+		List<List<NoteLyric>> chorusLyricTemplates = null;
 		for (Triple<SegmentType, List<Integer>, List<Integer>> triple : syllablesPerPhrase) {
 			boolean sampleLyrics = false;
 			switch (triple.getFirst()) {
 			case CHORUS:
-				if (chorusTemplateGenerated)
-					templates = null;
+				if (chorusLyricTemplates != null)
+					templates = chorusLyricTemplates;
 				else {
 					sampleLyrics = true;
 				}
@@ -170,6 +177,8 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 				for (Integer templateLength : templateLengths) {
 					templates.add(model.sampleTemplate(templateLength));
 				}
+				if (triple.getFirst() == SegmentType.CHORUS)
+					chorusLyricTemplates = templates;
 			}
 			
 			templatesBySegment.add(new Triple<SegmentType, List<List<NoteLyric>>, List<Integer>>(triple.getFirst(), templates, triple.getThird()));
@@ -184,9 +193,10 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 		
 		SegmentType prevType = null, currType;
 		printTemplateForLyrist(inspiration, templatesBySegment);
-		List<Triple<SegmentType, List<List<NoteLyric>>, List<Integer>>> lyricPhrasesToAdd = templatesBySegment;
+		List<Triple<SegmentType, List<List<NoteLyric>>, List<Integer>>> lyricPhrasesToAdd = getExternalLyrics(templatesBySegment);
 		
 		boolean inTheMiddleOfATie = false;
+		int notesInSegment = 0;
 		for (int currMeasureNumber = 0; currMeasureNumber < measures.size(); currMeasureNumber++) {
 			Measure measure = measures.get(currMeasureNumber);
 			
@@ -197,6 +207,7 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 				lyrIdx = 0;
 				segmentIdx++;
 				currTemplates = lyricPhrasesToAdd.get(segmentIdx).getSecond();
+				notesInSegment = 0;
 			}
 			switch (currType) {
 			case INTERLUDE:
@@ -246,6 +257,7 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 						if (note.tie == NoteTie.START) {
 							inTheMiddleOfATie = true;
 						}
+						notesInSegment++;
 						List<NoteLyric> currTemplate = currTemplates.get(phraseIdx);
 						if (lyrIdx < currTemplate.size()) {
 							note.setLyric(currTemplate.get(lyrIdx++), true);
@@ -263,38 +275,63 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 	}
 
 	private void printTemplateForLyrist(Inspiration inspiration, List<Triple<SegmentType, List<List<NoteLyric>>, List<Integer>>> templatesBySegment) {
-//		File lyricFile = new File("lyricTemplate.txt");
+//		File lyricFile = new File("externalLyrics.txt");
+		File lyricFile = new File("lyricTemplate.txt");
 //		File rhymeFile = new File("rhymeTemplate.txt");
-//		PrintWriter lyricFileWriter = new PrintWriter(lyricFile);
+		PrintWriter lyricFileWriter = null;
+		try {
+			lyricFileWriter = new PrintWriter(lyricFile);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 //		PrintWriter rhymeFileWriter = new PrintWriter(rhymeFile);
 		
-		System.out.println("TITLE: BSSF");
-		System.out.println("INSPIRATION: " + inspiration.getMaxEmotion());
-		System.out.println();
+		lyricFileWriter.println("TITLE: BSSF");
+		lyricFileWriter.println("INSPIRATION: " + inspiration.getMaxEmotion());
+		lyricFileWriter.println();
 
 		for (Triple<SegmentType, List<List<NoteLyric>>, List<Integer>> triple : templatesBySegment) {
 			SegmentType type = triple.getFirst();
 			List<List<NoteLyric>> templatePhrasesForSegment = triple.getSecond();
 			List<Integer> rhymeGroupLabels = triple.getThird();
 			assert templatePhrasesForSegment.size() == rhymeGroupLabels.size() : "mismatch between rhyme groups and phrases";
-			System.out.println(type);
+			lyricFileWriter.println(type);
 			for (int i = 0; i < templatePhrasesForSegment.size(); i++) {
 				List<NoteLyric> templatePhrase = templatePhrasesForSegment.get(i);
 				Integer rhymeGroupNumber = rhymeGroupLabels.get(i);
-				char rhymeGroupLabel = (char) (rhymeGroupNumber == null?' ':'A' + rhymeGroupNumber);
-				System.out.print(rhymeGroupLabel + "\t");
+				if (rhymeGroupNumber != null) lyricFileWriter.print(rhymeGroupNumber + 1);
+				lyricFileWriter.print("\t");
 				for (NoteLyric noteLyric : templatePhrase) {
 					if (noteLyric == null) {
-						System.out.print("null ");
+						lyricFileWriter.print("[[buffer]] ");
 					} else {
-						System.out.print(noteLyric.text + (noteLyric.syllabic == Syllabic.SINGLE || noteLyric.syllabic == Syllabic.END?' ':'•'));
+						switch (noteLyric.syllabic) {
+						case SINGLE:
+						case END:
+							lyricFileWriter.print(noteLyric.text + ' ');
+							break;
+						case BEGIN:
+						case MIDDLE:
+						case TRAILING_HYPHENATION:
+							lyricFileWriter.print(noteLyric.text + '•');
+							break;
+						case LEADING_HYPHENATION:
+							lyricFileWriter.print('•' + noteLyric.text);
+							break;
+						case LEADING_AND_TRAILING_HYPHENATION:
+							lyricFileWriter.print('•' + noteLyric.text + '•');
+							break;
+						default:
+							break;
+						}
 					}
 				}
-				System.out.println();
+				lyricFileWriter.println();
 			}
-			System.out.println();
+			lyricFileWriter.println();
 		}
-		
+		lyricFileWriter.close();
 	}
 
 	private List<Triple<SegmentType, List<Integer>, List<Integer>>> getNoteCountBySegment(Score score) {
@@ -324,7 +361,7 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 			// if new segment
 			boolean addPreviousSegment = currType != prevType && prevType != null;
 			if (addPreviousSegment) {
-				if (currPhraseMeasureCount >= SegmentStructureExtractor.MIN_FULL_MSRS_LYR_PHRASE && currPhraseNoteCount > 0) {
+				if (currPhraseMeasureCount >= StructureExtractor.MIN_FULL_MSRS_LYR_PHRASE && currPhraseNoteCount > 0) {
 					currSegmentPhrases.add(currPhraseNoteCount);
 					currSegmentRhymeGroups.add(null);
 					currPhraseNoteCount = 0;
@@ -403,7 +440,7 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 			measure = nextMeasure;
 		}
 		if (prevType != null) { // if we saw anything
-			if (currPhraseMeasureCount >= SegmentStructureExtractor.MIN_FULL_MSRS_LYR_PHRASE && currPhraseNoteCount > 0) {
+			if (currPhraseMeasureCount >= StructureExtractor.MIN_FULL_MSRS_LYR_PHRASE && currPhraseNoteCount > 0) {
 				currSegmentPhrases.add(currPhraseNoteCount);
 				currSegmentRhymeGroups.add(null);
 			}
@@ -414,18 +451,51 @@ public class LyricTemplateEngineer extends LyricalEngineer {
 		return noteCountBySegment;
 	}
 
-	private List<NoteLyric> getExternalLyrics() {
-		String text = null;
+	private List<Triple<SegmentType, List<List<NoteLyric>>, List<Integer>>> getExternalLyrics(List<Triple<SegmentType, List<List<NoteLyric>>, List<Integer>>> templates) {
+		List<Triple<SegmentType, List<List<NoteLyric>>, List<Integer>>> externalLyrics = new ArrayList<Triple<SegmentType, List<List<NoteLyric>>, List<Integer>>>();
+		
+		Scanner sysScan = new Scanner(System.in);
+		System.out.println("Press enter when ready to load lyrics from externalLyrics.txt file:");
+//		sysScan.nextLine();
+		sysScan.close();
+		
+		Scanner fileScan = null;
 		try {
-			text = new String(Files.readAllBytes(Paths.get("externalLyrics.txt")), StandardCharsets.UTF_8);
+			fileScan = new Scanner(new File("externalLyrics.txt"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		String[] words = text.split("\\s+");
-		List<NoteLyric> lyrics = new ArrayList<NoteLyric>();
-		for (String word : words) {
-			lyrics.add(new NoteLyric(Syllabic.SINGLE, word, false, false));
+		String line = null;
+		while(fileScan.hasNextLine()) {
+			line = fileScan.nextLine();
+			
+			if (line.startsWith("TITLE:")) continue;
+			if (line.startsWith("INSPIRATION:")) continue;
+			if (line.trim().length() == 0) continue;
+			
+			SegmentType type = SegmentType.valueOf(line.trim());
+			List<List<NoteLyric>> lyricPhrases = new ArrayList<List<NoteLyric>>();
+			while(fileScan.hasNextLine()) {
+				line = fileScan.nextLine();
+				if (line.trim().length() == 0) break;
+				
+				List<NoteLyric> lyrics = new ArrayList<NoteLyric>();
+				String[] words = line.split("[\\s\\-•]+");
+				boolean first = true;
+				for (String word : words) {
+					if (first) {
+						first = false;
+						continue;
+					}
+					if (word.trim().equals(".")) continue;
+					lyrics.add(new NoteLyric(Syllabic.SINGLE, word, false, false));
+				}
+				lyricPhrases.add(lyrics);
+				
+			}
+			externalLyrics.add(new Triple<SegmentType, List<List<NoteLyric>>, List<Integer>>(type, lyricPhrases, templates.get(externalLyrics.size()).getThird()));
 		}
-		return lyrics;
+		
+		return externalLyrics;
 	}
 }

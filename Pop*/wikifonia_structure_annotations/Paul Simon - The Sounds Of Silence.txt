@@ -1,0 +1,109 @@
+INTRO	1	1	0.0	0
+
+VERSE	1	1	Hel	-1
+
+rhyme
+friend	2	1
+gain	4	1
+
+rhyme
+creep	6	1
+sleep	8	1
+
+rhyme
+ing	6	1
+ing	8	1
+
+rhyme
+brain	11	1
+mains	12	1
+
+TAGCHORUS	13	1	the	-1
+
+exactBinaryMatch
+the	13	1
+lence	15	1
+
+VERSE	16	1	In	-1
+
+rhyme
+lone	17	1
+stone	19	1
+
+rhyme
+lamp	21	1
+damp	23	1
+
+rhyme
+light	26	1
+night	27	1
+
+TAGCHORUS	28	1	the	-1
+
+exactBinaryMatch
+the	28	1
+ence	30	1
+
+VERSE	16	2	and	-1
+
+rhyme
+saw	17	2
+more	19	2
+
+rhyme
+ing	21	2
+ing	23	2
+
+rhyme
+shared	26	2
+dared	27	2
+
+TAGCHORUS	28	2	the	-1
+
+exactBinaryMatch
+the	28	2
+ence	30	2
+
+VERSE	31	1	Fools	-1
+
+rhyme
+know	32	1
+grows	34	1
+
+rhyme
+teach	36	1
+reach	38	1
+
+rhyme
+you	36	1
+you	38	1
+
+TAGCHORUS	43	1	the	-1
+
+exactBinaryMatch
+the	43	1
+lence	45	1
+
+VERSE	46	1	and	-1	1
+
+rhyme
+prayed	47	1
+made,	49	1
+
+rhyme
+warn	51	1
+form	53	1
+
+rhyme
+ing	51	1
+ing	53	1
+
+rhyme
+walls	57	1
+halls	58	1
+
+TAGCHORUS	59	1	the	-1
+
+exactBinaryMatch
+the	59	1
+lence.	61	1

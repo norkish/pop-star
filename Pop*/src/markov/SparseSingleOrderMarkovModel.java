@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import config.SongConfiguration;
+
 import java.util.Random;
 
 public class SparseSingleOrderMarkovModel<T> extends AbstractMarkovModel<T>{
@@ -12,7 +15,7 @@ public class SparseSingleOrderMarkovModel<T> extends AbstractMarkovModel<T>{
 	Map<Integer,Double> logPriors;
 	Map<Integer,Map<Integer,Double>> logTransitions;
 	Map<T, Integer> stateIndex;
-	Random rand = new Random();
+	Random rand = new Random(SongConfiguration.randSeed);
 
 	/*
 	 * Makes deep copy of all input params for new instance of Markov Model
