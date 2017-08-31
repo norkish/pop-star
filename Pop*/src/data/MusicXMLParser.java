@@ -39,9 +39,9 @@ import utils.Triple;
 
 public class MusicXMLParser {
 
-	final private static int DEBUG = 0; 
 	final private static int SYLLABLE = 5; 
 	final private static int ENDINGS = 4; 
+	final private static int DEBUG = SYLLABLE; 
 	
 	public enum DirectionType {
 		DS_AL_CODA1, AL_CODA1, CODA1, DS_AL_CODA2, AL_CODA2, CODA2, SEGNO, IGNORE, DS_AL_FINE, FINE, DC_AL_FINE, DC_AL_CODA1;
@@ -1936,13 +1936,17 @@ public class MusicXMLParser {
 						currNoteLyric.addSyllableStress(syllables.get(0));
 						totalSyllablesWithStress++;
 					} else {
-						if (DEBUG > 2) System.err.println("Multiple syllables for note with lyric \"" + currNoteLyric.text + "\"");
+						if (DEBUG == SYLLABLE) {
+							System.err.println("Multiple syllables for note with lyric \"" + currNoteLyric.text + "\"");
+						}
 					}
 				} else {
 					if (phones.isEmpty()) {
 						musicXML.lyricsWithoutStress.add(currNoteLyric.text);
 					} else 
-						if (DEBUG > 2) System.err.println("" + phones.size() + " entries in phone dict for \"" + currNoteLyric.text + "\"");
+						if (DEBUG == SYLLABLE) {
+							System.err.println("" + phones.size() + " entries in phone dict for \"" + currNoteLyric.text + "\"");
+						}
 				}
 				currentWordNotes = null;
 				continue;
@@ -1976,13 +1980,16 @@ public class MusicXMLParser {
 						}
 					} else {
 						musicXML.lyricsWithDifferentSyllableCountThanAssociatedNotes.add(new Pair<List<NoteLyric>, List<Triple<String, StressedPhone[], Integer>>>(currentWordNotes,syllables));
-						if (DEBUG > 2) System.err.println("" + currentWordNotes.size() + " notes mismatch with " + syllables.size() + " syllables:" + word);
+						if (DEBUG == SYLLABLE) {
+							System.err.println("" + currentWordNotes.size() + " notes mismatch with " + syllables.size() + " syllables:" + word);
+						}
 					}
 				} else {
 					if (phones.isEmpty()) {
 						musicXML.lyricsWithoutStress.add(word);
-					} else 
-						if (DEBUG > 2) System.err.println("" + phones.size() + " entries with different stresses in phone dict for multi-syllable \"" + word + "\"");
+					} else {
+						if (DEBUG == SYLLABLE) System.err.println("" + phones.size() + " entries with different stresses in phone dict for multi-syllable \"" + word + "\"");
+					}
 				}
 				currentWordNotes = null;
 				break;
@@ -2000,13 +2007,14 @@ public class MusicXMLParser {
 						currNoteLyric.addSyllableStress(syllables.get(0));
 						totalSyllablesWithStress++;
 					} else {
-						if (DEBUG > 2) System.err.println("Multiple syllables for note with lyric \"" + currNoteLyric.text + "\"");
+						if (DEBUG == SYLLABLE) System.err.println("Multiple syllables for note with lyric \"" + currNoteLyric.text + "\"");
 					}
 				} else {
 					if (phones.isEmpty()) {
 						musicXML.lyricsWithoutStress.add(currNoteLyric.text);
-					} else 
-						if (DEBUG > 2) System.err.println("" + phones.size() + " entries in phone dict for \"" + currNoteLyric.text + "\"");
+					} else {
+						if (DEBUG == SYLLABLE) System.err.println("" + phones.size() + " entries in phone dict for \"" + currNoteLyric.text + "\"");
+					}
 				}
 				if (currentWordNotes != null) {
 					musicXML.syllablesNotLookedUp.addAll(currentWordNotes);

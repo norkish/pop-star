@@ -329,13 +329,15 @@ public class StructureExtractor {
 		
 		// for each group of matching lyric positions (indexed by a letter, e.g., group 'A')
 		// you have each of the matching regions, with starting (inclusive) and ending (inclusive) measure and beat position of matching notes 
-		List<List<Pair<Integer, Double>>> rhymeMatches = new ArrayList<List<Pair<Integer, Double>>>();
+		Map<Character, List<Pair<Integer, Double>>> rhymeMatches = new HashMap<Character, List<Pair<Integer, Double>>>();
 		Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> lyricMatches = new HashMap<Character, List<Pair<Pair<Integer,Double>,Pair<Integer,Double>>>>();
 		Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> pitchMatches = new HashMap<Character, List<Pair<Pair<Integer,Double>,Pair<Integer,Double>>>>();		
 		Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> rhythmMatches = new HashMap<Character, List<Pair<Pair<Integer,Double>,Pair<Integer,Double>>>>();		
 		Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> harmonyMatches = new HashMap<Character, List<Pair<Pair<Integer,Double>,Pair<Integer,Double>>>>();
 		Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> matches;
 		List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>> matchesForGroup;
+		
+		char rhymeGroupLabel = 'A';
 		
 		List<List<Integer>> absoluteToPlayedMeasureNumbersMap = musicXML.absoluteToPlayedMeasureNumbersMap;
 		
@@ -464,10 +466,10 @@ public class StructureExtractor {
 				// process constraints for match map
 				if (matchClass.equals("rhyme")) {
 					List<Pair<Integer, Double>> rhymeGroup = new ArrayList<Pair<Integer, Double>>();
-					for (Triple<Integer, Double, Note> notePosition : constrainedNotes) {
+					for(Triple<Integer, Double, Note> notePosition : constrainedNotes) {
 						rhymeGroup.add(new Pair<Integer, Double>(notePosition.getFirst(), notePosition.getSecond()));
 					}
-					rhymeMatches.add(rhymeGroup);
+					rhymeMatches.put(rhymeGroupLabel++, rhymeGroup);
 				} else {
 					assert(constrainedNotes.size() == 2);
 					if (matchClass.equals("lyric")) {

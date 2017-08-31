@@ -38,6 +38,7 @@ import config.SongConfiguration;
 import data.MusicXMLParser;
 import data.MusicXMLParser.Harmony;
 import data.MusicXMLParser.Note;
+import data.MusicXMLParser.NoteLyric;
 import data.MusicXMLSummaryGenerator;
 import data.ParsedMusicXMLObject;
 import data.ParsedMusicXMLObject.MusicXMLAlignmentEvent;
@@ -45,6 +46,9 @@ import globalstructure.SegmentType;
 import globalstructure.StructureExtractor;
 import main.PopDriver;
 import tabcomplete.main.TabDriver;
+import tabcomplete.rhyme.HirjeeMatrix;
+import tabcomplete.rhyme.RhymeStructureAnalyzer;
+import tabcomplete.rhyme.StressedPhone;
 import utils.Pair;
 import utils.Triple;
 import utils.Utils;
@@ -852,6 +856,280 @@ public class GeneralizedGlobalStructureInferer {
 		}
 	}
 	
+	public static class RhymeAlignmentParameterization extends GeneralizedGlobalStructureAlignmentParameterization {
+		
+		// hirjee vowel alignment score
+		// Pat's rules score
+		// Pat's rules w/Hirjee score
+		// measure position
+		// distance (in measures) between events
+		// proximity (in syllable count) of (later) token to phrase/line-end punctuation
+		//
+		
+		public double noMatch;
+		public double identicalVowel;
+		public double differentVowel;
+		
+		public double hirjeeVowelMatchScore;
+		public double patAlnScore;
+		public double phonemeAlnScore;
+
+		public double bothLyricOnset;
+		public double neitherLyricOnset;
+		public double oneLyricOnsetOneNot;
+
+		public double minMeasureDistance;
+		public double maxMeasureDistance;
+
+		public double earlierHasPunctuation;
+		public double earlierDistanceFromPunctuation;
+		public double laterHasPunctuation;
+		public double laterDistanceFromPunctuation;
+
+		// measure offset match score
+		public double haveSameMeasureOffset;
+		public double haveDifferentMeasureOffset;
+		public double measureOffsetDifference;
+
+		public RhymeAlignmentParameterization() {
+			noMatch = rand.nextInt(7)-3;
+			identicalVowel = rand.nextInt(7)-3;
+			differentVowel = rand.nextInt(7)-3;
+			hirjeeVowelMatchScore = rand.nextInt(7)-3;
+			patAlnScore = rand.nextInt(7)-3;
+			phonemeAlnScore = rand.nextInt(7)-3;
+			bothLyricOnset = rand.nextInt(7)-3;
+			neitherLyricOnset = rand.nextInt(7)-3;
+			oneLyricOnsetOneNot = rand.nextInt(7)-3;
+			minMeasureDistance = rand.nextInt(7)-3;
+			maxMeasureDistance = rand.nextInt(7)-3;
+			earlierHasPunctuation = rand.nextInt(7)-3;
+			earlierDistanceFromPunctuation = rand.nextInt(7)-3;
+			laterHasPunctuation = rand.nextInt(7)-3;
+			laterDistanceFromPunctuation = rand.nextInt(7)-3;
+			haveSameMeasureOffset = rand.nextInt(7)-3;
+			haveDifferentMeasureOffset = rand.nextInt(7)-3;
+			measureOffsetDifference = rand.nextInt(7)-3;
+		}
+
+		public RhymeAlignmentParameterization(String[] nextTokens) {
+			super(nextTokens);
+			
+			int i = 4;
+			this.noMatch = Double.parseDouble(nextTokens[i++]);
+			this.identicalVowel = Double.parseDouble(nextTokens[i++]);
+			this.differentVowel = Double.parseDouble(nextTokens[i++]);
+			this.hirjeeVowelMatchScore = Double.parseDouble(nextTokens[i++]);
+			this.patAlnScore = Double.parseDouble(nextTokens[i++]);
+			this.phonemeAlnScore = Double.parseDouble(nextTokens[i++]);
+			this.bothLyricOnset = Double.parseDouble(nextTokens[i++]);
+			this.neitherLyricOnset = Double.parseDouble(nextTokens[i++]);
+			this.oneLyricOnsetOneNot = Double.parseDouble(nextTokens[i++]);
+			this.minMeasureDistance = Double.parseDouble(nextTokens[i++]);
+			this.maxMeasureDistance = Double.parseDouble(nextTokens[i++]);
+			this.earlierHasPunctuation = Double.parseDouble(nextTokens[i++]);
+			this.earlierDistanceFromPunctuation = Double.parseDouble(nextTokens[i++]);
+			this.laterHasPunctuation = Double.parseDouble(nextTokens[i++]);
+			this.laterDistanceFromPunctuation = Double.parseDouble(nextTokens[i++]);
+			this.haveSameMeasureOffset = Double.parseDouble(nextTokens[i++]);
+			this.haveDifferentMeasureOffset = Double.parseDouble(nextTokens[i++]);
+			this.measureOffsetDifference = Double.parseDouble(nextTokens[i++]);
+		}
+
+		@Override
+		public String toString() {
+			return 
+					super.toString() + ", " +
+					df2.format(noMatch) + ", " + 
+					df2.format(identicalVowel) + ", " + 
+					df2.format(differentVowel) + ", " + 
+					df2.format(hirjeeVowelMatchScore) + ", " + 
+					df2.format(patAlnScore) + ", " + 
+					df2.format(phonemeAlnScore) + ", " + 
+					df2.format(bothLyricOnset) + ", " + 
+					df2.format(neitherLyricOnset) + ", " + 
+					df2.format(oneLyricOnsetOneNot) + ", " + 
+					df2.format(minMeasureDistance) + ", " + 
+					df2.format(maxMeasureDistance) + ", " + 
+					df2.format(earlierHasPunctuation) + ", " + 
+					df2.format(earlierDistanceFromPunctuation) + ", " + 
+					df2.format(laterHasPunctuation) + ", " + 
+					df2.format(laterDistanceFromPunctuation) + ", " + 
+					df2.format(haveSameMeasureOffset) + ", " + 
+					df2.format(haveDifferentMeasureOffset) + ", " + 
+					df2.format(measureOffsetDifference);
+		}
+		
+		public RhymeAlignmentParameterization(GeneralizedGlobalStructureAlignmentParameterization p1g, GeneralizedGlobalStructureAlignmentParameterization p2g) {
+			super(p1g, p2g);
+			
+			RhymeAlignmentParameterization p1 = (RhymeAlignmentParameterization) p1g;
+			RhymeAlignmentParameterization p2 = (RhymeAlignmentParameterization) p2g;
+			
+			this.noMatch = (rand.nextBoolean()?p1.noMatch:p2.noMatch);
+			this.identicalVowel = (rand.nextBoolean()?p1.identicalVowel:p2.identicalVowel);
+			this.differentVowel = (rand.nextBoolean()?p1.differentVowel:p2.differentVowel);
+			this.hirjeeVowelMatchScore = (rand.nextBoolean()?p1.hirjeeVowelMatchScore:p2.hirjeeVowelMatchScore);
+			this.patAlnScore = (rand.nextBoolean()?p1.patAlnScore:p2.patAlnScore);
+			this.phonemeAlnScore = (rand.nextBoolean()?p1.phonemeAlnScore:p2.phonemeAlnScore);
+			this.bothLyricOnset = (rand.nextBoolean()?p1.bothLyricOnset:p2.bothLyricOnset);
+			this.neitherLyricOnset = (rand.nextBoolean()?p1.neitherLyricOnset:p2.neitherLyricOnset);
+			this.oneLyricOnsetOneNot = (rand.nextBoolean()?p1.oneLyricOnsetOneNot:p2.oneLyricOnsetOneNot);
+			this.minMeasureDistance = (rand.nextBoolean()?p1.minMeasureDistance:p2.minMeasureDistance);
+			this.maxMeasureDistance = (rand.nextBoolean()?p1.maxMeasureDistance:p2.maxMeasureDistance);
+			this.earlierHasPunctuation = (rand.nextBoolean()?p1.earlierHasPunctuation:p2.earlierHasPunctuation);
+			this.earlierDistanceFromPunctuation = (rand.nextBoolean()?p1.earlierDistanceFromPunctuation:p2.earlierDistanceFromPunctuation);
+			this.laterHasPunctuation = (rand.nextBoolean()?p1.laterHasPunctuation:p2.laterHasPunctuation);
+			this.laterDistanceFromPunctuation = (rand.nextBoolean()?p1.laterDistanceFromPunctuation:p2.laterDistanceFromPunctuation);
+			this.haveSameMeasureOffset = (rand.nextBoolean()?p1.haveSameMeasureOffset:p2.haveSameMeasureOffset);
+			this.haveDifferentMeasureOffset = (rand.nextBoolean()?p1.haveDifferentMeasureOffset:p2.haveDifferentMeasureOffset);
+			this.measureOffsetDifference = (rand.nextBoolean()?p1.measureOffsetDifference:p2.measureOffsetDifference);
+		}
+
+		public void mutateSubclassParameters() {
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.noMatch += (rand.nextBoolean()?1:-1) * rand.nextInt(MAX_MUTATION_STEP); 
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.identicalVowel += (rand.nextBoolean()?1:-1) * rand.nextInt(MAX_MUTATION_STEP); 
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.differentVowel += (rand.nextBoolean()?1:-1) * rand.nextInt(MAX_MUTATION_STEP);
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.hirjeeVowelMatchScore = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.patAlnScore = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.phonemeAlnScore = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.bothLyricOnset = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.neitherLyricOnset = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.oneLyricOnsetOneNot = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.minMeasureDistance = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.maxMeasureDistance = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.earlierHasPunctuation = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.earlierDistanceFromPunctuation = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.laterHasPunctuation = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.laterDistanceFromPunctuation = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.haveSameMeasureOffset = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.haveDifferentMeasureOffset = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.measureOffsetDifference = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+		}
+
+		@Override
+		public GeneralizedGlobalStructureAlignmentParameterization crossoverWith(
+				GeneralizedGlobalStructureAlignmentParameterization p2) {
+			return new RhymeAlignmentParameterization(this, (RhymeAlignmentParameterization) p2);
+		}
+		
+		private static double[][] hMatrix = HirjeeMatrix.load();
+
+		@Override
+		public double scoreMatch(MusicXMLAlignmentEvent musicXML1AlignmentEvent,
+				MusicXMLAlignmentEvent musicXML2AlignmentEvent) {
+			
+			if (musicXML1AlignmentEvent == musicXML2AlignmentEvent)
+				return noMatch;
+
+			NoteLyric mXML1NoteLyric = musicXML1AlignmentEvent.note.getLyric(musicXML1AlignmentEvent.segmentType.mustHaveDifferentLyricsOnRepeats());
+			NoteLyric mXML2NoteLyric = musicXML2AlignmentEvent.note.getLyric(musicXML2AlignmentEvent.segmentType.mustHaveDifferentLyricsOnRepeats());
+			
+			if (mXML1NoteLyric == null || mXML2NoteLyric == null) {
+				return noMatch;
+			}
+			
+			int mXML1Measure = musicXML1AlignmentEvent.measure;
+			int mXML2Measure = musicXML2AlignmentEvent.measure;
+			
+			double mXML1Beat = musicXML1AlignmentEvent.beat;
+			double mXML2Beat = musicXML2AlignmentEvent.beat;
+
+			if (mXML1Measure > mXML2Measure || mXML1Measure == mXML2Measure && mXML1Beat > mXML2Beat) { // let's make sure the 2nd event always comes after the first temporally
+				MusicXMLAlignmentEvent tmp = musicXML1AlignmentEvent;
+				musicXML1AlignmentEvent = musicXML2AlignmentEvent;
+				musicXML2AlignmentEvent = tmp;
+				
+				mXML1Measure = musicXML1AlignmentEvent.measure;
+				mXML2Measure = musicXML2AlignmentEvent.measure;
+				
+				mXML1Beat = musicXML1AlignmentEvent.beat;
+				mXML2Beat = musicXML2AlignmentEvent.beat;
+				
+				NoteLyric tmp2 = mXML1NoteLyric;
+				mXML1NoteLyric = mXML2NoteLyric;
+				mXML2NoteLyric = tmp2;
+			} 
+			
+			int measureDiff = mXML2Measure - mXML1Measure;
+			if (measureDiff < minMeasureDistance || measureDiff > maxMeasureDistance) {
+				return noMatch;
+			}
+			//has to be a lyric and a lyric onset to consider 
+			
+			double score = 0.0;
+			
+			Triple<String, StressedPhone[], Integer> mXML1LyricAndPronun = mXML1NoteLyric.syllableStress;
+			Triple<String, StressedPhone[], Integer> mXML2LyricAndPronun = mXML2NoteLyric.syllableStress;
+			StressedPhone[] mXML1LyricPronun = mXML1LyricAndPronun.getSecond();
+			StressedPhone[] mXML2LyricPronun = mXML2LyricAndPronun.getSecond();
+			StressedPhone mXML1VowelPronun = mXML1LyricPronun[mXML1LyricAndPronun.getThird()];
+			StressedPhone mXML2VowelPronun = mXML2LyricPronun[mXML2LyricAndPronun.getThird()];
+			
+			if (mXML1VowelPronun.equals(mXML2VowelPronun)) {
+				score += identicalVowel;
+			} else {
+				score += differentVowel;
+			}
+			
+			score += hirjeeVowelMatchScore * hMatrix[mXML1VowelPronun.phone][mXML2VowelPronun.phone];
+			score += patAlnScore * RhymeStructureAnalyzer.scoreRhymeByPatsRules(mXML1LyricPronun, mXML2LyricPronun);
+//			score += phonemeAlnScore;
+
+			final String mXML1OriginalText = mXML1LyricAndPronun.getFirst();
+//			if (mXML1OriginalText.charAt(mXML1OriginalText.length()-1).matches(".*[.,!?;]")) {
+//				
+//			}
+//			score += earlierHasPunctuation;
+//			score += earlierDistanceFromPunctuation;
+//			score += laterHasPunctuation;
+//			score += laterDistanceFromPunctuation;
+
+			//offset value
+			double offsetDifference = Math.abs(musicXML1AlignmentEvent.beat - musicXML2AlignmentEvent.beat);
+			if (offsetDifference == 0.0) {
+				score += haveSameMeasureOffset;
+			} else {
+				score += haveDifferentMeasureOffset;
+				score += measureOffsetDifference * offsetDifference;
+			}
+
+			if (musicXML1AlignmentEvent.lyricOnset) {
+				if (musicXML2AlignmentEvent.lyricOnset) {
+					score *= bothLyricOnset;
+				} else {
+					score *= oneLyricOnsetOneNot;
+				}
+			} else {
+				if (musicXML2AlignmentEvent.lyricOnset) {
+					score *= oneLyricOnsetOneNot;
+				} else {
+					score *= neitherLyricOnset;
+				}
+			}
+			
+			return score;
+		}
+	}
+	
 	static int populationSize = 15;
 	static int generation = 1;
 	private static final File[] files = new File(
@@ -899,7 +1177,7 @@ public class GeneralizedGlobalStructureInferer {
 		}
 	}
 
-	private final static String TYPE = "rhythm"; // if you change this, you will need to implement how accuracy is calculated
+	private final static String TYPE = "rhyme"; // if you change this, you will need to implement how accuracy is calculated
 	private static Class parameterizationClass = null;
 	static {
 		if (TYPE.equals("lyric"))
@@ -910,6 +1188,8 @@ public class GeneralizedGlobalStructureInferer {
 			parameterizationClass = HarmonicAlignmentParameterization.class;
 		if (TYPE.equals("rhythm"))
 			parameterizationClass = RhythmAlignmentParameterization.class;
+		if (TYPE.equals("rhyme"))
+			parameterizationClass = RhymeAlignmentParameterization.class;
 	}
 	private final static String POPULATION_FILE = "generalized_global_alignment_inference/parameterization_pop_"+ TYPE +".txt";
 	private final static String HEATMAP_FILE_PREFIX = "generalized_global_alignment_inference/"+ TYPE +"_visualizations/";
@@ -1716,6 +1996,8 @@ public class GeneralizedGlobalStructureInferer {
 			return currentSongEvent.getHarmonyGroups();
 		} else if (type.equals("rhythm")){
 			return currentSongEvent.getRhythmGroups();
+		} else if (type.equals("rhyme")){
+			return currentSongEvent.getRhymeGroups();
 		} else {
 			throw new RuntimeException("Not yet implemented");
 		}

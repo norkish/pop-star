@@ -43,6 +43,7 @@ public class ParsedMusicXMLObject {
 		public NoteLyric lyric;
 		public String strippedLyricLCText;
 		public boolean lyricOnset;
+		public int measure;
 		public double beat;
 		public SegmentType segmentType;
 		private int measureOffsetInSegment;
@@ -53,7 +54,7 @@ public class ParsedMusicXMLObject {
 		private Set<String> rhymingRegions;
 	
 		public MusicXMLAlignmentEvent(Note note, boolean noteOnset, double currBeatsSinceOnset, Harmony harmony, boolean harmonyOnset,
-				NoteLyric lyric, boolean lyricOnset, double currBeat, SegmentType segmentType, int measureOffsetInSegment, 
+				NoteLyric lyric, boolean lyricOnset, int currMeasure, double currBeat, SegmentType segmentType, int measureOffsetInSegment, 
 				Set<String> matchingLyricRegions, Set<String> matchingPitchRegions, 
 				Set<String> matchingRhythmRegions, Set<String> matchingHarmonyRegions,
 				Set<String> rhymingRegions) {
@@ -65,6 +66,7 @@ public class ParsedMusicXMLObject {
 			this.lyric = lyric;
 			this.strippedLyricLCText = lyric == null? "":lyric.text.replaceAll("[^a-zA-Z ]", "").toLowerCase();
 			this.lyricOnset = lyricOnset;
+			this.measure = currMeasure;
 			this.beat = currBeat;
 			this.segmentType = segmentType;
 			this.measureOffsetInSegment = measureOffsetInSegment;
@@ -106,6 +108,10 @@ public class ParsedMusicXMLObject {
 		
 		public Set<String> getRhythmGroups() {
 			return matchingRhythmRegions;
+		}
+		
+		public Set<String> getRhymeGroups() {
+			return rhymingRegions;
 		}
 	}
 
@@ -419,14 +425,14 @@ public class ParsedMusicXMLObject {
 	}
 
 	Map<Integer, List<ParsedMusicXMLObject.MusicXMLAlignmentEvent>> alignmentEvents = new HashMap<Integer, List<ParsedMusicXMLObject.MusicXMLAlignmentEvent>>();
-	public List<List<Pair<Integer, Double>>> rhymeMatches;
+	public Map<Character, List<Pair<Integer, Double>>> rhymeMatches;
 	private Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> lyricMatches;
 	private Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> pitchMatches;
 	private Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> rhythmMatches;
 	private Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> harmonyMatches;
 
 	 // the measure and beat are mapped to an index value for the rhymeMatches data structure where other matches can be looked up
-	private Map<Integer, Map<Double, Set<Integer>>> rhymeMatchGroupsByPosition = new HashMap<Integer, Map<Double, Set<Integer>>>();
+	private Map<Integer, Map<Double, Set<String>>> rhymeMatchGroupsByPosition = new HashMap<Integer, Map<Double, Set<String>>>();
 	private Map<Integer, Map<Double, Set<String>>> lyricMatchGroupsByPosition = new HashMap<Integer, Map<Double, Set<String>>>();
 	private Map<Integer, Map<Double, Set<String>>> pitchMatchGroupsByPosition = new HashMap<Integer, Map<Double, Set<String>>>();
 	private Map<Integer, Map<Double, Set<String>>> rhythmMatchGroupsByPostion = new HashMap<Integer, Map<Double, Set<String>>>();
@@ -591,7 +597,7 @@ public class ParsedMusicXMLObject {
 						"\n\t\tactiveRhymeGroups:" + activeRhymeGroups
 						);
 				
-				events.add(new ParsedMusicXMLObject.MusicXMLAlignmentEvent(currNote, noteOnset, currBeatsSinceOnset, currHarmony, harmonyOnset, currLyric, lyricOnset, currBeat, currSegment, measureOffsetIntoSegment, 
+				events.add(new ParsedMusicXMLObject.MusicXMLAlignmentEvent(currNote, noteOnset, currBeatsSinceOnset, currHarmony, harmonyOnset, currLyric, lyricOnset, measure, currBeat, currSegment, measureOffsetIntoSegment, 
 						new HashSet<String>(activeLyricGroups), new HashSet<String>(activePitchGroups), new HashSet<String>(activeRhythmGroups), 
 						new HashSet<String>(activeHarmonyGroups), new HashSet<String>(activeRhymeGroups)));
 				currDivs += currDivsPerEvent;
@@ -619,7 +625,8 @@ public class ParsedMusicXMLObject {
 		return false;
 	}
 
-	public void setMatches(List<List<Pair<Integer, Double>>> rhymeMatches, 
+
+	public void setMatches(Map<Character, List<Pair<Integer, Double>>> rhymeMatches, 
 			Map<Character,List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> lyricMatches, 
 			Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> pitchMatches, 
 			Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> rhythmMatches, 
@@ -631,26 +638,30 @@ public class ParsedMusicXMLObject {
 		this.harmonyMatches = harmonyMatches;
 		
 		List<Pair<Integer, Double>> rhymeMatchGroup;
-		Map<Double, Set<Integer>> rhymeMatchGroupsByMeasurePosition;
-		Set<Integer> rhymeMatchGroupsByMeasureBeat;
-		for (int i = 0; i < rhymeMatches.size(); i++) {
-			rhymeMatchGroup = rhymeMatches.get(i);
-			for (Pair<Integer, Double> rhymePosition : rhymeMatchGroup) {
-				final Integer rhymePositionMeasure = rhymePosition.getFirst();
-				final Double rhymePositionBeat = rhymePosition.getSecond();
-				rhymeMatchGroupsByMeasurePosition = rhymeMatchGroupsByPosition.get(rhymePositionMeasure);
+		Map<Double, Set<String>> rhymeMatchGroupsByMeasurePosition;
+		Set<String> rhymeMatchGroupsByMeasureBeat;
+		Integer measure;
+		Double beat;
+		for (Character rhymeGroupLabel : rhymeMatches.keySet()) {
+			rhymeMatchGroup = rhymeMatches.get(rhymeGroupLabel);
+			for (int i = 0; i < rhymeMatchGroup.size(); i++) {
+				Pair<Integer, Double> rhymePosition = rhymeMatchGroup.get(i);
+				measure = rhymePosition.getFirst();
+				beat = rhymePosition.getSecond();
+				rhymeMatchGroupsByMeasurePosition = rhymeMatchGroupsByPosition.get(measure);
 				if (rhymeMatchGroupsByMeasurePosition == null) {
-					rhymeMatchGroupsByMeasurePosition = new TreeMap<Double, Set<Integer>>();
-					rhymeMatchGroupsByPosition.put(rhymePositionMeasure,rhymeMatchGroupsByMeasurePosition);
+					rhymeMatchGroupsByMeasurePosition = new TreeMap<Double, Set<String>>();
+					rhymeMatchGroupsByPosition.put(measure,rhymeMatchGroupsByMeasurePosition);
 				}
-				rhymeMatchGroupsByMeasureBeat = rhymeMatchGroupsByMeasurePosition.get(rhymePositionBeat);
+				rhymeMatchGroupsByMeasureBeat = rhymeMatchGroupsByMeasurePosition.get(beat);
 				if (rhymeMatchGroupsByMeasureBeat == null) {
-					rhymeMatchGroupsByMeasureBeat = new HashSet<Integer>();
-					rhymeMatchGroupsByMeasurePosition.put(rhymePositionBeat, rhymeMatchGroupsByMeasureBeat);
+					rhymeMatchGroupsByMeasureBeat = new HashSet<String>();
+					rhymeMatchGroupsByMeasurePosition.put(beat, rhymeMatchGroupsByMeasureBeat);
 				}
-				rhymeMatchGroupsByMeasureBeat.add(i);
+				rhymeMatchGroupsByMeasureBeat.add("" + rhymeGroupLabel + (i+1));
 			}
 		}
+		
 		Object[] allMatches = new Object[]{lyricMatches, pitchMatches, rhythmMatches, harmonyMatches};
 		Map<Character,List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> matches;
 		Object[] allMatchGroupsByPosition = new Object[]{lyricMatchGroupsByPosition, pitchMatchGroupsByPosition, rhythmMatchGroupsByPostion, harmonyMatchGroupsByPosition};
@@ -659,8 +670,6 @@ public class ParsedMusicXMLObject {
 		Map<Double, Set<String>> matchGroupsByMeasurePosition;
 		Set<String> matchGroupsByMeasureBeat;
 		Pair<Pair<Integer, Double>, Pair<Integer, Double>> groupForLabel;
-		int measure;
-		double beat;
 		for (int i = 0; i < allMatches.length; i++) {
 			matches = (Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>>) allMatches[i];
 			matchGroupsByPosition = (Map<Integer, Map<Double, Set<String>>>) allMatchGroupsByPosition[i];
