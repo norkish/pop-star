@@ -33,6 +33,7 @@ import data.MusicXMLParser.Quality;
 import pitch.Pitch;
 import syllabify.Syllabifier;
 import tabcomplete.rhyme.Phonetecizer;
+import tabcomplete.rhyme.RhymeStructureAnalyzer;
 import tabcomplete.rhyme.StressedPhone;
 import utils.Pair;
 import utils.Triple;
@@ -205,7 +206,7 @@ public class MusicXMLParser {
 		final public String text;
 		final public boolean extend;
 		final public boolean elision;
-		public Triple<String, StressedPhone[], Integer> syllableStress;
+		public List<Triple<String, StressedPhone[], StressedPhone>> syllableStresses;
 
 		public NoteLyric(Syllabic syllabic, String text, boolean extend, boolean elision) {
 			this.syllabic = syllabic;
@@ -219,7 +220,7 @@ public class MusicXMLParser {
 			this.text = other.text;
 			this.extend = other.extend;
 			this.elision = other.elision;
-			this.syllableStress = other.syllableStress;
+			this.syllableStresses = other.syllableStresses;
 		}
 
 		@Override
@@ -256,8 +257,11 @@ public class MusicXMLParser {
 			return true;
 		}
 
-		public void addSyllableStress(Triple<String, StressedPhone[], Integer> triple) {
-			this.syllableStress = triple;
+		public void addSyllableStress(Triple<String, StressedPhone[], StressedPhone> triple) {
+			if (syllableStresses == null) {
+				syllableStresses = new ArrayList<Triple<String, StressedPhone[], StressedPhone>>();
+			}
+			this.syllableStresses.add(triple);
 		}
 	}
 
@@ -1321,6 +1325,8 @@ public class MusicXMLParser {
 		}
 
 		public double fractionOfSimilarToTotalNotes(Harmony other) {
+			if (other == null) return 0.;
+			
 			boolean[] thisRelativePitches = this.quality.getPitches();
 			boolean[] otherRelativePitches = other.quality.getPitches();
 			int thisRootStep = this.root.rootStep;
@@ -1884,15 +1890,49 @@ public class MusicXMLParser {
 		// ADD SYLLABLE STRESS
 		addStressToSyllables(notesByPlayedMeasure, musicXML);
 		
+		
 		musicXML.setTimeByAbsoluteMeasure(timeByAbsoluteMeasure);
 		normalizeKeysByOriginalKey(keyByAbsoluteMeasure);
 		musicXML.normalizedKeyByAbsoluteMeasure = keyByAbsoluteMeasure;
 		
+		final Time zeroTime = timeByAbsoluteMeasure.get(0);
+		adjustFirstMeasureForPickups(notesByPlayedMeasure, unoverlappingHarmonyByPlayedMeasure, (int) (divsPerQuarterByAbsoluteMeasure.get(0) * (4.0/zeroTime.beatType) * zeroTime.beats));
 		musicXML.setNotesByPlayedMeasure(notesByPlayedMeasure);
 		musicXML.unoverlappingHarmonyByPlayedMeasure = unoverlappingHarmonyByPlayedMeasure;
 		musicXML.setDivsPerQuarterByAbsoluteMeasure(divsPerQuarterByAbsoluteMeasure);
 		
 		return musicXML;
+	}
+
+	private void adjustFirstMeasureForPickups(List<Triple<Integer, Integer, Note>> notesByPlayedMeasure,
+			List<Triple<Integer, Integer, Harmony>> unoverlappingHarmonyByPlayedMeasure, int divsInFirstMeasure) {
+		int totalDivsOfNotesInFirstMeasure = 0;
+		
+		int idx = 0;
+		Triple<Integer, Integer, Note> note = notesByPlayedMeasure.get(idx++);
+		while (note.getFirst() == 0) {
+			totalDivsOfNotesInFirstMeasure += note.getThird().duration;
+			note = notesByPlayedMeasure.get(idx++);
+		}
+		
+		if (totalDivsOfNotesInFirstMeasure == divsInFirstMeasure) return;
+		int divsOffset = divsInFirstMeasure - totalDivsOfNotesInFirstMeasure;
+		
+		idx = 0;
+		note = notesByPlayedMeasure.get(idx++);
+		while (note.getFirst() == 0) {
+			note.setSecond(note.getSecond() + divsOffset);
+			note = notesByPlayedMeasure.get(idx++);
+		}
+		notesByPlayedMeasure.add(0, new Triple<Integer, Integer, MusicXMLParser.Note>(0, 0, new Note(Note.REST, divsOffset, -1, null, false, 0, null, null, null, false)));
+
+		idx = 0;
+		Triple<Integer, Integer, Harmony> harmony = unoverlappingHarmonyByPlayedMeasure.get(idx++);
+		while (harmony.getFirst() == 0) {
+			harmony.setSecond(note.getSecond() + divsOffset);
+			harmony = unoverlappingHarmonyByPlayedMeasure.get(idx++);
+		}
+		unoverlappingHarmonyByPlayedMeasure.add(0, new Triple<Integer, Integer, MusicXMLParser.Harmony>(0, 0, null));
 	}
 
 	/** 
@@ -1930,24 +1970,24 @@ public class MusicXMLParser {
 			totalSyllables++;
 			if (currNoteLyric.syllabic == null) {
 				phones = Phonetecizer.getPhones(currNoteLyric.text,true);
-				if (phones.size() == 1) {
-					List<Triple<String, StressedPhone[], Integer>> syllables = Syllabifier.syllabify(currNoteLyric.text, phones.get(0));
-					if (syllables.size() == 1) {
-						currNoteLyric.addSyllableStress(syllables.get(0));
-						totalSyllablesWithStress++;
-					} else {
-						if (DEBUG == SYLLABLE) {
-							System.err.println("Multiple syllables for note with lyric \"" + currNoteLyric.text + "\"");
+				if (phones.isEmpty()) {
+					musicXML.lyricsWithoutStress.add(currNoteLyric.text);
+					if (DEBUG == SYLLABLE) System.err.println("No entries in phone dict for \"" + currNoteLyric.text + "\"");
+				} else {
+					int validPronuns = 0;
+					for (StressedPhone[] stressedPhones : phones) {
+						List<Triple<String, StressedPhone[], StressedPhone>> syllables = Syllabifier.syllabify(currNoteLyric.text, stressedPhones);
+						if (syllables.size() == 1) {
+							currNoteLyric.addSyllableStress(syllables.get(0));
+							totalSyllablesWithStress++;
+						} else {
+							if (DEBUG == SYLLABLE) {
+								System.err.println("Multiple syllables for note with lyric \"" + currNoteLyric.text + "\"");
+							}
 						}
 					}
-				} else {
-					if (phones.isEmpty()) {
-						musicXML.lyricsWithoutStress.add(currNoteLyric.text);
-					} else 
-						if (DEBUG == SYLLABLE) {
-							System.err.println("" + phones.size() + " entries in phone dict for \"" + currNoteLyric.text + "\"");
-						}
-				}
+					if (DEBUG == SYLLABLE && validPronuns == 0) System.err.println("No pronunciation entries with 1 syllable for monosyllabic word: \"" + currNoteLyric.text + "\"");
+				} 
 				currentWordNotes = null;
 				continue;
 			}
@@ -1971,25 +2011,28 @@ public class MusicXMLParser {
 				}
 				final String word = wordBuilder.toString();
 				phones = Phonetecizer.getPhones(word,true);
-				if (phones.size() == 1 || allPhonesHaveSameSyllablesAndStress(word,phones)) {
-					List<Triple<String, StressedPhone[], Integer>> syllables = Syllabifier.syllabify(word, phones.get(0));
-					if (syllables.size() == currentWordNotes.size()) {
-						for (int i = 0; i < currentWordNotes.size(); i++) {
-							currentWordNotes.get(i).addSyllableStress(syllables.get(i));
-							totalSyllablesWithStress++;
-						}
-					} else {
-						musicXML.lyricsWithDifferentSyllableCountThanAssociatedNotes.add(new Pair<List<NoteLyric>, List<Triple<String, StressedPhone[], Integer>>>(currentWordNotes,syllables));
-						if (DEBUG == SYLLABLE) {
-							System.err.println("" + currentWordNotes.size() + " notes mismatch with " + syllables.size() + " syllables:" + word);
-						}
-					}
+				if (phones.isEmpty()) {
+					musicXML.lyricsWithoutStress.add(word);
+					if (DEBUG == SYLLABLE) System.err.println("" + phones.size() + " entries with different stresses in phone dict for multi-syllable \"" + word + "\"");
 				} else {
-					if (phones.isEmpty()) {
-						musicXML.lyricsWithoutStress.add(word);
-					} else {
-						if (DEBUG == SYLLABLE) System.err.println("" + phones.size() + " entries with different stresses in phone dict for multi-syllable \"" + word + "\"");
+//				if (phones.size() == 1 || allPhonesHaveSameSyllablesAndStress(word,phones)) {
+					int validPronuns = 0;
+					for (StressedPhone[] stressedPhones : phones) {
+						List<Triple<String, StressedPhone[], StressedPhone>> syllables = Syllabifier.syllabify(word, stressedPhones);
+						if (syllables.size() == currentWordNotes.size()) {
+							for (int i = 0; i < currentWordNotes.size(); i++) {
+								currentWordNotes.get(i).addSyllableStress(syllables.get(i));
+								totalSyllablesWithStress++;
+							}
+							validPronuns++;
+						} else {
+							musicXML.lyricsWithDifferentSyllableCountThanAssociatedNotes.add(new Pair<List<NoteLyric>, List<Triple<String, StressedPhone[], StressedPhone>>>(currentWordNotes,syllables));
+//							if (DEBUG == SYLLABLE) {
+//								System.err.println("" + currentWordNotes.size() + " notes mismatch with " + syllables.size() + " syllables:" + word);
+//							}
+						}
 					}
+					if (DEBUG == SYLLABLE && validPronuns == 0) System.err.println("No pronunciation entries with " + currentWordNotes.size() + " syllables for multi-syllable word: \"" + word + "\"");
 				}
 				currentWordNotes = null;
 				break;
@@ -2001,20 +2044,23 @@ public class MusicXMLParser {
 				break;
 			case SINGLE:
 				phones = Phonetecizer.getPhones(currNoteLyric.text,true);
-				if (phones.size() == 1) {
-					List<Triple<String, StressedPhone[], Integer>> syllables = Syllabifier.syllabify(currNoteLyric.text, phones.get(0));
-					if (syllables.size() == 1) {
-						currNoteLyric.addSyllableStress(syllables.get(0));
-						totalSyllablesWithStress++;
-					} else {
-						if (DEBUG == SYLLABLE) System.err.println("Multiple syllables for note with lyric \"" + currNoteLyric.text + "\"");
-					}
+				if (phones.isEmpty()) {
+					musicXML.lyricsWithoutStress.add(currNoteLyric.text);
+					if (DEBUG == SYLLABLE) System.err.println("No entries in phone dict for \"" + currNoteLyric.text + "\"");
 				} else {
-					if (phones.isEmpty()) {
-						musicXML.lyricsWithoutStress.add(currNoteLyric.text);
-					} else {
-						if (DEBUG == SYLLABLE) System.err.println("" + phones.size() + " entries in phone dict for \"" + currNoteLyric.text + "\"");
+					int validPronuns = 0;
+
+					for (StressedPhone[] stressedPhones : phones) {
+						List<Triple<String, StressedPhone[], StressedPhone>> syllables = Syllabifier.syllabify(currNoteLyric.text, stressedPhones);
+						if (syllables.size() == 1) {
+							currNoteLyric.addSyllableStress(syllables.get(0));
+							totalSyllablesWithStress++;
+							validPronuns++;
+						} else {
+//							if (DEBUG == SYLLABLE) System.err.println("Multiple syllables for note with lyric \"" + currNoteLyric.text + "\"");
+						}
 					}
+					if (DEBUG == SYLLABLE && validPronuns == 0) System.err.println("No pronunciation entries with 1 syllable for monosyllabic word: \"" + currNoteLyric.text + "\"");
 				}
 				if (currentWordNotes != null) {
 					musicXML.syllablesNotLookedUp.addAll(currentWordNotes);
@@ -2035,14 +2081,14 @@ public class MusicXMLParser {
 	private static boolean allPhonesHaveSameSyllablesAndStress(String word, List<StressedPhone[]> phones) {
 		if (phones.size() == 0) return false;
 		
-		List<Triple<String, StressedPhone[], Integer>> first = Syllabifier.syllabify(word, phones.get(0));
+		List<Triple<String, StressedPhone[], StressedPhone>> first = Syllabifier.syllabify(word, phones.get(0));
 		
 		for (int i = 1; i < phones.size(); i++) {
-			List<Triple<String, StressedPhone[], Integer>> next = Syllabifier.syllabify(word, phones.get(i));
+			List<Triple<String, StressedPhone[], StressedPhone>> next = Syllabifier.syllabify(word, phones.get(i));
 			if (first.size() != next.size()) return false;
 			
 			for (int j = 0; j < next.size(); j++) {
-				if (first.get(j).getThird() != next.get(j).getThird()) return false;
+				if (first.get(j).getThird().stress != next.get(j).getThird().stress) return false;
 			}
 		}
 		

@@ -299,7 +299,14 @@ public class StructureExtractor {
 		}
 
 		if (match == null) {
-			throw new Exception("No matching lyrics for \"" + lyricToMatch +"\" found in " + notesMap.values());
+			List<String> vals = new ArrayList<String>();
+			for (Note note : notesMap.values()) {
+				final NoteLyric lyric = note.getLyric(requireLyricVerseMatchesRepeatCount);
+				if (lyric!=null)
+					vals.add(lyric.text);
+			}
+			System.err.println("No matching lyrics for \"" + lyricToMatch +"\" found in " + vals);
+			throw new Exception("No matching lyrics for \"" + lyricToMatch +"\" found in " + vals);
 		}
 		
 		return match;
@@ -329,15 +336,21 @@ public class StructureExtractor {
 		
 		// for each group of matching lyric positions (indexed by a letter, e.g., group 'A')
 		// you have each of the matching regions, with starting (inclusive) and ending (inclusive) measure and beat position of matching notes 
-		Map<Character, List<Pair<Integer, Double>>> rhymeMatches = new HashMap<Character, List<Pair<Integer, Double>>>();
-		Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> lyricMatches = new HashMap<Character, List<Pair<Pair<Integer,Double>,Pair<Integer,Double>>>>();
-		Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> pitchMatches = new HashMap<Character, List<Pair<Pair<Integer,Double>,Pair<Integer,Double>>>>();		
-		Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> rhythmMatches = new HashMap<Character, List<Pair<Pair<Integer,Double>,Pair<Integer,Double>>>>();		
-		Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> harmonyMatches = new HashMap<Character, List<Pair<Pair<Integer,Double>,Pair<Integer,Double>>>>();
-		Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> matches;
+		Map<String, List<Pair<Integer, Double>>> rhymeMatches = new HashMap<String, List<Pair<Integer, Double>>>();
+		Map<String, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> lyricMatches = new HashMap<String, List<Pair<Pair<Integer,Double>,Pair<Integer,Double>>>>();
+		Map<String, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> pitchMatches = new HashMap<String, List<Pair<Pair<Integer,Double>,Pair<Integer,Double>>>>();		
+		Map<String, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> rhythmMatches = new HashMap<String, List<Pair<Pair<Integer,Double>,Pair<Integer,Double>>>>();		
+		Map<String, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> harmonyMatches = new HashMap<String, List<Pair<Pair<Integer,Double>,Pair<Integer,Double>>>>();
+		Map<String, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> chorusMatches = new HashMap<String, List<Pair<Pair<Integer,Double>,Pair<Integer,Double>>>>();
+		final ArrayList<Pair<Pair<Integer, Double>, Pair<Integer, Double>>> chorusMatchList = new ArrayList<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>();
+		chorusMatches.put("0000", chorusMatchList);
+		Map<String, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> verseMatches = new HashMap<String, List<Pair<Pair<Integer,Double>,Pair<Integer,Double>>>>();
+		final ArrayList<Pair<Pair<Integer, Double>, Pair<Integer, Double>>> verseMatchList = new ArrayList<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>();
+		verseMatches.put("0000", verseMatchList);
+		Map<String, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> matches;
 		List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>> matchesForGroup;
 		
-		char rhymeGroupLabel = 'A';
+		int rhymeGroupLabel = 0;
 		
 		List<List<Integer>> absoluteToPlayedMeasureNumbersMap = musicXML.absoluteToPlayedMeasureNumbersMap;
 		
@@ -354,9 +367,10 @@ public class StructureExtractor {
 		String nextLine;
 		int lineNum = 0;
 		SegmentType currType = null;
+		SegmentType prevType = null;
 		Class conditionClass = null;
 		String matchClass = null;
-		char matchGroup;
+		String matchGroup;
 		Pair<Integer, Note> offsetNote;
 		
 		while(scan.hasNextLine()) {
@@ -367,6 +381,7 @@ public class StructureExtractor {
 			}
 			String[] tokens = nextLine.split("\t");
 			try {
+				prevType = currType;
 				currType = SegmentType.valueOf(tokens[0]);
 				try {
 					int segmentStartMeasure = Integer.parseInt(tokens[1]) - 1;
@@ -392,7 +407,19 @@ public class StructureExtractor {
 					
 					int deltaFromFormStart = Integer.parseInt(tokens[4]);
 					assert structure.isEmpty() || segmentStartMeasure > structure.lastKey(): "Global Structure annotation should be in order by measure number where segment starts occur";
-					structure.put(segmentStartMeasure - deltaFromFormStart, new Triple<SegmentType, Integer, Double>(currType, deltaFromFormStart, segmentStartOffset));
+					structure.put(segmentStartMeasure - deltaFromFormStart, new Triple<SegmentType, Integer, Double>(currType, deltaFromFormStart, 0.0));
+					
+					if (prevType == SegmentType.CHORUS) {
+						chorusMatchList.get(chorusMatchList.size()-1).setSecond(new Pair<Integer,Double>(segmentStartMeasure - deltaFromFormStart,0.0));
+					} else if (prevType == SegmentType.VERSE) {
+						verseMatchList.get(verseMatchList.size()-1).setSecond(new Pair<Integer,Double>(segmentStartMeasure - deltaFromFormStart,0.0));
+					}
+					if (currType == SegmentType.CHORUS) {
+						chorusMatchList.add(new Pair<Pair<Integer,Double>, Pair<Integer,Double>>(new Pair<Integer,Double>(segmentStartMeasure - deltaFromFormStart,0.0), null));
+					} else if (currType == SegmentType.VERSE) {
+						verseMatchList.add(new Pair<Pair<Integer,Double>, Pair<Integer,Double>>(new Pair<Integer,Double>(segmentStartMeasure - deltaFromFormStart,0.0), null));
+					}
+					
 				} catch (Exception ex) {
 					System.err.println("AT LINE " + lineNum + ":");
 					throw new RuntimeException(ex);
@@ -402,12 +429,12 @@ public class StructureExtractor {
 				if (nextLine.startsWith("rh")) {
 					conditionClass = Rhyme.class;
 					matchClass = "rhyme";
-					matchGroup = '\0';
+					matchGroup = null;
 				} else if (nextLine.startsWith("ma")) {
 					conditionClass = BinaryMatch.class;
 					tokens = nextLine.split("\t");
 					matchClass = tokens[1];
-					matchGroup = tokens[2].charAt(0);
+					matchGroup = String.format("%04d", tokens[2].charAt(0) - 'A');
 				} else {
 					throw new RuntimeException("AT LINE " + lineNum + ": Improperly formatted constraint file. Expected new constraint or segment definition. Found: " + nextLine);
 				}
@@ -469,7 +496,7 @@ public class StructureExtractor {
 					for(Triple<Integer, Double, Note> notePosition : constrainedNotes) {
 						rhymeGroup.add(new Pair<Integer, Double>(notePosition.getFirst(), notePosition.getSecond()));
 					}
-					rhymeMatches.put(rhymeGroupLabel++, rhymeGroup);
+					rhymeMatches.put(String.format("%04d", rhymeGroupLabel++), rhymeGroup);
 				} else {
 					assert(constrainedNotes.size() == 2);
 					if (matchClass.equals("lyric")) {
@@ -495,6 +522,12 @@ public class StructureExtractor {
 			}
 		}
 		
+		if (!verseMatchList.isEmpty() && verseMatchList.get(verseMatchList.size()-1).getSecond() == null) {
+			verseMatchList.get(verseMatchList.size()-1).setSecond(new Pair<Integer,Double>(musicXML.getMeasureCount(), 0.0));
+		} else if (!chorusMatchList.isEmpty() && chorusMatchList.get(chorusMatchList.size()-1).getSecond() == null) {
+			chorusMatchList.get(chorusMatchList.size()-1).setSecond(new Pair<Integer,Double>(musicXML.getMeasureCount(), 0.0));
+		} 
+		
 		musicXML.setGlobalStructure(structure);
 		musicXML.segmentLyricStructure = lyricConstraints;		
 		// This really isn't doing much here, but may someday be useful 
@@ -503,7 +536,7 @@ public class StructureExtractor {
 		musicXML.segmentHarmonyStructure = harmonyConstraints;
 		
 		// this is being used.
-		musicXML.setMatches(rhymeMatches, lyricMatches, pitchMatches, rhythmMatches, harmonyMatches);
+		musicXML.setMatches(rhymeMatches, lyricMatches, pitchMatches, rhythmMatches, harmonyMatches, chorusMatches, verseMatches);
 	}
 
 	private static <T> void indexConstraints(SortedMap<Integer, SortedMap<Double, List<Constraint<T>>>> constraints,

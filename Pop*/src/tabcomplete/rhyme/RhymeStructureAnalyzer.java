@@ -7,6 +7,7 @@ import java.util.List;
 
 import tabcomplete.alignment.Aligner;
 import tabcomplete.alignment.SequencePair;
+import tabcomplete.alignment.SequencePair.AlignmentBuilder;
 import tabcomplete.alignment.StressedPhonePair;
 import tabcomplete.alignment.StressedPhonePairAlignment;
 import tabcomplete.utils.Utils;
@@ -18,13 +19,13 @@ public class RhymeStructureAnalyzer {
 	private static final int LOOKAHEAD = 4;
 	public static final double MATCHING_LINE_THRESHOLD = .2;
 	
-	private static final double PERFECT_RHYME_SCORE = 1.0;
-	private static final double FAMILY_RHYME_SCORE = .75;
-	private static final double ADDITIVE_RHYME_SCORE = .6;
-	private static final double SUBTRACTIVE_RHYME_SCORE = .4;
-	private static final double ASSONANCE_RHYME_SCORE = .4;
-	private static final double CONSONANCE_RHYME_SCORE = .2;
-	private static final boolean DEBUG = false;
+	public static final double PERFECT_RHYME_SCORE = 1.0;
+	public static final double FAMILY_RHYME_SCORE = .75;
+	public static final double ADDITIVE_RHYME_SCORE = .6;
+	public static final double SUBTRACTIVE_RHYME_SCORE = .4;
+	public static final double ASSONANCE_RHYME_SCORE = .4;
+	public static final double CONSONANCE_RHYME_SCORE = .2;
+	private static final boolean DEBUG = true;
 	
 	private static double[][] hMatrix = HirjeeMatrix.load();
 	private static List<Pair<String, PhoneCategory>> phoneDict = Phonetecizer.loadReversePhonesDict();
@@ -162,7 +163,7 @@ public class RhymeStructureAnalyzer {
 	 * @param line2Phones
 	 * @return
 	 */
-	private static boolean isAssonanceRhyme(StressedPhone[] line1Phones, StressedPhone[] line2Phones) {
+	public static boolean isAssonanceRhyme(StressedPhone[] line1Phones, StressedPhone[] line2Phones) {
 		int phone1VowelIdx = getLastVowelIdx(line1Phones);
 		int phone2VowelIdx = getLastVowelIdx(line2Phones);
 		
@@ -199,7 +200,7 @@ public class RhymeStructureAnalyzer {
 		return true;
 	}
 
-	private static int getLastVowelIdx(StressedPhone[] line1Phones) {
+	public static int getLastVowelIdx(StressedPhone[] line1Phones) {
 		int idx;
 		for (int i = 1; i <= line1Phones.length; i++) {
 			idx = line1Phones.length-i;
@@ -313,8 +314,9 @@ public class RhymeStructureAnalyzer {
 				score = simpleRhymeScore(word1SPs, word2SPs);
 				if (DEBUG) System.out.print(""+score);
 				score = alignedRhymeScore(word1SPs, word2SPs);
+				if (DEBUG) System.out.print("\t"+score);
 				if (DEBUG) System.out.println("\t" + words[i] + "\t" + words[j] + "\t" + Arrays.toString(Phonetecizer.readable(word1SPs)) + "\t" + Arrays.toString(Phonetecizer.readable(word2SPs)));
-				Utils.promptEnterKey("");
+				if (DEBUG) Utils.promptEnterKey("");
 			}
 		}
 		

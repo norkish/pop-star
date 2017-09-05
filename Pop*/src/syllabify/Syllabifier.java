@@ -36,18 +36,18 @@ public class Syllabifier {
 			List<StressedPhone[]> phones = Phonetecizer.getPhones(test,false);
 			for (StressedPhone[] stressedPhones : phones) {
 				System.out.println("\t" + Arrays.toString(Phonetecizer.readable(stressedPhones)));
-				List<Triple<String, StressedPhone[], Integer>> value = syllabify(test,stressedPhones);
+				List<Triple<String, StressedPhone[], StressedPhone>> value = syllabify(test,stressedPhones);
 				System.out.println(stringify(value));
 			}
 		}
 	}
 	
-	public static String stringify(List<Triple<String, StressedPhone[], Integer>> value) {
+	public static String stringify(List<Triple<String, StressedPhone[], StressedPhone>> value) {
 		StringBuilder wStr = new StringBuilder();
 		StringBuilder pStr = new StringBuilder();
 		
 		for (int i = 0; i < value.size();i++){
-			Triple<String, StressedPhone[], Integer> triple = value.get(i);
+			Triple<String, StressedPhone[], StressedPhone> triple = value.get(i);
 			if (i!=0){
 				wStr.append('•');
 				pStr.append('•');
@@ -75,28 +75,28 @@ public class Syllabifier {
 	 * Given a pronunciation phonemes, syllabify the word word
 	 * @param word
 	 * @param phonemes
-	 * @return
+	 * @return a list of syllabified syllables, each with the text, the phonemes, and the stress
 	 */
-	public static List<Triple<String, StressedPhone[], Integer>> syllabify(String word, StressedPhone[] phonemes) {
-		List<Pair<Pair<Integer,Integer>,Integer>> sylRanges = new ArrayList<Pair<Pair<Integer,Integer>, Integer>>();
+	public static List<Triple<String, StressedPhone[], StressedPhone>> syllabify(String word, StressedPhone[] phonemes) {
+		List<Pair<Pair<Integer,Integer>,StressedPhone>> sylRanges = new ArrayList<Pair<Pair<Integer,Integer>, StressedPhone>>();
 		List<String> intermediateConsonants = new ArrayList<String>();
-		Pair<Pair<Integer,Integer>,Integer> currSyllable = null;
-		List<Triple<String, StressedPhone[], Integer>> ret = new ArrayList<Triple<String,StressedPhone[],Integer>>();
+		Pair<Pair<Integer,Integer>,StressedPhone> currSyllable = null;
+		List<Triple<String, StressedPhone[], StressedPhone>> ret = new ArrayList<Triple<String,StressedPhone[],StressedPhone>>();
 		
 		//check if it's a number (which we don't syllabify)
 		if (StringUtils.isNumeric(word)) {
-			int stress = -1;
+			StressedPhone maxStressedVowel = null;
 			for (StressedPhone p : phonemes) {
-				if (p.stress > stress) {
-					stress = p.stress;
+				if (p.stress > maxStressedVowel.stress) {
+					maxStressedVowel = p;
 				}
 			}
-			ret.add(new Triple<String, StressedPhone[], Integer>(word, phonemes, stress));
+			ret.add(new Triple<String, StressedPhone[], StressedPhone>(word, phonemes, maxStressedVowel));
 			return ret;
 		}
 		
 		//check for literal spelling pronunciation
-		List<Triple<String, StressedPhone[], Integer>> literalPronunciation = spelledOutPronunciation(word);
+		List<Triple<String, StressedPhone[], StressedPhone>> literalPronunciation = spelledOutPronunciation(word);
 		int pIdx = 0;
 		boolean literalPron = true;
 		int sylIdx = 0,sylPhoIdx = 0;
@@ -138,7 +138,7 @@ public class Syllabifier {
 					sylRanges.get(sylRanges.size()-1).getFirst().setSecond(split);
 				}
 				
-				currSyllable = new Pair<Pair<Integer,Integer>,Integer>(new Pair<Integer,Integer>(split,-1),currPhone.stress);
+				currSyllable = new Pair<Pair<Integer,Integer>,StressedPhone>(new Pair<Integer,Integer>(split,-1),currPhone);
 				
 				// split intermediate consonants between last syllable and current syllable to favor longest onset for current syllable
 				
@@ -152,11 +152,11 @@ public class Syllabifier {
 		if (sylRanges.size() > 0) {
 			sylRanges.get(sylRanges.size()-1).getFirst().setSecond(phonemes.length);
 			if (sylRanges.size() == 1) { // if there's only one syllable, then we already know the syllibification of word (i.e., no syllibification)
-				ret.add(new Triple<String, StressedPhone[], Integer>(word, phonemes, sylRanges.get(0).getSecond()));
+				ret.add(new Triple<String, StressedPhone[], StressedPhone>(word, phonemes, sylRanges.get(0).getSecond()));
 				return ret;
 			}
 		} else {
-			ret.add(new Triple<String,StressedPhone[],Integer>(word,phonemes,-1));
+			ret.add(new Triple<String,StressedPhone[],StressedPhone>(word,phonemes,null));
 			return ret; // no syllables, return empty data structure
 		}
 		
@@ -169,7 +169,7 @@ public class Syllabifier {
 		
 		
 		for (int j = 0; j < sylRanges.size();j++) {
-			Pair<Pair<Integer, Integer>, Integer> syl = sylRanges.get(j);
+			Pair<Pair<Integer, Integer>, StressedPhone> syl = sylRanges.get(j);
 			Pair<Integer,Integer> range = syl.getFirst();
 			int start = range.getFirst();
 			int end = range.getSecond();
@@ -177,7 +177,7 @@ public class Syllabifier {
 			for (int i = 0; i < end-start; i++) {
 				phones[i] = phonemes[start+i];
 			}
-			ret.add(new Triple<String,StressedPhone[],Integer>(wordsyls[j],phones,syl.getSecond()));
+			ret.add(new Triple<String,StressedPhone[],StressedPhone>(wordsyls[j],phones,syl.getSecond()));
 		}
 		
 		return ret;
@@ -186,25 +186,25 @@ public class Syllabifier {
 	/**
 	 * null-delimited letter-by-letter pronunciation of input word
 	 */
-	private static List<Triple<String, StressedPhone[], Integer>> spelledOutPronunciation(String word) {
-		List<Triple<String, StressedPhone[], Integer>> spelledOut = new ArrayList<Triple<String, StressedPhone[], Integer>>();
+	private static List<Triple<String, StressedPhone[], StressedPhone>> spelledOutPronunciation(String word) {
+		List<Triple<String, StressedPhone[], StressedPhone>> spelledOut = new ArrayList<Triple<String, StressedPhone[], StressedPhone>>();
 		
 		for (char c : word.toCharArray()) {
 			StressedPhone[] pronunciationForChar = Phonetecizer.getPronunciationForChar(c);
-			int stress = -1;
+			StressedPhone maxStressedVowel = null;
 			for (StressedPhone stressedPhone : pronunciationForChar) {
-				if (stressedPhone.stress > stress) {
-					stress = stressedPhone.stress;
+				if (maxStressedVowel == null || stressedPhone.stress > maxStressedVowel.stress) {
+					maxStressedVowel = stressedPhone;
 				}
 			}
-			spelledOut.add(new Triple<String,StressedPhone[],Integer>("" + c,pronunciationForChar,stress));
+			spelledOut.add(new Triple<String,StressedPhone[],StressedPhone>("" + c,pronunciationForChar,maxStressedVowel));
 		}
 		
 		return spelledOut;
 	}
 
 	private static String[] getWordSyllables(String alnWord, StressedPhone[] alnPhones,
-			List<Pair<Pair<Integer, Integer>, Integer>> sylRanges) {
+			List<Pair<Pair<Integer, Integer>, StressedPhone>> sylRanges) {
 		String[] wordSyls = new String[sylRanges.size()];
 		
 		StringBuilder sylBldr = new StringBuilder();

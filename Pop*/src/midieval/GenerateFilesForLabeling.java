@@ -279,7 +279,7 @@ public class GenerateFilesForLabeling {
 	 * @param list lyric sheets to use in validating lyrics (function picks the most complete by length)
 	 * @return
 	 */
-	private static List<List<Triple<String, StressedPhone[], Integer>>> recoverPhonemesAndSyllablesForLyrics(List<Pair<String, NoteEvent[]>> parsedSong, List<LyricSheet> list) {
+	private static List<List<Triple<String, StressedPhone[], StressedPhone>>> recoverPhonemesAndSyllablesForLyrics(List<Pair<String, NoteEvent[]>> parsedSong, List<LyricSheet> list) {
 		// Concatenate kar lyrics - done
 		StringBuilder bldr = new StringBuilder();
 		for (Pair<String,NoteEvent[]> pair : parsedSong) {
@@ -319,17 +319,17 @@ public class GenerateFilesForLabeling {
 		List<Pair<String, List<String>>> karTokensForWords = alignKarTokensToWords(parsedSongTokens, lyricsSiteWords, concatKarLyrsLCAln, lyricsSiteLyricsLCAln); 
 		
 		// syllabify lyric site lyrics keeping all pronunciation
-		List<List<Triple<String, StressedPhone[], Integer>>> lyricsSiteWordSylSets = syllabifyWordsWithSyllableGuide(karTokensForWords);
+		List<List<Triple<String, StressedPhone[], StressedPhone>>> lyricsSiteWordSylSets = syllabifyWordsWithSyllableGuide(karTokensForWords);
 		
 		// words per song, syllables per word
-		List<List<Triple<String, StressedPhone[], Integer>>> parsedSongAssocSyls = getSylsAssocWithLyrics(parsedSong,
+		List<List<Triple<String, StressedPhone[], StressedPhone>>> parsedSongAssocSyls = getSylsAssocWithLyrics(parsedSong,
 				lyricsSiteWordSylSets, concatKarLyrsLCAln, lyricsSiteLyricsLCAln);
 		
 		// \for beginning of phrases, /for beginning of lines but not phrases, " " for beginning of words		
 		for (int i = 0; i < parsedSong.size(); i++) {
 			System.out.print(parsedSong.get(i).getFirst());
 			System.out.print(" ==> ");
-			List<Triple<String, StressedPhone[], Integer>> value = parsedSongAssocSyls.get(i);
+			List<Triple<String, StressedPhone[], StressedPhone>> value = parsedSongAssocSyls.get(i);
 //			if (value != null && value.size() > 0 && !value.get(0).getFirst().startsWith("" + KAR_PHRASE_DELIM) && !value.get(0).getFirst().startsWith(" "))
 //				System.err.println("Warning: Word doesn't start with space or phrase delimiter (partial adding of syllables)");
 			System.out.println(value==null?"null":Syllabifier.stringify(value));
@@ -407,11 +407,11 @@ public class GenerateFilesForLabeling {
 	 * @param lyricsSiteLyricsLCAln
 	 * @return
 	 */
-	private static List<List<Triple<String, StressedPhone[], Integer>>> getSylsAssocWithLyrics(
+	private static List<List<Triple<String, StressedPhone[], StressedPhone>>> getSylsAssocWithLyrics(
 			List<Pair<String, NoteEvent[]>> parsedSong,
-			List<List<Triple<String, StressedPhone[], Integer>>> lyricsSiteWordSylSets, String concatKarLyrsLCAln,
+			List<List<Triple<String, StressedPhone[], StressedPhone>>> lyricsSiteWordSylSets, String concatKarLyrsLCAln,
 			String lyricsSiteLyricsLCAln) {
-		List<List<Triple<String, StressedPhone[], Integer>>> parsedSongAssocSyls = new ArrayList<List<Triple<String, StressedPhone[], Integer>>>();
+		List<List<Triple<String, StressedPhone[], StressedPhone>>> parsedSongAssocSyls = new ArrayList<List<Triple<String, StressedPhone[], StressedPhone>>>();
 		int parsedSongWordIdx = -1;
 		int parsedSongWordCharIdx = -1;
 		int lyricsSiteWordIdx = -1;
@@ -420,7 +420,7 @@ public class GenerateFilesForLabeling {
 		
 		char karC;
 		String webC;
-		Triple<String, StressedPhone[], Integer> sylToAdd = null;
+		Triple<String, StressedPhone[], StressedPhone> sylToAdd = null;
 		boolean pickupNewLineWithNextSyllable = true;
 		// iterate over alignment, skipping any characters in the regexWB set, and essentially replacing syllables in kar aligned string
 		for (int i = 0; i < concatKarLyrsLCAln.length(); i++) {
@@ -452,11 +452,11 @@ public class GenerateFilesForLabeling {
 					if (lyricsSiteWordSylIdx == 0) { // If it's the first syllable in a word
 						if (pickupNewLineWithNextSyllable) { // If this is the first syllable found since last seeing a new line character
 							// add a new phrase character to the lyric
-							sylToAdd = new Triple<String, StressedPhone[], Integer>(KAR_PHRASE_DELIM + sylToAdd.getFirst(), sylToAdd.getSecond(),sylToAdd.getThird()); 
+							sylToAdd = new Triple<String, StressedPhone[], StressedPhone>(KAR_PHRASE_DELIM + sylToAdd.getFirst(), sylToAdd.getSecond(),sylToAdd.getThird()); 
 							pickupNewLineWithNextSyllable = false;
 						} else {
 							// Otherwise, if it's not the beginning of a phrase, then put a space in front of it
-							sylToAdd = new Triple<String, StressedPhone[], Integer>(' ' + sylToAdd.getFirst(), sylToAdd.getSecond(),sylToAdd.getThird()); // add a new phrase character to the lyric
+							sylToAdd = new Triple<String, StressedPhone[], StressedPhone>(' ' + sylToAdd.getFirst(), sylToAdd.getSecond(),sylToAdd.getThird()); // add a new phrase character to the lyric
 						}
 					}
 				}
@@ -475,7 +475,7 @@ public class GenerateFilesForLabeling {
 						parsedSongAssocSyls.add(null);
 						parsedSongWordIdx++;
 					}
-					parsedSongAssocSyls.add(new ArrayList<Triple<String, StressedPhone[], Integer>>());				
+					parsedSongAssocSyls.add(new ArrayList<Triple<String, StressedPhone[], StressedPhone>>());				
 				}
 				// can only add syllables if a character in the karaoke file aligns to it AND if it hasn't been already added.
 				if (sylToAdd != null) { // If something is ready to be added
@@ -502,9 +502,9 @@ public class GenerateFilesForLabeling {
 	 * @param lyricsSiteLyrics
 	 * @return
 	 */
-	private static List<List<Triple<String, StressedPhone[], Integer>>> syllabifyWordsWithSyllableGuide(List<Pair<String, List<String>>> karTokensForWords) {
+	private static List<List<Triple<String, StressedPhone[], StressedPhone>>> syllabifyWordsWithSyllableGuide(List<Pair<String, List<String>>> karTokensForWords) {
 		// per word, per pronunciation, per syllable
-		List<List<Triple<String, StressedPhone[], Integer>>> lyricsSiteWordSylSets = new ArrayList<List<Triple<String, StressedPhone[], Integer>>>();
+		List<List<Triple<String, StressedPhone[], StressedPhone>>> lyricsSiteWordSylSets = new ArrayList<List<Triple<String, StressedPhone[], StressedPhone>>>();
 		// for each word
 		String word;
 		int optimalSyllableCount;
@@ -514,9 +514,9 @@ public class GenerateFilesForLabeling {
 			if (word.length() == 0)
 				continue;
 			// for each pronunciation of the word
-			List<Triple<String, StressedPhone[], Integer>> optimalPronunciation = null;
+			List<Triple<String, StressedPhone[], StressedPhone>> optimalPronunciation = null;
 			for(StressedPhone[] p : Phonetecizer.getPhones(word,false)) {
-				List<Triple<String, StressedPhone[], Integer>> pronunciation = Syllabifier.syllabify(word, p);
+				List<Triple<String, StressedPhone[], StressedPhone>> pronunciation = Syllabifier.syllabify(word, p);
 				if(optimalPronunciation == null || Math.abs(pronunciation.size() - optimalSyllableCount) < Math.abs(optimalPronunciation.size() - optimalSyllableCount)) { 
 					optimalPronunciation = pronunciation;
 				}

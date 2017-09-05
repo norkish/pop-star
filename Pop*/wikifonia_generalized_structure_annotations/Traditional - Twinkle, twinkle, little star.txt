@@ -27,7 +27,7 @@ how	3	1
 Up	5	1
 
 //Up above the world so high...
-BRIDGE	6	1	0.0	0
+BRIDGE	5	1	Up	0
 
 rhyme
 high,	6	1

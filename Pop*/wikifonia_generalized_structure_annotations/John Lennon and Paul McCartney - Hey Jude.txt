@@ -1,6 +1,6 @@
 INTRO	1	1	0.0	0
 
-VERSE	1	1	Hey	-1
+CHORUS	1	1	Hey	-1
 
 rhyme
 bad.	3	1
@@ -224,7 +224,7 @@ Da	27	2
 
 INTERLUDE	27	2	Da	-1
 
-VERSE	31	1	Hey	-1
+CHORUS	31	1	Hey	-1
 
 rhyme
 bad.	33	1
@@ -264,7 +264,7 @@ match	chord	A
 Hey	31	1
 1.0	39	1
 
-OUTRO	41	1	0.0	0
+OUTRO	40	1	0.0	0
 
 // Da da da
 match	lyric	F
