@@ -1,6 +1,8 @@
-INTRO	1	1	0.0	0
+INTRO	A	1	1	0.0	0
 
-CHORUS	1	1	Hey	-1
+CHORUS	A	1	1	Hey	-1
+
+CHORUS	B	5	1	Re	-1
 
 rhyme
 bad.	3	1
@@ -40,7 +42,9 @@ match	chord	A
 Hey	1	1
 Hey	9	1
 
-VERSE	9	1	Hey	-1
+VERSE	A	9	1	Hey	-1
+
+CHORUS	B	13	1	The	-1
 
 rhyme
 fraid.	11	1
@@ -75,7 +79,7 @@ match	chord	A
 Hey	9	1
 3.0	17	1
 
-BRIDGE	18	1	0.0	0
+BRIDGE	A	18	1	0.0	0
 
 rhyme
 pain,	18	1
@@ -134,9 +138,11 @@ match	chord	D
 Da	27	1
 2.0	29	1
 
-INTERLUDE	27	1	Da	-1
+INTERLUDE	A	27	1	Da	-1
 
-VERSE	30	1	Hey	-1
+VERSE	A	30	1	Hey	-1
+
+CHORUS	B	13	2	Re	-1
 
 // let her into your heart. Then you can start to make it better
 match	lyric	C
@@ -171,7 +177,7 @@ match	chord	A
 Hey	30	1
 3.0	17	2
 
-BRIDGE	18	2	0.0	0
+BRIDGE	A	18	2	0.0	0
 
 rhyme
 in,	18	2
@@ -222,9 +228,11 @@ match	chord	D
 Da	27	2
 2.0	29	2
 
-INTERLUDE	27	2	Da	-1
+INTERLUDE	A	27	2	Da	-1
 
-CHORUS	31	1	Hey	-1
+CHORUS	A	31	1	Hey	-1
+
+CHORUS	B	35	1	Re	-1
 
 rhyme
 bad.	33	1
@@ -264,7 +272,7 @@ match	chord	A
 Hey	31	1
 1.0	39	1
 
-OUTRO	40	1	0.0	0
+OUTRO	A	40	1	0.0	0
 
 // Da da da
 match	lyric	F

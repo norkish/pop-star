@@ -1,4 +1,4 @@
-CHORUS	1	1	0.0	0
+CHORUS	A	1	1	0.0	0
 
 rhyme
 high,	4	1
@@ -16,7 +16,7 @@ match	pitch	A
 Some	1	1
 there's	5	1
 
-VERSE	3	1	0.0	0
+VERSE	A	3	1	0.0	0
 
 match	pitch	B
 there's	5	1
@@ -58,7 +58,7 @@ match	rhythm	C
 by.	8	1
 Some	1	2
 
-CHORUS	1	2	0.0	0
+CHORUS	A	1	2	0.0	0
 
 rhyme
 blue,	4	2
@@ -76,7 +76,7 @@ match	pitch	A
 Some	1	2
 and	5	2
 
-VERSE	3	2	0.0	0
+VERSE	A	3	2	0.0	0
 
 match	pitch	B
 and	5	2
@@ -122,7 +122,7 @@ match	rhythm	C
 true.	9	1
 Some	9	1
 
-BRIDGE	9	1	Some	-1
+BRIDGE	A	9	1	Some	-1
 
 rhyme
 star	10	1
@@ -184,7 +184,7 @@ match	rhythm	E
 find	17	1
 Some	18	1
 
-CHORUS	18	1	0.0	0
+CHORUS	A	18	1	0.0	0
 
 rhyme
 fly.	21	1
@@ -202,7 +202,7 @@ match	pitch	A
 Some	18	1
 Birds	22	1
 
-VERSE	20	1	0.0	0
+VERSE	A	20	1	0.0	0
 
 match	pitch	B
 Birds	22	1

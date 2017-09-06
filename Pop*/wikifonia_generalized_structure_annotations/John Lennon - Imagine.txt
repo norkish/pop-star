@@ -1,4 +1,4 @@
-INTRO	1	1	0.0	0
+INTRO	A	1	1	0.0	0
 
 // rest
 match	pitch	A
@@ -28,7 +28,7 @@ match	chord	A
 0.0	1	2
 0.0	3	1
 
-VERSE	3	1	I	0
+VERSE	A	3	1	I	0
 
 rhyme
 try.	6	1
@@ -94,7 +94,9 @@ match	chord	A
 0.0	9	1
 0.0	11	1
 
-CHORUS	11	1	I	0
+CHORUS	A	11	1	I	0
+
+VERSE	B	13	1	liv	0
 
 // Imagine all the people
 match	lyric	A
@@ -121,7 +123,7 @@ match	chord	B
 0.0	11	1
 0.0	15	1
 
-VERSE	15	1	I	0
+VERSE	A	15	1	I	0
 
 rhyme
 do.	17	1
@@ -187,7 +189,9 @@ match	chord	A
 0.0	21	1
 0.0	23	1
 
-CHORUS	23	1	I	0
+CHORUS	A	23	1	I	0
+
+VERSE	B	25	1	liv	0
 
 // Imagine all the people
 match	lyric	A
@@ -214,7 +218,7 @@ match	chord	B
 0.0	23	1
 0.0	27	1
 
-BRIDGE	27	1	You	0
+BRIDGE	A	27	1	You	0
 
 rhyme
 one.	29	1
@@ -285,7 +289,7 @@ match	chord	D
 0.0	33	1
 0.0	15	2
 
-VERSE	15	2	I	0
+VERSE	A	15	2	I	0
 
 rhyme
 can.	17	2
@@ -351,7 +355,9 @@ match	chord	A
 0.0	21	2
 0.0	23	2
 
-CHORUS	23	2	I	0
+CHORUS	A	23	2	I	0
+
+VERSE	B	25	2	shar	0
 
 // Imagine all the people
 match	lyric	A
@@ -378,7 +384,7 @@ match	chord	B
 0.0	23	2
 0.0	27	2
 
-BRIDGE	27	2	You	0
+BRIDGE	A	27	2	You	0
 
 rhyme
 one.	29	2

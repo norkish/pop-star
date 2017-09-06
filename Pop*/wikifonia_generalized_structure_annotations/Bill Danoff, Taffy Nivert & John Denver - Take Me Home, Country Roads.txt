@@ -1,4 +1,4 @@
-VERSE	1	1	0.0	0
+VERSE	A	1	1	0.0	0
 
 rhyme
 trees.	13	1
@@ -94,7 +94,7 @@ match	chord	A
 0.0	10	1
 0.0	18	1
 
-CHORUS	17	1	Coun	-1
+CHORUS	A	17	1	Coun	-1
 
 rhyme
 roads,	18	1
@@ -187,7 +187,7 @@ match	chord	D
 home,	30	1
 0.0	34	1
 
-VERSE	34	1	0.0	0
+VERSE	A	34	1	0.0	0
 
 rhyme
 sky.	13	2
@@ -283,7 +283,7 @@ match	chord	A
 0.0	10	2
 0.0	18	2
 
-CHORUS	17	2	Coun	-1
+CHORUS	A	17	2	Coun	-1
 
 rhyme
 roads,	18	2
@@ -376,7 +376,7 @@ match	chord	D
 home,	30	2
 0.0	35	1
 
-BRIDGE	35	1	I	0
+BRIDGE	A	35	1	I	0
 
 rhyme
 way,	42	1
@@ -402,7 +402,7 @@ match	rhythm	E
 yes	48	1
 Coun	50	1
 
-CHORUS	50	1	Coun	-1
+CHORUS	A	50	1	Coun	-1
 
 rhyme
 roads,	18	3
@@ -495,7 +495,7 @@ match	chord	D
 home,	30	3
 0.0	53	1
 
-OUTRO	52	1	take	-1
+OUTRO	A	52	1	take	-1
 
 rhyme
 home,	53	1

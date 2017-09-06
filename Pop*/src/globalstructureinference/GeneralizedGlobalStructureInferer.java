@@ -56,8 +56,8 @@ public class GeneralizedGlobalStructureInferer {
 		
 		private static final int MIN_DISTANCE_FROM_DIAGNOAL_IN_BEATS = 2;
 		private static final int MAX_DISTANCE_FROM_DIAGNOAL_IN_BEATS = 20;
-		protected static double MUTATION_RATE = 0.25;
-		protected static int MAX_MUTATION_STEP = 15;
+		protected static double MUTATION_RATE = 0.2;
+		protected static int MAX_MUTATION_STEP = 10;
 		
 		// gap scores
 		public double gapOpenScore;
@@ -185,7 +185,6 @@ public class GeneralizedGlobalStructureInferer {
 	    	return solutionID;
 		}
 		
-
 		public double scoreOffset(MusicXMLAlignmentEvent musicXML1AlignmentEvent,
 				MusicXMLAlignmentEvent musicXML2AlignmentEvent) {
 			double matchScore = 0;
@@ -1271,9 +1270,9 @@ public class GeneralizedGlobalStructureInferer {
 		}
 	}
 
-	private static final int populationSize = 15;
+	private static final int populationSize = 20;
 	private static final int LITTER_SIZE = 10;
-	private final static String TYPE = "harmony"; 
+	private final static String TYPE = "chorus"; 
 	private final static String POPULATION_FILE_PREFIX = "generalized_global_alignment_inference/parameterization_pop_";
 	private final static String HEATMAP_FILE_PREFIX = "generalized_global_alignment_inference/"+ TYPE +"_visualizations/";
 	private final static int TOTAL_GENERATIONS = 10000;
@@ -1692,7 +1691,7 @@ public class GeneralizedGlobalStructureInferer {
 		MusicXMLAlignmentEvent currentSongEvent, inferredSongEvent;
 
 		@SuppressWarnings("rawtypes")
-		Map<String, List> allMatchingGroups = getMatchingGroups(song, type);
+		Map<Character, List> allMatchingGroups = getMatchingGroups(song, type);
 		Set<String> inferredGroups;
 		int allGroupsForLabelCount;
 		
@@ -1713,10 +1712,10 @@ public class GeneralizedGlobalStructureInferer {
 				// what should it have inferred?
 				matchingRegions = new HashSet<String>();
 				for (String actualGroup: actualGroups) { // for each actual group (and group ID) for this event
-					String group = actualGroup.substring(0, groupLabelLength); // abstract to the group label
+					Character group = actualGroup.charAt(0); // abstract to the group label
 					allGroupsForLabelCount = allMatchingGroups.get(group).size(); // find all group IDs with this label
 					for (int j = 1; j <= allGroupsForLabelCount; j++) { // for each of the group IDs with this label
-						String groupID = "" + group + String.format("%04d",j);
+						String groupID = "" + group + j;
 						if (!actualGroups.contains(groupID)) { // if the ID doesn't already belong to this event
 							matchingRegions.add(groupID); // then this even should match to that ID
 						}
@@ -1776,22 +1775,22 @@ public class GeneralizedGlobalStructureInferer {
 	}
 
 	@SuppressWarnings("unchecked")
-	private static <T extends List> Map<String, T> getMatchingGroups(
+	private static <T extends List> Map<Character, T> getMatchingGroups(
 			ParsedMusicXMLObject song, String type) {
 		if (type.equals("lyric")) {
-			return (Map<String, T>) song.getAllMatchingLyricGroups();
+			return (Map<Character, T>) song.getAllMatchingLyricGroups();
 		} else if (type.equals("pitch")){
-			return (Map<String, T>) song.getAllMatchingPitchGroups();
+			return (Map<Character, T>) song.getAllMatchingPitchGroups();
 		} else if (type.equals("harmony")){
-			return (Map<String, T>) song.getAllMatchingHarmonyGroups();
+			return (Map<Character, T>) song.getAllMatchingHarmonyGroups();
 		} else if (type.equals("rhythm")){
-			return (Map<String, T>) song.getAllMatchingRhythmGroups();
+			return (Map<Character, T>) song.getAllMatchingRhythmGroups();
 		} else if (type.equals("rhyme")){
-			return (Map<String, T>) song.getAllMatchingRhymeGroups();
+			return (Map<Character, T>) song.getAllMatchingRhymeGroups();
 		} else if (type.equals("chorus")){
-			return (Map<String, T>) song.getAllMatchingChorusGroups();
+			return (Map<Character, T>) song.getAllMatchingChorusGroups();
 		} else if (type.equals("verse")){
-			return (Map<String, T>) song.getAllMatchingVerseGroups();
+			return (Map<Character, T>) song.getAllMatchingVerseGroups();
 		} else {
 			throw new RuntimeException("Not yet implemented");
 		}
@@ -1962,6 +1961,7 @@ public class GeneralizedGlobalStructureInferer {
 		List<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>> population = null;
 		while (fileScanner.hasNextLine()) {
 			if (modifyGlobalVariables) generation = Integer.parseInt(fileScanner.nextLine().split(" ")[1]);
+			else fileScanner.nextLine();
 			population = new ArrayList<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>>();
 			while (fileScanner.hasNextLine()){
 				String nextLine = fileScanner.nextLine();
