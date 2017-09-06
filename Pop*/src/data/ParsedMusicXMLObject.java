@@ -442,13 +442,13 @@ public class ParsedMusicXMLObject {
 	}
 
 	Map<Integer, List<ParsedMusicXMLObject.MusicXMLAlignmentEvent>> alignmentEvents = new HashMap<Integer, List<ParsedMusicXMLObject.MusicXMLAlignmentEvent>>();
-	public Map<String, List<Pair<Integer, Double>>> rhymeMatches;
-	private Map<String, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> lyricMatches;
-	private Map<String, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> pitchMatches;
-	private Map<String, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> rhythmMatches;
-	private Map<String, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> harmonyMatches;
-	private Map<String, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> chorusMatches;
-	private Map<String, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> verseMatches;
+	public Map<Character, List<Pair<Integer, Double>>> rhymeMatches;
+	private Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> lyricMatches;
+	private Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> pitchMatches;
+	private Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> rhythmMatches;
+	private Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> harmonyMatches;
+	private Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> chorusMatches;
+	private Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> verseMatches;
 
 	 // the measure and beat are mapped to an index value for the rhymeMatches data structure where other matches can be looked up
 	private Map<Integer, Map<Double, Set<String>>> rhymeMatchGroupsByPosition = new HashMap<Integer, Map<Double, Set<String>>>();
@@ -636,13 +636,13 @@ public class ParsedMusicXMLObject {
 		return events;
 	}
 
-	public void setMatches(Map<String, List<Pair<Integer, Double>>> rhymeMatches, 
-			Map<String, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> lyricMatches, 
-			Map<String, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> pitchMatches, 
-			Map<String, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> rhythmMatches, 
-			Map<String, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> harmonyMatches,
-			Map<String, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> chorusMatches,
-			Map<String, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> verseMatches) {
+	public void setMatches(Map<Character, List<Pair<Integer, Double>>> rhymeMatches, 
+			Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> lyricMatches, 
+			Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> pitchMatches, 
+			Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> rhythmMatches, 
+			Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> harmonyMatches,
+			Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> chorusMatches,
+			Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> verseMatches) {
 		this.rhymeMatches = rhymeMatches;		
 		this.lyricMatches = lyricMatches;		
 		this.pitchMatches = pitchMatches;		
@@ -656,7 +656,7 @@ public class ParsedMusicXMLObject {
 		Set<String> rhymeMatchGroupsByMeasureBeat;
 		Integer measure;
 		Double beat;
-		for (String rhymeGroupLabel : rhymeMatches.keySet()) {
+		for (Character rhymeGroupLabel : rhymeMatches.keySet()) {
 			rhymeMatchGroup = rhymeMatches.get(rhymeGroupLabel);
 			for (int i = 0; i < rhymeMatchGroup.size(); i++) {
 				Pair<Integer, Double> rhymePosition = rhymeMatchGroup.get(i);
@@ -677,21 +677,19 @@ public class ParsedMusicXMLObject {
 		}
 		
 		Object[] allMatches = new Object[]{lyricMatches, pitchMatches, rhythmMatches, harmonyMatches, chorusMatches, verseMatches};
-		Map<String, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> matches;
+		Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> matches;
 		Object[] allMatchGroupsByPosition = new Object[]{lyricMatchGroupsByPosition, pitchMatchGroupsByPosition, rhythmMatchGroupsByPosition, harmonyMatchGroupsByPosition, chorusMatchGroupsByPosition, verseMatchGroupsByPosition};
 		Map<Integer, Map<Double, Set<String>>> matchGroupsByPosition;
 		Pair<Integer, Double> startPosition, endPosition;
 		Map<Double, Set<String>> matchGroupsByMeasurePosition;
-//		Map<Double, Set<String>> harPitRhyLyrMatchGroupsByMeasurePosition;
 		Set<String> matchGroupsByMeasureBeat;
-//		Set<String> harPitRhyLyrMatchGroupsByMeasureBeat;
 		Pair<Pair<Integer, Double>, Pair<Integer, Double>> groupForLabel;
 		// for each viewpoint
 		for (int i = 0; i < allMatches.length; i++) {
-			matches = (Map<String, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>>) allMatches[i];
+			matches = (Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>>) allMatches[i];
 			matchGroupsByPosition = (Map<Integer, Map<Double, Set<String>>>) allMatchGroupsByPosition[i];
 			// for each group
-			for (String groupLabel : matches.keySet()) {
+			for (Character groupLabel : matches.keySet()) {
 				List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>> groupsForLabel = matches.get(groupLabel);
 				// for each match in group
 				for (int j = 0; j < groupsForLabel.size(); j++) {
@@ -704,22 +702,12 @@ public class ParsedMusicXMLObject {
 						matchGroupsByMeasurePosition = new TreeMap<Double, Set<String>>();
 						matchGroupsByPosition.put(measure,matchGroupsByMeasurePosition);
 					}
-//					harPitRhyLyrMatchGroupsByMeasurePosition = harPitRhyLyrMatchGroupsByPosition.get(measure);
-//					if (harPitRhyLyrMatchGroupsByMeasurePosition == null) {
-//						harPitRhyLyrMatchGroupsByMeasurePosition = new TreeMap<Double, Set<String>>();
-//						harPitRhyLyrMatchGroupsByPosition.put(measure,harPitRhyLyrMatchGroupsByMeasurePosition);
-//					}
 					matchGroupsByMeasureBeat = matchGroupsByMeasurePosition.get(beat);
 					if (matchGroupsByMeasureBeat == null) {
 						matchGroupsByMeasureBeat = new HashSet<String>();
 						matchGroupsByMeasurePosition.put(beat, matchGroupsByMeasureBeat);
 					}
-//					harPitRhyLyrMatchGroupsByMeasureBeat = harPitRhyLyrMatchGroupsByMeasurePosition.get(beat);
-//					if (harPitRhyLyrMatchGroupsByMeasureBeat == null) {
-//						harPitRhyLyrMatchGroupsByMeasureBeat = new HashSet<String>();
-//						harPitRhyLyrMatchGroupsByMeasurePosition.put(beat, harPitRhyLyrMatchGroupsByMeasureBeat); // simply mark that there's a change in the grouping here.
-//					}
-					final String matchGroupLabel = "" + groupLabel + String.format("%04d", j+1);
+					final String matchGroupLabel = "" + groupLabel + (j+1);
 					matchGroupsByMeasureBeat.add(matchGroupLabel);
 					
 					endPosition = groupForLabel.getSecond();
@@ -730,274 +718,43 @@ public class ParsedMusicXMLObject {
 						matchGroupsByMeasurePosition = new TreeMap<Double, Set<String>>();
 						matchGroupsByPosition.put(measure,matchGroupsByMeasurePosition);
 					}
-//					harPitRhyLyrMatchGroupsByMeasurePosition = harPitRhyLyrMatchGroupsByPosition.get(measure);
-//					if (harPitRhyLyrMatchGroupsByMeasurePosition == null) {
-//						harPitRhyLyrMatchGroupsByMeasurePosition = new TreeMap<Double, Set<String>>();
-//						harPitRhyLyrMatchGroupsByPosition.put(measure,harPitRhyLyrMatchGroupsByMeasurePosition);
-//					}
 					matchGroupsByMeasureBeat = matchGroupsByMeasurePosition.get(beat);
 					if (matchGroupsByMeasureBeat == null) {
 						matchGroupsByMeasureBeat = new HashSet<String>();
 						matchGroupsByMeasurePosition.put(beat, matchGroupsByMeasureBeat);
 					}
-//					harPitRhyLyrMatchGroupsByMeasureBeat = harPitRhyLyrMatchGroupsByMeasurePosition.get(beat);
-//					if (harPitRhyLyrMatchGroupsByMeasureBeat == null) {
-//						harPitRhyLyrMatchGroupsByMeasureBeat = new HashSet<String>();
-//						harPitRhyLyrMatchGroupsByMeasurePosition.put(beat, harPitRhyLyrMatchGroupsByMeasureBeat); // simply mark that there's a change in the grouping here.
-//					}
 					matchGroupsByMeasureBeat.add(matchGroupLabel);
 				}
 			}
 		}
 		
-////		// combine viewpoint matches for harPitRhyLyrMatches
-//		Set<String> activeHarmonyMatchGroups = new HashSet<String>();
-//		Set<String> activePitchMatchGroups = new HashSet<String>();
-//		Set<String> activeRhythmMatchGroups = new HashSet<String>();
-//		Set<String> activeLyricMatchGroups = new HashSet<String>();
-//		activeLyricMatchGroups.add("*");
-//		Set<String[]> activeHarPitRhyLyrMatchGroups = new HashSet<String[]>();
-//		
-//		Map<String,Integer> currHarmonyMatchGroupDivision = new HashMap<String,Integer>();
-//		Map<String,Integer> currPitchMatchGroupDivision = new HashMap<String,Integer>();
-//		Map<String,Integer> currRhythmMatchGroupDivision = new HashMap<String,Integer>();
-//		Map<String,Integer> currLyricMatchGroupDivision = new HashMap<String,Integer>();
-//		
-//		for (Iterator<Integer> msrIter = harPitRhyLyrMatchGroupsByPosition.keySet().iterator(); msrIter.hasNext();) {
-//			Integer msr = msrIter.next();
-//			harPitRhyLyrMatchGroupsByMeasurePosition = harPitRhyLyrMatchGroupsByPosition.get(msr);
-//			Map<Double, Set<String>> harmonyMatchGroupsByMeasurePosition = harmonyMatchGroupsByPosition.get(msr);
-//			Map<Double, Set<String>> pitchMatchGroupsByMeasurePosition = pitchMatchGroupsByPosition.get(msr);
-//			Map<Double, Set<String>> rhythmMatchGroupsByMeasurePosition = rhythmMatchGroupsByPosition.get(msr);
-//			Map<Double, Set<String>> lyricMatchGroupsByMeasurePosition = lyricMatchGroupsByPosition.get(msr);
-//			// This essentially iterates over every point at which some viewpoint has a match group change
-//			for (Iterator<Double> btIter = harPitRhyLyrMatchGroupsByMeasurePosition.keySet().iterator(); btIter.hasNext();) {
-//				Double bt = btIter.next();
-//				harPitRhyLyrMatchGroupsByMeasureBeat = harPitRhyLyrMatchGroupsByMeasurePosition.get(bt);
-//				if (harmonyMatchGroupsByMeasurePosition != null && harmonyMatchGroupsByMeasurePosition.containsKey(bt)) {
-//					for (String harmonyMatchGroup : harmonyMatchGroupsByMeasurePosition.get(bt)) {
-//						if (!activeHarmonyMatchGroups.remove(harmonyMatchGroup)) {
-//							activeHarmonyMatchGroups.add(harmonyMatchGroup);
-//							currHarmonyMatchGroupDivision.put(harmonyMatchGroup, 0);
-//						} else {
-//							currHarmonyMatchGroupDivision.remove(harmonyMatchGroup);
-//						}
-//					}
-//				}
-//				if (pitchMatchGroupsByMeasurePosition != null && pitchMatchGroupsByMeasurePosition.containsKey(bt)) {
-//					for (String pitchMatchGroup : pitchMatchGroupsByMeasurePosition.get(bt)) {
-//						if (!activePitchMatchGroups.remove(pitchMatchGroup)) {
-//							activePitchMatchGroups.add(pitchMatchGroup);
-//							currPitchMatchGroupDivision.put(pitchMatchGroup, 0);
-//						} else {
-//							currPitchMatchGroupDivision.remove(pitchMatchGroup);
-//						}
-//					}
-//				}
-//				if (rhythmMatchGroupsByMeasurePosition != null && rhythmMatchGroupsByMeasurePosition.containsKey(bt)) {
-//					for (String rhythmMatchGroup : rhythmMatchGroupsByMeasurePosition.get(bt)) {
-//						if (!activeRhythmMatchGroups.remove(rhythmMatchGroup)) {
-//							activeRhythmMatchGroups.add(rhythmMatchGroup);
-//							currRhythmMatchGroupDivision.put(rhythmMatchGroup, 0);
-//						} else {
-//							currRhythmMatchGroupDivision.remove(rhythmMatchGroup);
-//						}
-//					}
-//				}
-//				if (lyricMatchGroupsByMeasurePosition != null && lyricMatchGroupsByMeasurePosition.containsKey(bt)) {
-//					for (String lyricMatchGroup : lyricMatchGroupsByMeasurePosition.get(bt)) {
-//						if (!activeLyricMatchGroups.remove(lyricMatchGroup)) {
-//							// lyricMatchGroup wasn't removed, thus this is a group start
-//							activeLyricMatchGroups.remove("*");
-//							activeLyricMatchGroups.add(lyricMatchGroup);
-//							currLyricMatchGroupDivision.put(lyricMatchGroup,0);
-//						} else {
-//							// lyricMatchGroup was removed, thus this is an end, and if it creates empty, we add *
-//							currLyricMatchGroupDivision.remove(lyricMatchGroup);
-//							if (activeLyricMatchGroups.isEmpty()) {
-//								activeLyricMatchGroups.add("*");
-//							}
-//						}
-//					}
-//				}
-//				
-//				// for active groups over all viewpoints, 
-//				for (Iterator<String[]> harPitRhyLyrMatchGroupIter = activeHarPitRhyLyrMatchGroups.iterator(); harPitRhyLyrMatchGroupIter.hasNext();) {
-//					String[] harPitRhyLyrMatchGroup = harPitRhyLyrMatchGroupIter.next();
-//					// check if they're still active (i.e., each of their viewpoint reps is active) and if not, remove them
-//					if (!activeHarmonyMatchGroups.contains(harPitRhyLyrMatchGroup[0]) || !activePitchMatchGroups.contains(harPitRhyLyrMatchGroup[1]) || 
-//							!activeRhythmMatchGroups.contains(harPitRhyLyrMatchGroup[2]) || !activeLyricMatchGroups.contains(harPitRhyLyrMatchGroup[3])) {
-//						harPitRhyLyrMatchGroupIter.remove();
-//						// if any of them change, then we have to increment the division counter
-//						
-//						// mark the end of this combined viewpoint matchgroup
-//						final String combinedLabel = getCombinedLabel(harPitRhyLyrMatchGroup);
-//						harPitRhyLyrMatchGroupsByMeasureBeat.add(combinedLabel);
-//						final Integer currVal = structureCounter.putIfAbsent(combinedLabel.substring(0,4), 1);
-//						if (currVal != null) {
-//							structureCounter.put(combinedLabel.substring(0,4), currVal+1);
-//						}
-//					}
-//				}
-//				
-//				for (String activeHarmonyMatchGroup : activeHarmonyMatchGroups) {
-//					for (String activePitchMatchGroup : activePitchMatchGroups) {
-//						for (String activeRhythmMatchGroup : activeRhythmMatchGroups) {
-//							for (String activeLyricMatchGroup : activeLyricMatchGroups) {
-//								String[] harPitRhyLyrMatchGroup = new String[]{activeHarmonyMatchGroup,activePitchMatchGroup,activeRhythmMatchGroup,activeLyricMatchGroup};
-//								if (activeHarPitRhyLyrMatchGroups.add(harPitRhyLyrMatchGroup)) {
-//									final String combinedLabel = getCombinedLabel(harPitRhyLyrMatchGroup, structureCounter);
-//									harPitRhyLyrMatchGroupsByMeasureBeat.add(combinedLabel);
-//								}
-//							}	
-//						}	
-//					}
-//				}
-//				
-//				if (harPitRhyLyrMatchGroupsByMeasureBeat.isEmpty()) {
-//					btIter.remove();
-//				}
-//			}
-//			
-//			if (harPitRhyLyrMatchGroupsByMeasurePosition.isEmpty()) {
-//				msrIter.remove();
-//			}
-//		}
-//		
-//		// infer verses and choruses
-//		verseMatches = new HashMap<String, List<Pair<Pair<Integer,Double>,Pair<Integer,Double>>>>();
-//		chorusMatches = new HashMap<String, List<Pair<Pair<Integer,Double>,Pair<Integer,Double>>>>();
-//		for (Integer msr : harPitRhyLyrMatchGroupsByPosition.keySet()) {
-//			harPitRhyLyrMatchGroupsByMeasurePosition = harPitRhyLyrMatchGroupsByPosition.get(msr);
-//			for (Double bt : harPitRhyLyrMatchGroupsByMeasurePosition.keySet()) {
-//				harPitRhyLyrMatchGroupsByMeasureBeat = harPitRhyLyrMatchGroupsByMeasurePosition.get(bt);
-//				for (String combinedLabelAndInstance: harPitRhyLyrMatchGroupsByMeasureBeat) {
-//					String combinedLabel = combinedLabelAndInstance.substring(0, 4);
-//					Integer totalInstances = structureCounter.get(combinedLabel);
-//					if (totalInstances >= 2) {
-//						if (combinedLabel.charAt(3) == '*') {
-//							// get verses (meaning only 3 of 4 groups are defined and structure is repeated)
-//							Map<Double, Set<String>> verseMatchGroupsByMeasure = verseMatchGroupsByPosition.get(msr);
-//							if (verseMatchGroupsByMeasure == null) {
-//								verseMatchGroupsByMeasure = new HashMap<Double, Set<String>>();
-//								verseMatchGroupsByPosition.put(msr, verseMatchGroupsByMeasure);
-//							}
-//							Set<String> verseMatchGroupsByMeasureBeat = verseMatchGroupsByMeasure.get(bt);
-//							if (verseMatchGroupsByMeasureBeat == null) {
-//								verseMatchGroupsByMeasureBeat = new HashSet<String>();
-//								verseMatchGroupsByMeasure.put(bt, verseMatchGroupsByMeasureBeat);
-//							}
-//							verseMatchGroupsByMeasureBeat.add(combinedLabelAndInstance);
-//
-//							// update match groups
-//							List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>> verseMatchesForLabel = verseMatches.get(combinedLabelAndInstance);
-//							if (verseMatchesForLabel == null) {
-//								verseMatchesForLabel = new ArrayList<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>();
-//								verseMatchesForLabel.add(new Pair<Pair<Integer, Double>, Pair<Integer, Double>>(new Pair<Integer,Double>(msr,bt),null));
-//								verseMatches.put(combinedLabelAndInstance, verseMatchesForLabel);
-//							} else {
-//								Pair<Pair<Integer, Double>, Pair<Integer, Double>> range = verseMatchesForLabel.get(verseMatchesForLabel.size()-1);
-//								if (range.getSecond() == null) {
-//									range.setSecond(new Pair<Integer,Double>(msr,bt));
-//								} else {
-//									verseMatchesForLabel.add(new Pair<Pair<Integer, Double>, Pair<Integer, Double>>(new Pair<Integer,Double>(msr,bt),null));
-//								}
-//							}
-//						} else {
-//							// get choruses (meaning all four groups are defined and structure is repeated)
-//							Map<Double, Set<String>> chorusMatchGroupsByMeasure = chorusMatchGroupsByPosition.get(msr);
-//							if (chorusMatchGroupsByMeasure == null) {
-//								chorusMatchGroupsByMeasure = new HashMap<Double, Set<String>>();
-//								chorusMatchGroupsByPosition.put(msr, chorusMatchGroupsByMeasure);
-//							}
-//							Set<String> chorusMatchGroupsByMeasureBeat = chorusMatchGroupsByMeasure.get(bt);
-//							if (chorusMatchGroupsByMeasureBeat == null) {
-//								chorusMatchGroupsByMeasureBeat = new HashSet<String>();
-//								chorusMatchGroupsByMeasure.put(bt, chorusMatchGroupsByMeasureBeat);
-//							}
-//							chorusMatchGroupsByMeasureBeat.add(combinedLabelAndInstance);
-//							
-//							// update match groups
-//							List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>> chorusMatchesForLabel = chorusMatches.get(combinedLabelAndInstance);
-//							if (chorusMatchesForLabel == null) {
-//								chorusMatchesForLabel = new ArrayList<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>();
-//								chorusMatchesForLabel.add(new Pair<Pair<Integer, Double>, Pair<Integer, Double>>(new Pair<Integer,Double>(msr,bt),null));
-//								chorusMatches.put(combinedLabelAndInstance, chorusMatchesForLabel);
-//							} else {
-//								Pair<Pair<Integer, Double>, Pair<Integer, Double>> range = chorusMatchesForLabel.get(chorusMatchesForLabel.size()-1);
-//								if (range.getSecond() == null) {
-//									range.setSecond(new Pair<Integer,Double>(msr,bt));
-//								} else {
-//									chorusMatchesForLabel.add(new Pair<Pair<Integer, Double>, Pair<Integer, Double>>(new Pair<Integer,Double>(msr,bt),null));
-//								}
-//							}
-//						}
-//					}
-//				}
-//			}
-//		}
-//		
-//		// Remove instance from chorusMatches
-//		List<String> combinedLabelsAndInstances = new ArrayList<String>(chorusMatches.keySet());
-//		for (String combinedLabelAndInstance : combinedLabelsAndInstances) {
-//			List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>> instanceRanges = chorusMatches.remove(combinedLabelAndInstance);
-//			String combinedLabel = combinedLabelAndInstance.substring(0, 4);
-//			List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>> prevInstanceRanges = chorusMatches.putIfAbsent(combinedLabel, instanceRanges);
-//			if (prevInstanceRanges != null) {
-//				prevInstanceRanges.addAll(instanceRanges);
-//			}
-//		}
-//		// sort each list first coordinate
-//		for (String string : chorusMatches.keySet()) {
-//			chorusMatches.get(string).sort((o1,o2)->(o1.getFirst().getFirst() == o2.getFirst().getFirst()? // same first measure?
-//					o1.getFirst().getSecond().compareTo(o2.getFirst().getSecond()): // then compare first beat
-//						o1.getFirst().getFirst().compareTo(o2.getFirst().getFirst()))); // otherwise compare first measure
-//		}
-//		
-//		// Remove instance from verseMatches
-//		combinedLabelsAndInstances = new ArrayList<String>(verseMatches.keySet());
-//		for (String combinedLabelAndInstance : combinedLabelsAndInstances) {
-//			List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>> instanceRanges = verseMatches.remove(combinedLabelAndInstance);
-//			//TODO: remove ranges in verseMatchGroupsByPosition that are not actually marked as VERSE
-//			String combinedLabel = combinedLabelAndInstance.substring(0, 4);
-//			List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>> prevInstanceRanges = verseMatches.putIfAbsent(combinedLabel, instanceRanges);
-//			if (prevInstanceRanges != null) {
-//				prevInstanceRanges.addAll(instanceRanges);
-//			}
-//		}
-//		// sort each list first coordinate
-//		for (String string : verseMatches.keySet()) {
-//			verseMatches.get(string).sort((o1,o2)->(o1.getFirst().getFirst() == o2.getFirst().getFirst()? // same first measure?
-//					o1.getFirst().getSecond().compareTo(o2.getFirst().getSecond()): // then compare first beat
-//						o1.getFirst().getFirst().compareTo(o2.getFirst().getFirst()))); // otherwise compare first measure
-//		}
 	}
 
-	public Map<String, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> getAllMatchingLyricGroups() {
+	public Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> getAllMatchingLyricGroups() {
 		return lyricMatches;
 	}
 	
-	public Map<String, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> getAllMatchingPitchGroups() {
+	public Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> getAllMatchingPitchGroups() {
 		return pitchMatches;
 	}
 	
-	public Map<String, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> getAllMatchingHarmonyGroups() {
+	public Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> getAllMatchingHarmonyGroups() {
 		return harmonyMatches;
 	}
 	
-	public Map<String, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> getAllMatchingChorusGroups() {
+	public Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> getAllMatchingChorusGroups() {
 		return chorusMatches;
 	}
 	
-	public Map<String, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> getAllMatchingVerseGroups() {
+	public Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> getAllMatchingVerseGroups() {
 		return verseMatches;
 	}
 	
-	public Map<String, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> getAllMatchingRhythmGroups() {
+	public Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> getAllMatchingRhythmGroups() {
 		return rhythmMatches;
 	}
 	
-	public Map<String, List<Pair<Integer, Double>>> getAllMatchingRhymeGroups() {
+	public Map<Character, List<Pair<Integer, Double>>> getAllMatchingRhymeGroups() {
 		return rhymeMatches;
 	}
 	
