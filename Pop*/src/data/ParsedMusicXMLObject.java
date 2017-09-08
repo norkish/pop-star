@@ -20,6 +20,7 @@ import data.MusicXMLParser.Harmony;
 import data.MusicXMLParser.Key;
 import data.MusicXMLParser.Note;
 import data.MusicXMLParser.NoteLyric;
+import data.MusicXMLParser.Syllabic;
 import data.MusicXMLParser.Time;
 import globalstructure.SegmentType;
 import tabcomplete.rhyme.StressedPhone;
@@ -85,23 +86,6 @@ public class ParsedMusicXMLObject {
 			this.matchingVerseRegions = matchingVerseRegions;
 			this.rhymingRegions = rhymingRegions;
 		}
-	
-//		public boolean shouldAlignWith(MusicXMLAlignmentEvent that) {
-//	
-//			if (this.segmentType != SegmentType.CHORUS || this.segmentType != that.segmentType) {
-//				return false;
-//			}
-//			
-//			if (this.measureOffsetInSegment != that.measureOffsetInSegment) {
-//				return false;
-//			}
-//			
-//			if (this.beat != that.beat) {
-//				return false;
-//			}
-//			
-//			return true;
-//		}
 
 		public Set<String> getLyricGroups() {
 			return matchingLyricRegions;
@@ -305,7 +289,7 @@ public class ParsedMusicXMLObject {
 	}
 	
 	public double getDivsPerQuarterForAbsoluteMeasure(int absoluteMeasureNumber) {
-		return Utils.valueForKeyBeforeOrEqualTo(absoluteMeasureNumber, divsPerQuarterByAbsoluteMeasure);
+		return (double) Utils.valueForKeyBeforeOrEqualTo(absoluteMeasureNumber, divsPerQuarterByAbsoluteMeasure);
 	}
 
 	public SortedMap<Integer, SortedMap<Integer, Note>> getNotesByPlayedMeasureAsMap() {

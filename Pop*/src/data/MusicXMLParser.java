@@ -42,7 +42,7 @@ public class MusicXMLParser {
 
 	final private static int SYLLABLE = 5; 
 	final private static int ENDINGS = 4; 
-	final private static int DEBUG = SYLLABLE; 
+	final private static int DEBUG = 0; 
 	
 	public enum DirectionType {
 		DS_AL_CODA1, AL_CODA1, CODA1, DS_AL_CODA2, AL_CODA2, CODA2, SEGNO, IGNORE, DS_AL_FINE, FINE, DC_AL_FINE, DC_AL_CODA1;

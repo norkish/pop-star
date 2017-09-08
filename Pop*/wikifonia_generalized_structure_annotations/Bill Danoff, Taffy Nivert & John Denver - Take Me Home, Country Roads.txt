@@ -495,7 +495,9 @@ match	chord	D
 home,	30	3
 0.0	53	1
 
-OUTRO	A	52	1	take	-1
+CHORUS	B	52	1	take	-1
+
+CHORUS	B	56	1	take	-1
 
 rhyme
 home,	53	1
