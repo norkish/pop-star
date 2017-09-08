@@ -245,8 +245,8 @@ public class GeneralizedGlobalStructureInferer {
 			this.oneRest = Double.parseDouble(nextTokens[i++]);
 			this.bothLyricsNull = Double.parseDouble(nextTokens[i++]);
 			this.oneLyricNull = Double.parseDouble(nextTokens[i++]);
-			this.lyricsEqual = Double.parseDouble(nextTokens[i++]);
 			this.lyricsUnequal = Double.parseDouble(nextTokens[i++]);
+			this.lyricsEqual = Double.parseDouble(nextTokens[i++]);
 			this.bothLyricsOnset = Double.parseDouble(nextTokens[i++]);
 			this.oneLyricOnsetOneNot = Double.parseDouble(nextTokens[i++]);
 			this.bothLyricsNotOnset = Double.parseDouble(nextTokens[i++]);
@@ -385,10 +385,10 @@ public class GeneralizedGlobalStructureInferer {
 		private double lyricWeight;
 		
 		public CombinedAlignmentParameterization() throws FileNotFoundException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-			harmonyWeight = rand.nextDouble();
-			pitchWeight = rand.nextDouble();
-			rhythmWeight = rand.nextDouble();
-			lyricWeight = rand.nextDouble();
+			harmonyWeight = rand.nextInt(7)-3;
+			pitchWeight = rand.nextInt(7)-3;
+			rhythmWeight = rand.nextInt(7)-3;
+			lyricWeight = rand.nextInt(7)-3;
 			
 			parameterizations = new GeneralizedGlobalStructureAlignmentParameterization[]{
 //					new HarmonicAlignmentParameterization(),
@@ -1272,10 +1272,10 @@ public class GeneralizedGlobalStructureInferer {
 
 	private static final int populationSize = 20;
 	private static final int LITTER_SIZE = 10;
-	private final static String TYPE = "chorus"; 
+	private final static String TYPE = "verse"; 
 	private final static String POPULATION_FILE_PREFIX = "generalized_global_alignment_inference/parameterization_pop_";
 	private final static String HEATMAP_FILE_PREFIX = "generalized_global_alignment_inference/"+ TYPE +"_visualizations/";
-	private final static int TOTAL_GENERATIONS = 10000;
+	private final static int TOTAL_GENERATIONS = 5000;
 	
 	private static double prevBestAccuracy = 0.0;
 	public static void main(String[] args) throws Exception {
@@ -1343,7 +1343,7 @@ public class GeneralizedGlobalStructureInferer {
 			List<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>> population) throws Exception {
 		List<GeneralizedGlobalStructureAlignmentParameterization> newPop = new ArrayList<GeneralizedGlobalStructureAlignmentParameterization>();
 		
-		for (int i = 0; i < LITTER_SIZE; i++) {
+		while (newPop.size() < LITTER_SIZE) {
 			// selection
 			int parentIdx = rand.nextInt(population.size());
 			GeneralizedGlobalStructureAlignmentParameterization parent1 = population.get(parentIdx).getSecond();
@@ -1357,8 +1357,9 @@ public class GeneralizedGlobalStructureInferer {
 			GeneralizedGlobalStructureAlignmentParameterization newOffspring = (GeneralizedGlobalStructureAlignmentParameterization) getParameterizationClass(viewpoint).getDeclaredConstructor(GeneralizedGlobalStructureAlignmentParameterization.class, GeneralizedGlobalStructureAlignmentParameterization.class).newInstance(parent1,parent2);
 			// mutation
 			newOffspring.mutate();
-			
-			newPop.add(newOffspring);
+			if (!solutionIDMap.containsKey(newOffspring.toString())) {
+				newPop.add(newOffspring);
+			}
 		}
 		
 		return newPop;
