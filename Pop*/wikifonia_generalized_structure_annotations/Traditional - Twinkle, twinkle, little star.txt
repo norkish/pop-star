@@ -1,4 +1,4 @@
-CHORUS	1	1	0.0	0
+CHORUS	A	1	1	0.0	0
 
 // We're not considering "Twinkle, twinkle" as an intentional rhyme or an intentionally repeated lyric BECAUSE it seems reasonable that in a parody of the song, words could be substituted that neither rhyme nor match without altering the basic structure of the song lyrics
 //Twinkle
@@ -27,7 +27,7 @@ how	3	1
 Up	5	1
 
 //Up above the world so high...
-BRIDGE	6	1	0.0	0
+BRIDGE	A	5	1	Up	0
 
 rhyme
 high,	6	1
@@ -58,7 +58,7 @@ Like	7	1
 Twink	1	2
 
 //Twinkle, twinkle,...
-CHORUS	1	2	0.0	0
+CHORUS	A	1	2	0.0	0
 
 rhyme
 star,	2	2

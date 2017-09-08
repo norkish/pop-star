@@ -22,15 +22,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
-import javax.naming.OperationNotSupportedException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.StopWatch;
 import org.tc33.jheatchart.HeatChart;
 import org.w3c.dom.Document;
 
@@ -38,13 +31,15 @@ import config.SongConfiguration;
 import data.MusicXMLParser;
 import data.MusicXMLParser.Harmony;
 import data.MusicXMLParser.Note;
+import data.MusicXMLParser.NoteLyric;
 import data.MusicXMLSummaryGenerator;
 import data.ParsedMusicXMLObject;
 import data.ParsedMusicXMLObject.MusicXMLAlignmentEvent;
-import globalstructure.SegmentType;
 import globalstructure.StructureExtractor;
-import main.PopDriver;
 import tabcomplete.main.TabDriver;
+import tabcomplete.rhyme.HirjeeMatrix;
+import tabcomplete.rhyme.RhymeStructureAnalyzer;
+import tabcomplete.rhyme.StressedPhone;
 import utils.Pair;
 import utils.Triple;
 import utils.Utils;
@@ -53,14 +48,16 @@ public class GeneralizedGlobalStructureInferer {
 
 	final private static int DEBUG = 0;
 	
-	private static DecimalFormat df2 = new DecimalFormat(".##");
-	private static DecimalFormat df3 = new DecimalFormat(".###");
+	private static DecimalFormat df2 = new DecimalFormat("#.##");
+	private static DecimalFormat df3 = new DecimalFormat("#.###");
 	protected final static Random rand = new Random(SongConfiguration.randSeed);
 
 	public static abstract class GeneralizedGlobalStructureAlignmentParameterization {
 		
-		protected static double MUTATION_RATE = 0.5;
-		protected static int MAX_MUTATION_STEP = 5;
+		private static final int MIN_DISTANCE_FROM_DIAGNOAL_IN_BEATS = 2;
+		private static final int MAX_DISTANCE_FROM_DIAGNOAL_IN_BEATS = 20;
+		protected static double MUTATION_RATE = 0.2;
+		protected static int MAX_MUTATION_STEP = 10;
 		
 		// gap scores
 		public double gapOpenScore;
@@ -68,23 +65,44 @@ public class GeneralizedGlobalStructureInferer {
 		
 		// alignment non-scoring params
 		public double minThresholdForLocalMaxima;
-		public int distanceFromDiagonalInBeats;
-		public int eventsPerBeat; //number of divisions into which the beat should be divided.
+		public int distanceFromDiagonalInBeats = 3;
+		public int eventsPerBeat = 1; //number of divisions into which the beat should be divided.
+		
+//		// measure offset match score
+		public double haveSameMeasureOffset;
+		public double haveDifferentMeasureOffset;
+		public double measureOffsetDifference;
+//		public double haveSameMeasureLeadOffset;
+//		public double haveDifferentMeasureLeadOffset;
+//		public double measureOffsetLeadDifference;
 
 		public GeneralizedGlobalStructureAlignmentParameterization() {
-			gapOpenScore = rand.nextInt(7)-3;//rand.nextDouble() * 0.25;
-			gapExtendScore = rand.nextInt(7)-3;//rand.nextDouble() * 0.25;
+			gapOpenScore = rand.nextInt(7)-3;
+			gapExtendScore = rand.nextInt(7)-3;
 			minThresholdForLocalMaxima = rand.nextDouble() * 20;
 			distanceFromDiagonalInBeats = rand.nextInt(5)+6; // distance from diagonal
 			eventsPerBeat = (int) Math.pow(2,rand.nextInt(2)); // events per beat
+			haveSameMeasureOffset = rand.nextInt(7)-3;
+			haveDifferentMeasureOffset = rand.nextInt(7)-3;
+			measureOffsetDifference = rand.nextInt(7)-3;
+//			haveSameMeasureLeadOffset = rand.nextInt(7)-3;
+//			haveDifferentMeasureLeadOffset = rand.nextInt(7)-3;
+//			measureOffsetLeadDifference = rand.nextInt(7)-3;
 		}
 		
 		public GeneralizedGlobalStructureAlignmentParameterization(GeneralizedGlobalStructureAlignmentParameterization p1, GeneralizedGlobalStructureAlignmentParameterization p2){
-			this.gapOpenScore = (rand.nextBoolean()?p1.gapOpenScore:p2.gapOpenScore);
-			this.gapExtendScore = (rand.nextBoolean()?p1.gapExtendScore:p2.gapExtendScore);
-			this.minThresholdForLocalMaxima = (rand.nextBoolean()?p1.minThresholdForLocalMaxima:p2.minThresholdForLocalMaxima);
-			this.distanceFromDiagonalInBeats = (rand.nextBoolean()?p1.distanceFromDiagonalInBeats:p2.distanceFromDiagonalInBeats);
-			this.eventsPerBeat = (rand.nextBoolean()?p1.eventsPerBeat:p2.eventsPerBeat);
+			
+			this.gapOpenScore = (rand.nextBoolean() ? p1.gapOpenScore:p2.gapOpenScore);;
+			this.gapExtendScore = (rand.nextBoolean()? p1.gapExtendScore:p2.gapExtendScore);
+			this.minThresholdForLocalMaxima = (rand.nextBoolean() ? p1.minThresholdForLocalMaxima:p2.minThresholdForLocalMaxima);
+			this.distanceFromDiagonalInBeats = (rand.nextBoolean() ? p1.distanceFromDiagonalInBeats:p2.distanceFromDiagonalInBeats);
+			this.eventsPerBeat = (rand.nextBoolean() ? p1.eventsPerBeat:p2.eventsPerBeat);
+			this.haveSameMeasureOffset = (rand.nextBoolean()?p1.haveSameMeasureOffset:p2.haveSameMeasureOffset);
+			this.haveDifferentMeasureOffset = (rand.nextBoolean()?p1.haveDifferentMeasureOffset:p2.haveDifferentMeasureOffset);
+			this.measureOffsetDifference = (rand.nextBoolean()?p1.measureOffsetDifference:p2.measureOffsetDifference);
+//			this.haveSameMeasureLeadOffset = (rand.nextBoolean()?p1.haveSameMeasureOffset:p2.haveSameMeasureOffset);
+//			this.haveDifferentMeasureLeadOffset = (rand.nextBoolean()?p1.haveDifferentMeasureOffset:p2.haveDifferentMeasureOffset);
+//			this.measureOffsetLeadDifference = (rand.nextBoolean()?p1.measureOffsetDifference:p2.measureOffsetDifference);
 		}
 
 		public GeneralizedGlobalStructureAlignmentParameterization(String[] nextTokens) {
@@ -94,6 +112,12 @@ public class GeneralizedGlobalStructureInferer {
 			this.minThresholdForLocalMaxima = Double.parseDouble(nextTokens[i++]);
 			this.distanceFromDiagonalInBeats = Integer.parseInt(nextTokens[i++]);
 			this.eventsPerBeat = Integer.parseInt(nextTokens[i++]);
+			this.haveSameMeasureOffset = Double.parseDouble(nextTokens[i++]);
+			this.haveDifferentMeasureOffset = Double.parseDouble(nextTokens[i++]);
+			this.measureOffsetDifference = Double.parseDouble(nextTokens[i++]);
+//			this.haveSameMeasureLeadOffset = Double.parseDouble(nextTokens[i++]);
+//			this.haveDifferentMeasureLeadOffset = Double.parseDouble(nextTokens[i++]);
+//			this.measureOffsetLeadDifference = Double.parseDouble(nextTokens[i++]);
 		}
 
 		public abstract GeneralizedGlobalStructureAlignmentParameterization crossoverWith(GeneralizedGlobalStructureAlignmentParameterization p2);
@@ -107,14 +131,27 @@ public class GeneralizedGlobalStructureInferer {
 				this.minThresholdForLocalMaxima *= rand.nextDouble() * 2;
 			if (rand.nextDouble() < MUTATION_RATE) {
 				this.distanceFromDiagonalInBeats += (rand.nextBoolean()?1:-1) * rand.nextInt(MAX_MUTATION_STEP);
-				if (this.distanceFromDiagonalInBeats > 20) {
-					this.distanceFromDiagonalInBeats = 20;
-				} else if (this.distanceFromDiagonalInBeats < 2) {
-					this.distanceFromDiagonalInBeats = 2;
+				if (this.distanceFromDiagonalInBeats > MAX_DISTANCE_FROM_DIAGNOAL_IN_BEATS) {
+					this.distanceFromDiagonalInBeats = MAX_DISTANCE_FROM_DIAGNOAL_IN_BEATS;
+				} else if (this.distanceFromDiagonalInBeats < MIN_DISTANCE_FROM_DIAGNOAL_IN_BEATS) {
+					this.distanceFromDiagonalInBeats = MIN_DISTANCE_FROM_DIAGNOAL_IN_BEATS;
 				}
 			}
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.eventsPerBeat = (int) Math.pow(2,rand.nextInt(2));	
+			
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.haveSameMeasureOffset += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.haveDifferentMeasureOffset += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.measureOffsetDifference += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
 //			if (rand.nextDouble() < MUTATION_RATE)
-//				this.eventsPerBeat = (int) Math.pow(2,rand.nextInt(3));	
+//				this.haveSameMeasureLeadOffset += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+//			if (rand.nextDouble() < MUTATION_RATE)
+//				this.haveDifferentMeasureLeadOffset += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+//			if (rand.nextDouble() < MUTATION_RATE)
+//				this.measureOffsetLeadDifference += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
 			
 			mutateSubclassParameters();
 		}
@@ -129,7 +166,13 @@ public class GeneralizedGlobalStructureInferer {
 					df2.format(gapExtendScore) + ", " +
 					df2.format(minThresholdForLocalMaxima) + ", " +
 					distanceFromDiagonalInBeats + ", " + 
-					eventsPerBeat;
+					eventsPerBeat + ", " + 
+					df2.format(haveSameMeasureOffset) + ", " + 
+					df2.format(haveDifferentMeasureOffset) + ", " + 
+					df2.format(measureOffsetDifference); 
+//					df2.format(haveSameMeasureLeadOffset) + ", " + 
+//					df2.format(haveDifferentMeasureLeadOffset) + ", " + 
+//					df2.format(measureOffsetLeadDifference);
 		}
 		
 		public Integer getSolutionID() {
@@ -141,62 +184,72 @@ public class GeneralizedGlobalStructureInferer {
 	    	}
 	    	return solutionID;
 		}
+		
+		public double scoreOffset(MusicXMLAlignmentEvent musicXML1AlignmentEvent,
+				MusicXMLAlignmentEvent musicXML2AlignmentEvent) {
+			double matchScore = 0;
+//			offset value
+			double offsetDifference = Math.abs(musicXML1AlignmentEvent.beat - musicXML2AlignmentEvent.beat);
+			if (offsetDifference == 0.0) {
+				matchScore += haveSameMeasureOffset;
+			} else {
+				matchScore += haveDifferentMeasureOffset;
+				matchScore += measureOffsetDifference * offsetDifference;
+			}
+			
+//			double offsetDifference = Math.abs(musicXML1AlignmentEvent.beatsToMeasureEnd - musicXML2AlignmentEvent.beatsToMeasureEnd);
+//			if (offsetDifference == 0.0) {
+//				matchScore += haveSameMeasureLeadOffset;
+//			} else {
+//				matchScore += haveDifferentMeasureLeadOffset;
+//				matchScore += measureOffsetLeadDifference * offsetDifference;
+//			}
+			
+			return matchScore;
+		}
+
 	}
 
 	public static class LyricAlignmentParameterization extends GeneralizedGlobalStructureAlignmentParameterization {
 
 		// pitch weights
 		public double bothRests;
-		public double oneRests;
-		public double neitherRests;
+		public double oneRest;
 
 		// lyric weights
+		public double bothLyricsNull;
+		public double oneLyricNull;
 		public double lyricsEqual;
 		public double lyricsUnequal;
-		public double bothLyricsNull;
-		public double oneLyricsNull;
 		public double bothLyricsOnset;
-		public double bothLyricsNotOnset;
 		public double oneLyricOnsetOneNot;
-
-		// measure offset match score
-		public double haveSameMeasureOffset;
-		public double haveDifferentMeasureOffset;
-		public double measureOffsetDifference;
+		public double bothLyricsNotOnset;
 
 		public LyricAlignmentParameterization() {
 			bothRests = rand.nextInt(7)-3;
-			oneRests = rand.nextInt(7)-3;
-			neitherRests = rand.nextInt(7)-3;
+			oneRest = rand.nextInt(7)-3;
+			bothLyricsNull = rand.nextInt(7)-3;
+			oneLyricNull = rand.nextInt(7)-3;
 			lyricsEqual = rand.nextInt(7)-3;
 			lyricsUnequal = rand.nextInt(7)-3;
-			bothLyricsNull = rand.nextInt(7)-3;
-			oneLyricsNull = rand.nextInt(7)-3;
 			bothLyricsOnset = rand.nextInt(7)-3;
-			bothLyricsNotOnset = rand.nextInt(7)-3;
 			oneLyricOnsetOneNot = rand.nextInt(7)-3;
-			haveSameMeasureOffset = rand.nextInt(7)-3;
-			haveDifferentMeasureOffset = rand.nextInt(7)-3;
-			measureOffsetDifference = rand.nextInt(7)-3;
+			bothLyricsNotOnset = rand.nextInt(7)-3;
 		}
 
 		public LyricAlignmentParameterization(String[] nextTokens) {
 			super(nextTokens);
 			
-			int i = 4;
+			int i = 8;
 			this.bothRests = Double.parseDouble(nextTokens[i++]);
-			this.oneRests = Double.parseDouble(nextTokens[i++]);
-			this.neitherRests = Double.parseDouble(nextTokens[i++]);
-			this.lyricsEqual = Double.parseDouble(nextTokens[i++]);
-			this.lyricsUnequal = Double.parseDouble(nextTokens[i++]);
+			this.oneRest = Double.parseDouble(nextTokens[i++]);
 			this.bothLyricsNull = Double.parseDouble(nextTokens[i++]);
-			this.oneLyricsNull = Double.parseDouble(nextTokens[i++]);
+			this.oneLyricNull = Double.parseDouble(nextTokens[i++]);
+			this.lyricsUnequal = Double.parseDouble(nextTokens[i++]);
+			this.lyricsEqual = Double.parseDouble(nextTokens[i++]);
 			this.bothLyricsOnset = Double.parseDouble(nextTokens[i++]);
-			this.bothLyricsNotOnset = Double.parseDouble(nextTokens[i++]);
 			this.oneLyricOnsetOneNot = Double.parseDouble(nextTokens[i++]);
-			this.haveSameMeasureOffset = Double.parseDouble(nextTokens[i++]);
-			this.haveDifferentMeasureOffset = Double.parseDouble(nextTokens[i++]);
-			this.measureOffsetDifference = Double.parseDouble(nextTokens[i++]);
+			this.bothLyricsNotOnset = Double.parseDouble(nextTokens[i++]);
 		}
 
 		@Override
@@ -204,18 +257,14 @@ public class GeneralizedGlobalStructureInferer {
 			return 
 					super.toString() + ", " +
 					df2.format(bothRests) + ", " + 
-					df2.format(oneRests) + ", " +
-					df2.format(neitherRests) + ", " + 
+					df2.format(oneRest) + ", " +
+					df2.format(bothLyricsNull) + ", " + 
+					df2.format(oneLyricNull) + ", " + 
 					df2.format(lyricsEqual) + ", " + 
 					df2.format(lyricsUnequal) + ", " + 
-					df2.format(bothLyricsNull) + ", " + 
-					df2.format(oneLyricsNull) + ", " + 
 					df2.format(bothLyricsOnset) + ", " + 
-					df2.format(bothLyricsNotOnset) + ", " + 
-					df2.format(oneLyricOnsetOneNot) + ", " + 
-					df2.format(haveSameMeasureOffset) + ", " + 
-					df2.format(haveDifferentMeasureOffset) + ", " + 
-					df2.format(measureOffsetDifference);
+					df2.format(oneLyricOnsetOneNot) + ", " +
+					df2.format(bothLyricsNotOnset);
 		}
 		
 		public LyricAlignmentParameterization(GeneralizedGlobalStructureAlignmentParameterization p1g, GeneralizedGlobalStructureAlignmentParameterization p2g) {
@@ -225,47 +274,35 @@ public class GeneralizedGlobalStructureInferer {
 			LyricAlignmentParameterization p2 = (LyricAlignmentParameterization) p2g;
 			
 			this.bothRests = (rand.nextBoolean()?p1.bothRests:p2.bothRests);
-			this.oneRests = (rand.nextBoolean()?p1.oneRests:p2.oneRests);
-			this.neitherRests = (rand.nextBoolean()?p1.neitherRests:p2.neitherRests);
+			this.oneRest = (rand.nextBoolean()?p1.oneRest:p2.oneRest);
+			this.bothLyricsNull = (rand.nextBoolean()?p1.bothLyricsNull:p2.bothLyricsNull);
+			this.oneLyricNull = (rand.nextBoolean()?p1.oneLyricNull:p2.oneLyricNull);
 			this.lyricsEqual = (rand.nextBoolean()?p1.lyricsEqual:p2.lyricsEqual);
 			this.lyricsUnequal = (rand.nextBoolean()?p1.lyricsUnequal:p2.lyricsUnequal);
-			this.bothLyricsNull = (rand.nextBoolean()?p1.bothLyricsNull:p2.bothLyricsNull);
-			this.oneLyricsNull = (rand.nextBoolean()?p1.oneLyricsNull:p2.oneLyricsNull);
 			this.bothLyricsOnset = (rand.nextBoolean()?p1.bothLyricsOnset:p2.bothLyricsOnset);
-			this.bothLyricsNotOnset = (rand.nextBoolean()?p1.bothLyricsNotOnset:p2.bothLyricsNotOnset);
 			this.oneLyricOnsetOneNot = (rand.nextBoolean()?p1.oneLyricOnsetOneNot:p2.oneLyricOnsetOneNot);
-			this.haveSameMeasureOffset = (rand.nextBoolean()?p1.haveSameMeasureOffset:p2.haveSameMeasureOffset);
-			this.haveDifferentMeasureOffset = (rand.nextBoolean()?p1.haveDifferentMeasureOffset:p2.haveDifferentMeasureOffset);
-			this.measureOffsetDifference = (rand.nextBoolean()?p1.measureOffsetDifference:p2.measureOffsetDifference);
+			this.bothLyricsNotOnset = (rand.nextBoolean()?p1.bothLyricsNotOnset:p2.bothLyricsNotOnset);
 		}
 
 		public void mutateSubclassParameters() {
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.bothRests = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+				this.bothRests += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.oneRests = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+				this.oneRest += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.neitherRests = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+				this.bothLyricsNull += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2);
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.lyricsEqual += (rand.nextBoolean()?1:-1) * rand.nextInt(MAX_MUTATION_STEP); 
+				this.oneLyricNull += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2);
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.lyricsUnequal += (rand.nextBoolean()?1:-1) * rand.nextInt(MAX_MUTATION_STEP); 
+				this.lyricsEqual += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.bothLyricsNull += (rand.nextBoolean()?1:-1) * rand.nextInt(MAX_MUTATION_STEP);
+				this.lyricsUnequal += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.oneLyricsNull += (rand.nextBoolean()?1:-1) * rand.nextInt(MAX_MUTATION_STEP);
+				this.bothLyricsOnset += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.bothLyricsOnset = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+				this.oneLyricOnsetOneNot += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.bothLyricsNotOnset = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
-			if (rand.nextDouble() < MUTATION_RATE)
-				this.oneLyricOnsetOneNot = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
-			if (rand.nextDouble() < MUTATION_RATE)
-				this.haveSameMeasureOffset = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
-			if (rand.nextDouble() < MUTATION_RATE)
-				this.haveDifferentMeasureOffset = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
-			if (rand.nextDouble() < MUTATION_RATE)
-				this.measureOffsetDifference = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+				this.bothLyricsNotOnset += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
 		}
 
 		@Override
@@ -277,8 +314,8 @@ public class GeneralizedGlobalStructureInferer {
 		@Override
 		public double scoreMatch(MusicXMLAlignmentEvent musicXML1AlignmentEvent,
 				MusicXMLAlignmentEvent musicXML2AlignmentEvent) {
-			String mXML1Lyric = musicXML1AlignmentEvent.strippedLyricLCText;
-			String mXML2Lyric = musicXML2AlignmentEvent.strippedLyricLCText;
+			String mXML1Lyric = musicXML1AlignmentEvent.strippedLyricLowerCaseText;
+			String mXML2Lyric = musicXML2AlignmentEvent.strippedLyricLowerCaseText;
 			
 			if (musicXML1AlignmentEvent.note.pitch == Note.REST) {
 				if (musicXML2AlignmentEvent.note.pitch == Note.REST) {
@@ -286,11 +323,11 @@ public class GeneralizedGlobalStructureInferer {
 					return bothRests;
 				} else {
 					// one rest
-					return oneRests;
+					return oneRest;
 				}
 			} else if (musicXML2AlignmentEvent.note.pitch == Note.REST) {
 				// one rest
-				return oneRests;
+				return oneRest;
 			} else {
 				// neither are rests
 				if (mXML1Lyric.isEmpty()) {
@@ -299,12 +336,12 @@ public class GeneralizedGlobalStructureInferer {
 						return bothLyricsNull;
 					} else {
 						// one has lyrics, both notes are on
-						return oneLyricsNull;
+						return oneLyricNull;
 					}
 				} else {
 					if (mXML2Lyric.isEmpty()) {
 						// one has lyrics, both notes are on
-						return oneLyricsNull;
+						return oneLyricNull;
 					} else {
 						// both have lyrics
 						double matchScore = 0.0;
@@ -329,14 +366,7 @@ public class GeneralizedGlobalStructureInferer {
 								matchScore += bothLyricsNotOnset;
 						}
 						
-						//offset value
-						double offsetDifference = Math.abs(musicXML1AlignmentEvent.beat - musicXML2AlignmentEvent.beat);
-						if (offsetDifference == 0.0) {
-							matchScore += haveSameMeasureOffset;
-						} else {
-							matchScore += haveDifferentMeasureOffset;
-							matchScore += measureOffsetDifference * offsetDifference;
-						}
+						matchScore += super.scoreOffset(musicXML1AlignmentEvent,musicXML2AlignmentEvent);
 						
 						return matchScore;
 					}
@@ -345,56 +375,181 @@ public class GeneralizedGlobalStructureInferer {
 		}
 	}
 	
+	public static class CombinedAlignmentParameterization extends GeneralizedGlobalStructureAlignmentParameterization {
+
+		private GeneralizedGlobalStructureAlignmentParameterization[] parameterizations;
+		
+		private double harmonyWeight;
+		private double pitchWeight;
+		private double rhythmWeight;
+		private double lyricWeight;
+		
+		public CombinedAlignmentParameterization() throws FileNotFoundException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+			harmonyWeight = rand.nextInt(7)-3;
+			pitchWeight = rand.nextInt(7)-3;
+			rhythmWeight = rand.nextInt(7)-3;
+			lyricWeight = rand.nextInt(7)-3;
+			
+			parameterizations = new GeneralizedGlobalStructureAlignmentParameterization[]{
+//					new HarmonicAlignmentParameterization(),
+//					new PitchAlignmentParameterization(),
+//					new RhythmAlignmentParameterization(),
+//					new LyricAlignmentParameterization(),
+					loadInitialPopulationFromFile("harmony", false).get(0).getSecond(),
+					loadInitialPopulationFromFile("pitch", false).get(0).getSecond(),
+					loadInitialPopulationFromFile("rhythm", false).get(0).getSecond(),
+					loadInitialPopulationFromFile("lyric", false).get(0).getSecond(),
+			};
+			minThresholdForLocalMaxima = 0.0;
+			for (GeneralizedGlobalStructureAlignmentParameterization generalizedGlobalStructureAlignmentParameterization : parameterizations) {
+				minThresholdForLocalMaxima += generalizedGlobalStructureAlignmentParameterization.minThresholdForLocalMaxima;
+				if (gapOpenScore > generalizedGlobalStructureAlignmentParameterization.gapOpenScore) {
+					gapOpenScore = generalizedGlobalStructureAlignmentParameterization.gapOpenScore;
+				}
+				if (gapExtendScore > generalizedGlobalStructureAlignmentParameterization.gapExtendScore) {
+					gapExtendScore = generalizedGlobalStructureAlignmentParameterization.gapExtendScore;
+				}
+				if (generalizedGlobalStructureAlignmentParameterization.distanceFromDiagonalInBeats < distanceFromDiagonalInBeats) {
+					distanceFromDiagonalInBeats = generalizedGlobalStructureAlignmentParameterization.distanceFromDiagonalInBeats;
+				}
+				if (generalizedGlobalStructureAlignmentParameterization.eventsPerBeat > eventsPerBeat) {
+					eventsPerBeat = generalizedGlobalStructureAlignmentParameterization.eventsPerBeat;
+				}
+			}
+		}
+
+		public CombinedAlignmentParameterization(String[] nextTokens) {
+			super(nextTokens);
+			
+			int i = 8;
+			harmonyWeight = Double.parseDouble(nextTokens[i++]);
+			pitchWeight = Double.parseDouble(nextTokens[i++]);
+			rhythmWeight = Double.parseDouble(nextTokens[i++]);
+			lyricWeight = Double.parseDouble(nextTokens[i++]);
+			
+			parameterizations = new GeneralizedGlobalStructureAlignmentParameterization[]{
+					new HarmonicAlignmentParameterization(Arrays.copyOfRange(nextTokens, i, i+=14)),
+					new PitchAlignmentParameterization(Arrays.copyOfRange(nextTokens, i, i+=17)),
+					new RhythmAlignmentParameterization(Arrays.copyOfRange(nextTokens, i, i+=17)),
+					new LyricAlignmentParameterization(Arrays.copyOfRange(nextTokens, i, i+=17))
+			};
+		}
+		
+
+		@Override
+		public String toString() {
+			StringBuilder str = new StringBuilder();
+			str.append(super.toString() + ", " +
+					df2.format(harmonyWeight) + ", " + 
+					df2.format(pitchWeight) + ", " +
+					df2.format(rhythmWeight) + ", " + 
+					df2.format(lyricWeight));
+			
+			for (GeneralizedGlobalStructureAlignmentParameterization parameterization : parameterizations) {
+				str.append(", ");
+				str.append(parameterization.toString());
+			}
+			
+			return str.toString();
+		}
+		
+		public CombinedAlignmentParameterization(GeneralizedGlobalStructureAlignmentParameterization p1g, GeneralizedGlobalStructureAlignmentParameterization p2g) {
+			super(p1g, p2g);
+			
+			CombinedAlignmentParameterization p1 = (CombinedAlignmentParameterization) p1g;
+			CombinedAlignmentParameterization p2 = (CombinedAlignmentParameterization) p2g;
+			
+			this.harmonyWeight = (rand.nextBoolean() ?p1.harmonyWeight:p2.harmonyWeight);
+			this.pitchWeight = (rand.nextBoolean() ?p1.pitchWeight:p2.pitchWeight);
+			this.rhythmWeight = (rand.nextBoolean() ?p1.rhythmWeight:p2.rhythmWeight);
+			this.lyricWeight = (rand.nextBoolean()?p1.lyricWeight:p2.lyricWeight);
+			
+			parameterizations = new GeneralizedGlobalStructureAlignmentParameterization[]{
+					new HarmonicAlignmentParameterization(p1.parameterizations[0],p2.parameterizations[0]),
+					new PitchAlignmentParameterization(p1.parameterizations[1],p2.parameterizations[1]),
+					new RhythmAlignmentParameterization(p1.parameterizations[2],p2.parameterizations[2]),
+					new LyricAlignmentParameterization(p1.parameterizations[3],p2.parameterizations[3])
+			};
+		}
+
+		@Override
+		protected void mutateSubclassParameters() {
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.harmonyWeight += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.pitchWeight += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2);  
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.rhythmWeight += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2);  
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.lyricWeight += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2);
+			
+			for (GeneralizedGlobalStructureAlignmentParameterization parameterization : parameterizations) {
+				parameterization.mutate();
+			}
+		}
+
+		@Override
+		public GeneralizedGlobalStructureAlignmentParameterization crossoverWith(
+				GeneralizedGlobalStructureAlignmentParameterization p2) {
+			return new CombinedAlignmentParameterization(this, (CombinedAlignmentParameterization) p2);
+		}
+
+		@Override
+		public double scoreMatch(MusicXMLAlignmentEvent musicXML1AlignmentEvent,
+				MusicXMLAlignmentEvent musicXML2AlignmentEvent) {
+			
+			double score = 0.0;
+			
+			score += harmonyWeight * parameterizations[0].scoreMatch(musicXML1AlignmentEvent, musicXML2AlignmentEvent);
+			score += pitchWeight * parameterizations[1].scoreMatch(musicXML1AlignmentEvent, musicXML2AlignmentEvent);
+			score += rhythmWeight * parameterizations[2].scoreMatch(musicXML1AlignmentEvent, musicXML2AlignmentEvent);
+			score += lyricWeight * parameterizations[3].scoreMatch(musicXML1AlignmentEvent, musicXML2AlignmentEvent);
+			
+			score += super.scoreOffset(musicXML1AlignmentEvent, musicXML2AlignmentEvent);
+			
+			return score;
+		}
+	}
+	
 	public static class PitchAlignmentParameterization extends GeneralizedGlobalStructureAlignmentParameterization {
 
 		// pitch weights
 		public double bothRests;
-		public double oneRests;
+		public double oneRest;
 		public double neitherRests;
 
 		public double pitchesEqual;
 		public double pitchesUnequal;
 		public double pitchDifference;
 		public double bothPitchesOnset;
-		public double bothPitchesNotOnset;
 		public double onePitchOnsetOneNot;
-
-		// measure offset match score
-		public double haveSameMeasureOffset;
-		public double haveDifferentMeasureOffset;
-		public double measureOffsetDifference;
+		public double bothPitchesNotOnset;
 
 		public PitchAlignmentParameterization() {
 			bothRests = rand.nextInt(7)-3;
-			oneRests = rand.nextInt(7)-3;
+			oneRest = rand.nextInt(7)-3;
 			neitherRests = rand.nextInt(7)-3;
 			pitchesEqual = rand.nextInt(7)-3;
 			pitchesUnequal = rand.nextInt(7)-3;
 			pitchDifference = rand.nextInt(7)-3;
 			bothPitchesOnset = rand.nextInt(7)-3;
-			bothPitchesNotOnset = rand.nextInt(7)-3;
 			onePitchOnsetOneNot = rand.nextInt(7)-3;
-			haveSameMeasureOffset = rand.nextInt(7)-3;
-			haveDifferentMeasureOffset = rand.nextInt(7)-3;
-			measureOffsetDifference = rand.nextInt(7)-3;
+			bothPitchesNotOnset = rand.nextInt(7)-3;
 		}
 
 		public PitchAlignmentParameterization(String[] nextTokens) {
 			super(nextTokens);
 			
-			int i = 4;
+			int i = 8;
 			this.bothRests = Double.parseDouble(nextTokens[i++]);
-			this.oneRests = Double.parseDouble(nextTokens[i++]);
+			this.oneRest = Double.parseDouble(nextTokens[i++]);
 			this.neitherRests = Double.parseDouble(nextTokens[i++]);
 			this.pitchesEqual = Double.parseDouble(nextTokens[i++]);
 			this.pitchesUnequal = Double.parseDouble(nextTokens[i++]);
 			this.pitchDifference = Double.parseDouble(nextTokens[i++]);
 			this.bothPitchesOnset = Double.parseDouble(nextTokens[i++]);
-			this.bothPitchesNotOnset = Double.parseDouble(nextTokens[i++]);
 			this.onePitchOnsetOneNot = Double.parseDouble(nextTokens[i++]);
-			this.haveSameMeasureOffset = Double.parseDouble(nextTokens[i++]);
-			this.haveDifferentMeasureOffset = Double.parseDouble(nextTokens[i++]);
-			this.measureOffsetDifference = Double.parseDouble(nextTokens[i++]);
+			this.bothPitchesNotOnset = Double.parseDouble(nextTokens[i++]);
 		}
 
 		@Override
@@ -402,17 +557,14 @@ public class GeneralizedGlobalStructureInferer {
 			return 
 					super.toString() + ", " +
 					df2.format(bothRests) + ", " + 
-					df2.format(oneRests) + ", " +
+					df2.format(oneRest) + ", " +
 					df2.format(neitherRests) + ", " + 
 					df2.format(pitchesEqual) + ", " + 
 					df2.format(pitchesUnequal) + ", " + 
 					df2.format(pitchDifference) + ", " + 
 					df2.format(bothPitchesOnset) + ", " + 
-					df2.format(bothPitchesNotOnset) + ", " + 
-					df2.format(onePitchOnsetOneNot) + ", " + 
-					df2.format(haveSameMeasureOffset) + ", " + 
-					df2.format(haveDifferentMeasureOffset) + ", " + 
-					df2.format(measureOffsetDifference);
+					df2.format(onePitchOnsetOneNot) + ", " +
+					df2.format(bothPitchesNotOnset);
 		}
 		
 		public PitchAlignmentParameterization(GeneralizedGlobalStructureAlignmentParameterization p1g, GeneralizedGlobalStructureAlignmentParameterization p2g) {
@@ -421,45 +573,36 @@ public class GeneralizedGlobalStructureInferer {
 			PitchAlignmentParameterization p1 = (PitchAlignmentParameterization) p1g;
 			PitchAlignmentParameterization p2 = (PitchAlignmentParameterization) p2g;
 			
-			this.bothRests = (rand.nextBoolean()?p1.bothRests:p2.bothRests);
-			this.oneRests = (rand.nextBoolean()?p1.oneRests:p2.oneRests);
-			this.neitherRests = (rand.nextBoolean()?p1.neitherRests:p2.neitherRests);
+			this.bothRests = (rand.nextBoolean() ?p1.bothRests:p2.bothRests);
+			this.oneRest = (rand.nextBoolean() ?p1.oneRest:p2.oneRest);
+			this.neitherRests = (rand.nextBoolean() ?p1.neitherRests:p2.neitherRests);
 			this.pitchesEqual = (rand.nextBoolean()?p1.pitchesEqual:p2.pitchesEqual);
 			this.pitchesUnequal = (rand.nextBoolean()?p1.pitchesUnequal:p2.pitchesUnequal);
 			this.pitchDifference = (rand.nextBoolean()?p1.pitchDifference:p2.pitchDifference);
 			this.bothPitchesOnset = (rand.nextBoolean()?p1.bothPitchesOnset:p2.bothPitchesOnset);
-			this.bothPitchesNotOnset = (rand.nextBoolean()?p1.bothPitchesNotOnset:p2.bothPitchesNotOnset);
 			this.onePitchOnsetOneNot = (rand.nextBoolean()?p1.onePitchOnsetOneNot:p2.onePitchOnsetOneNot);
-			this.haveSameMeasureOffset = (rand.nextBoolean()?p1.haveSameMeasureOffset:p2.haveSameMeasureOffset);
-			this.haveDifferentMeasureOffset = (rand.nextBoolean()?p1.haveDifferentMeasureOffset:p2.haveDifferentMeasureOffset);
-			this.measureOffsetDifference = (rand.nextBoolean()?p1.measureOffsetDifference:p2.measureOffsetDifference);
+			this.bothPitchesNotOnset = (rand.nextBoolean()?p1.bothPitchesNotOnset:p2.bothPitchesNotOnset);
 		}
 
 		public void mutateSubclassParameters() {
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.bothRests = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+				this.bothRests += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.oneRests = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+				this.oneRest += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2);  
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.neitherRests = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+				this.neitherRests += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2);  
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.pitchesEqual += (rand.nextBoolean()?1:-1) * rand.nextInt(MAX_MUTATION_STEP); 
+				this.pitchesEqual += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2);  
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.pitchesUnequal += (rand.nextBoolean()?1:-1) * rand.nextInt(MAX_MUTATION_STEP); 
+				this.pitchesUnequal += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2);  
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.pitchDifference += (rand.nextBoolean()?1:-1) * rand.nextInt(MAX_MUTATION_STEP);
+				this.pitchDifference += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.bothPitchesOnset = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+				this.bothPitchesOnset += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2);  
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.bothPitchesNotOnset = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+				this.onePitchOnsetOneNot += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2);  
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.onePitchOnsetOneNot = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
-			if (rand.nextDouble() < MUTATION_RATE)
-				this.haveSameMeasureOffset = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
-			if (rand.nextDouble() < MUTATION_RATE)
-				this.haveDifferentMeasureOffset = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
-			if (rand.nextDouble() < MUTATION_RATE)
-				this.measureOffsetDifference = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+				this.bothPitchesNotOnset += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2);  
 		}
 
 		@Override
@@ -481,11 +624,11 @@ public class GeneralizedGlobalStructureInferer {
 				if (mXML2Pitch == Note.REST) {
 					score += bothRests;
 				} else {
-					score += oneRests;
+					score += oneRest;
 				}
 			} else {
 				if (mXML2Pitch == Note.REST) {
-					score += oneRests;
+					score += oneRest;
 				} else {
 					score += neitherRests;
 					int diff = Math.abs(mXML2Pitch - mXML1Pitch);
@@ -509,15 +652,7 @@ public class GeneralizedGlobalStructureInferer {
 							score += bothPitchesNotOnset;
 					}
 					
-					//offset value
-					double offsetDifference = Math.abs(musicXML1AlignmentEvent.beat - musicXML2AlignmentEvent.beat);
-					if (offsetDifference == 0.0) {
-						score += haveSameMeasureOffset;
-					} else {
-						score += haveDifferentMeasureOffset;
-						score += measureOffsetDifference * offsetDifference;
-					}
-					
+					score += super.scoreOffset(musicXML1AlignmentEvent, musicXML2AlignmentEvent);
 				}
 			}
 			return score;
@@ -530,39 +665,28 @@ public class GeneralizedGlobalStructureInferer {
 		public double harmonyUnequal;
 		public double harmonyDifference;
 		public double bothHarmonyOnset;
-		public double bothHarmonyNotOnset;
 		public double oneHarmonyOnsetOneNot;
-
-		// measure offset match score
-		public double haveSameMeasureOffset;
-		public double haveDifferentMeasureOffset;
-		public double measureOffsetDifference;
+		public double bothHarmonyNotOnset;
 
 		public HarmonicAlignmentParameterization() {
 			harmonyEqual = rand.nextInt(7)-3;
 			harmonyUnequal = rand.nextInt(7)-3;
 			harmonyDifference = rand.nextInt(7)-3;
 			bothHarmonyOnset = rand.nextInt(7)-3;
-			bothHarmonyNotOnset = rand.nextInt(7)-3;
 			oneHarmonyOnsetOneNot = rand.nextInt(7)-3;
-			haveSameMeasureOffset = rand.nextInt(7)-3;
-			haveDifferentMeasureOffset = rand.nextInt(7)-3;
-			measureOffsetDifference = rand.nextInt(7)-3;
+			bothHarmonyNotOnset = rand.nextInt(7)-3;
 		}
 
 		public HarmonicAlignmentParameterization(String[] nextTokens) {
 			super(nextTokens);
 			
-			int i = 4;
+			int i = 8;
 			this.harmonyEqual = Double.parseDouble(nextTokens[i++]);
 			this.harmonyUnequal = Double.parseDouble(nextTokens[i++]);
 			this.harmonyDifference = Double.parseDouble(nextTokens[i++]);
 			this.bothHarmonyOnset = Double.parseDouble(nextTokens[i++]);
-			this.bothHarmonyNotOnset = Double.parseDouble(nextTokens[i++]);
 			this.oneHarmonyOnsetOneNot = Double.parseDouble(nextTokens[i++]);
-			this.haveSameMeasureOffset = Double.parseDouble(nextTokens[i++]);
-			this.haveDifferentMeasureOffset = Double.parseDouble(nextTokens[i++]);
-			this.measureOffsetDifference = Double.parseDouble(nextTokens[i++]);
+			this.bothHarmonyNotOnset = Double.parseDouble(nextTokens[i++]);
 		}
 
 		@Override
@@ -573,11 +697,8 @@ public class GeneralizedGlobalStructureInferer {
 					df2.format(harmonyUnequal) + ", " + 
 					df2.format(harmonyDifference) + ", " + 
 					df2.format(bothHarmonyOnset) + ", " + 
-					df2.format(bothHarmonyNotOnset) + ", " + 
-					df2.format(oneHarmonyOnsetOneNot) + ", " + 
-					df2.format(haveSameMeasureOffset) + ", " + 
-					df2.format(haveDifferentMeasureOffset) + ", " + 
-					df2.format(measureOffsetDifference);
+					df2.format(oneHarmonyOnsetOneNot) + ", " +
+					df2.format(bothHarmonyNotOnset);
 		}
 		
 		public HarmonicAlignmentParameterization(GeneralizedGlobalStructureAlignmentParameterization p1g, GeneralizedGlobalStructureAlignmentParameterization p2g) {
@@ -590,32 +711,23 @@ public class GeneralizedGlobalStructureInferer {
 			this.harmonyUnequal = (rand.nextBoolean()?p1.harmonyUnequal:p2.harmonyUnequal);
 			this.harmonyDifference = (rand.nextBoolean()?p1.harmonyDifference:p2.harmonyDifference);
 			this.bothHarmonyOnset = (rand.nextBoolean()?p1.bothHarmonyOnset:p2.bothHarmonyOnset);
-			this.bothHarmonyNotOnset = (rand.nextBoolean()?p1.bothHarmonyNotOnset:p2.bothHarmonyNotOnset);
 			this.oneHarmonyOnsetOneNot = (rand.nextBoolean()?p1.oneHarmonyOnsetOneNot:p2.oneHarmonyOnsetOneNot);
-			this.haveSameMeasureOffset = (rand.nextBoolean()?p1.haveSameMeasureOffset:p2.haveSameMeasureOffset);
-			this.haveDifferentMeasureOffset = (rand.nextBoolean()?p1.haveDifferentMeasureOffset:p2.haveDifferentMeasureOffset);
-			this.measureOffsetDifference = (rand.nextBoolean()?p1.measureOffsetDifference:p2.measureOffsetDifference);
+			this.bothHarmonyNotOnset = (rand.nextBoolean()?p1.bothHarmonyNotOnset:p2.bothHarmonyNotOnset);
 		}
 
 		public void mutateSubclassParameters() {
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.harmonyEqual += (rand.nextBoolean()?1:-1) * rand.nextInt(MAX_MUTATION_STEP); 
+				this.harmonyEqual += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.harmonyUnequal += (rand.nextBoolean()?1:-1) * rand.nextInt(MAX_MUTATION_STEP); 
+				this.harmonyUnequal += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.harmonyDifference += (rand.nextBoolean()?1:-1) * rand.nextInt(MAX_MUTATION_STEP);
+				this.harmonyDifference += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2);
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.bothHarmonyOnset = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+				this.bothHarmonyOnset += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.bothHarmonyNotOnset = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+				this.oneHarmonyOnsetOneNot += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.oneHarmonyOnsetOneNot = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
-			if (rand.nextDouble() < MUTATION_RATE)
-				this.haveSameMeasureOffset = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
-			if (rand.nextDouble() < MUTATION_RATE)
-				this.haveDifferentMeasureOffset = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
-			if (rand.nextDouble() < MUTATION_RATE)
-				this.measureOffsetDifference = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+				this.bothHarmonyNotOnset += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
 		}
 
 		@Override
@@ -633,15 +745,25 @@ public class GeneralizedGlobalStructureInferer {
 			Harmony mXML1Harmony = musicXML1AlignmentEvent.harmony;
 			Harmony mXML2Harmony = musicXML2AlignmentEvent.harmony;
 			
-			double diff = 1/mXML1Harmony.fractionOfSimilarToTotalNotes(mXML2Harmony);
-			if (diff == 0.) {
+			double similarity;
+			if (mXML1Harmony == null) {
+				if (mXML2Harmony == null) {
+					similarity = 1.0;
+				} else {
+					similarity = mXML2Harmony.fractionOfSimilarToTotalNotes(mXML1Harmony);
+				}
+			} else {
+				similarity = mXML1Harmony.fractionOfSimilarToTotalNotes(mXML2Harmony);
+			}
+
+			if (similarity == 1.0) {
 				score += harmonyEqual;
 			} else {
 				score += harmonyUnequal;
-				score += harmonyDifference * diff;
+				score += harmonyDifference * 1.0/similarity;
 			}
 			
-			//onset value
+//			//onset value
 			if (musicXML1AlignmentEvent.harmonyOnset) {
 				if (musicXML2AlignmentEvent.harmonyOnset)
 					score += bothHarmonyOnset;
@@ -654,14 +776,7 @@ public class GeneralizedGlobalStructureInferer {
 					score += bothHarmonyNotOnset;
 			}
 			
-			//offset value
-			double offsetDifference = Math.abs(musicXML1AlignmentEvent.beat - musicXML2AlignmentEvent.beat);
-			if (offsetDifference == 0.0) {
-				score += haveSameMeasureOffset;
-			} else {
-				score += haveDifferentMeasureOffset;
-				score += measureOffsetDifference * offsetDifference;
-			}
+			score += super.scoreOffset(musicXML1AlignmentEvent, musicXML2AlignmentEvent);
 					
 			return score;
 		}
@@ -669,72 +784,59 @@ public class GeneralizedGlobalStructureInferer {
 	
 	public static class RhythmAlignmentParameterization extends GeneralizedGlobalStructureAlignmentParameterization {
 		
+		public double bothNotesRest;
+		public double oneNoteRestOneNot;
+		public double bothNotesNotRest;
+
 		public double noteDurationEqual;
 		public double noteDurationUnequal;
 		public double noteDurationDifference;
 		
-		public double bothNoteOnset;
-		public double bothNoteNotOnset;
+		public double bothNotesOnset;
 		public double oneNoteOnsetOneNot;
+		public double bothNotesNotOnset;
 
-		public double bothNotesNotRest;
-		public double bothNotesRest;
-		public double oneNoteRestOneNot;
-
-		// measure offset match score
-		public double haveSameMeasureOffset;
-		public double haveDifferentMeasureOffset;
-		public double measureOffsetDifference;
 
 		public RhythmAlignmentParameterization() {
+			bothNotesRest = rand.nextInt(7)-3;
+			oneNoteRestOneNot = rand.nextInt(7)-3;
+			bothNotesNotRest = rand.nextInt(7)-3;
 			noteDurationEqual = rand.nextInt(7)-3;
 			noteDurationUnequal = rand.nextInt(7)-3;
 			noteDurationDifference = rand.nextInt(7)-3;
-			bothNoteOnset = rand.nextInt(7)-3;
-			bothNoteNotOnset = rand.nextInt(7)-3;
+			bothNotesOnset = rand.nextInt(7)-3;
 			oneNoteOnsetOneNot = rand.nextInt(7)-3;
-			bothNotesNotRest = rand.nextInt(7)-3;
-			bothNotesRest = rand.nextInt(7)-3;
-			oneNoteRestOneNot = rand.nextInt(7)-3;
-			haveSameMeasureOffset = rand.nextInt(7)-3;
-			haveDifferentMeasureOffset = rand.nextInt(7)-3;
-			measureOffsetDifference = rand.nextInt(7)-3;
+			bothNotesNotOnset = rand.nextInt(7)-3;
 		}
 
 		public RhythmAlignmentParameterization(String[] nextTokens) {
 			super(nextTokens);
 			
-			int i = 4;
+			int i = 8;
+			this.bothNotesRest = Double.parseDouble(nextTokens[i++]);
+			this.oneNoteRestOneNot = Double.parseDouble(nextTokens[i++]);
+			this.bothNotesNotRest = Double.parseDouble(nextTokens[i++]);
 			this.noteDurationEqual = Double.parseDouble(nextTokens[i++]);
 			this.noteDurationUnequal = Double.parseDouble(nextTokens[i++]);
 			this.noteDurationDifference = Double.parseDouble(nextTokens[i++]);
-			this.bothNoteOnset = Double.parseDouble(nextTokens[i++]);
-			this.bothNoteNotOnset = Double.parseDouble(nextTokens[i++]);
+			this.bothNotesOnset = Double.parseDouble(nextTokens[i++]);
 			this.oneNoteOnsetOneNot = Double.parseDouble(nextTokens[i++]);
-			this.bothNotesNotRest = Double.parseDouble(nextTokens[i++]);
-			this.bothNotesRest = Double.parseDouble(nextTokens[i++]);
-			this.oneNoteRestOneNot = Double.parseDouble(nextTokens[i++]);
-			this.haveSameMeasureOffset = Double.parseDouble(nextTokens[i++]);
-			this.haveDifferentMeasureOffset = Double.parseDouble(nextTokens[i++]);
-			this.measureOffsetDifference = Double.parseDouble(nextTokens[i++]);
+			this.bothNotesNotOnset = Double.parseDouble(nextTokens[i++]);
 		}
 
 		@Override
 		public String toString() {
 			return 
 					super.toString() + ", " +
+					df2.format(bothNotesRest) + ", " + 
+					df2.format(oneNoteRestOneNot) + ", " +
+					df2.format(bothNotesNotRest) + ", " + 
 					df2.format(noteDurationEqual) + ", " + 
 					df2.format(noteDurationUnequal) + ", " + 
 					df2.format(noteDurationDifference) + ", " + 
-					df2.format(bothNoteOnset) + ", " + 
-					df2.format(bothNoteNotOnset) + ", " + 
+					df2.format(bothNotesOnset) + ", " + 
 					df2.format(oneNoteOnsetOneNot) + ", " + 
-					df2.format(bothNotesNotRest) + ", " + 
-					df2.format(bothNotesRest) + ", " + 
-					df2.format(oneNoteRestOneNot) + ", " + 
-					df2.format(haveSameMeasureOffset) + ", " + 
-					df2.format(haveDifferentMeasureOffset) + ", " + 
-					df2.format(measureOffsetDifference);
+					df2.format(bothNotesNotOnset); 
 		}
 		
 		public RhythmAlignmentParameterization(GeneralizedGlobalStructureAlignmentParameterization p1g, GeneralizedGlobalStructureAlignmentParameterization p2g) {
@@ -743,45 +845,36 @@ public class GeneralizedGlobalStructureInferer {
 			RhythmAlignmentParameterization p1 = (RhythmAlignmentParameterization) p1g;
 			RhythmAlignmentParameterization p2 = (RhythmAlignmentParameterization) p2g;
 			
+			this.oneNoteRestOneNot = (rand.nextBoolean()?p1.oneNoteRestOneNot:p2.oneNoteRestOneNot);
+			this.bothNotesRest = (rand.nextBoolean()?p1.bothNotesRest:p2.bothNotesRest);
+			this.bothNotesNotRest = (rand.nextBoolean()?p1.bothNotesNotRest:p2.bothNotesNotRest);
 			this.noteDurationEqual = (rand.nextBoolean()?p1.noteDurationEqual:p2.noteDurationEqual);
 			this.noteDurationUnequal = (rand.nextBoolean()?p1.noteDurationUnequal:p2.noteDurationUnequal);
 			this.noteDurationDifference = (rand.nextBoolean()?p1.noteDurationDifference:p2.noteDurationDifference);
-			this.bothNoteOnset = (rand.nextBoolean()?p1.bothNoteOnset:p2.bothNoteOnset);
-			this.bothNoteNotOnset = (rand.nextBoolean()?p1.bothNoteNotOnset:p2.bothNoteNotOnset);
+			this.bothNotesOnset = (rand.nextBoolean()?p1.bothNotesOnset:p2.bothNotesOnset);
 			this.oneNoteOnsetOneNot = (rand.nextBoolean()?p1.oneNoteOnsetOneNot:p2.oneNoteOnsetOneNot);
-			this.bothNotesNotRest = (rand.nextBoolean()?p1.bothNotesNotRest:p2.bothNotesNotRest);
-			this.bothNotesRest = (rand.nextBoolean()?p1.bothNotesRest:p2.bothNotesRest);
-			this.oneNoteRestOneNot = (rand.nextBoolean()?p1.oneNoteRestOneNot:p2.oneNoteRestOneNot);
-			this.haveSameMeasureOffset = (rand.nextBoolean()?p1.haveSameMeasureOffset:p2.haveSameMeasureOffset);
-			this.haveDifferentMeasureOffset = (rand.nextBoolean()?p1.haveDifferentMeasureOffset:p2.haveDifferentMeasureOffset);
-			this.measureOffsetDifference = (rand.nextBoolean()?p1.measureOffsetDifference:p2.measureOffsetDifference);
+			this.bothNotesNotOnset = (rand.nextBoolean()?p1.bothNotesNotOnset:p2.bothNotesNotOnset);
 		}
 
 		public void mutateSubclassParameters() {
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.noteDurationEqual += (rand.nextBoolean()?1:-1) * rand.nextInt(MAX_MUTATION_STEP); 
+				this.bothNotesRest += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.noteDurationUnequal += (rand.nextBoolean()?1:-1) * rand.nextInt(MAX_MUTATION_STEP); 
+				this.oneNoteRestOneNot += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.noteDurationDifference += (rand.nextBoolean()?1:-1) * rand.nextInt(MAX_MUTATION_STEP);
+				this.bothNotesNotRest += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.bothNoteOnset = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+				this.noteDurationEqual += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.bothNoteNotOnset = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+				this.noteDurationUnequal += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.oneNoteOnsetOneNot = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+				this.noteDurationDifference += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2);
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.bothNotesNotRest = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+				this.bothNotesOnset += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.bothNotesRest = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+				this.oneNoteOnsetOneNot += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
 			if (rand.nextDouble() < MUTATION_RATE)
-				this.oneNoteRestOneNot = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
-			if (rand.nextDouble() < MUTATION_RATE)
-				this.haveSameMeasureOffset = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
-			if (rand.nextDouble() < MUTATION_RATE)
-				this.haveDifferentMeasureOffset = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
-			if (rand.nextDouble() < MUTATION_RATE)
-				this.measureOffsetDifference = (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+				this.bothNotesNotOnset += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
 		}
 
 		@Override
@@ -795,7 +888,6 @@ public class GeneralizedGlobalStructureInferer {
 				MusicXMLAlignmentEvent musicXML2AlignmentEvent) {
 			
 			double score = 0.0;
-
 
 			boolean mXML1Resting = musicXML1AlignmentEvent.note.pitch == Note.REST;
 			boolean mXML2Resting = musicXML2AlignmentEvent.note.pitch == Note.REST;
@@ -814,24 +906,17 @@ public class GeneralizedGlobalStructureInferer {
 			//onset value
 			if (musicXML1AlignmentEvent.noteOnset) {
 				if (musicXML2AlignmentEvent.noteOnset)
-					score += bothNoteOnset;
+					score += bothNotesOnset;
 				else 
 					score += oneNoteOnsetOneNot;
 			} else {
 				if (musicXML2AlignmentEvent.noteOnset)
 					score += oneNoteOnsetOneNot;
 				else 
-					score += bothNoteNotOnset;
+					score += bothNotesNotOnset;
 			}
 			
-			//offset value
-			double offsetDifference = Math.abs(musicXML1AlignmentEvent.beat - musicXML2AlignmentEvent.beat);
-			if (offsetDifference == 0.0) {
-				score += haveSameMeasureOffset;
-			} else {
-				score += haveDifferentMeasureOffset;
-				score += measureOffsetDifference * offsetDifference;
-			}
+			score += super.scoreOffset(musicXML1AlignmentEvent, musicXML2AlignmentEvent);
 
 			// if notes are both rests
 			if (mXML1Resting) {
@@ -852,17 +937,309 @@ public class GeneralizedGlobalStructureInferer {
 		}
 	}
 	
-	static int populationSize = 15;
+	public static class RhymeAlignmentParameterization extends GeneralizedGlobalStructureAlignmentParameterization {
+		
+		// hirjee vowel alignment score
+		// Pat's rules score
+		// Pat's rules w/Hirjee score
+		// measure position
+		// distance (in measures) between events
+		// proximity (in syllable count) of (later) token to phrase/line-end punctuation
+		//
+		
+		public double noMatch;
+		public double identicalVowel;
+		public double differentVowel;
+		
+		public double hirjeeVowelMatchScore;
+		public double patAlnScore;
+		
+		public double sameStress;
+
+		public double bothLyricOnset;
+		public double neitherLyricOnset;
+		public double oneLyricOnsetOneNot;
+
+		public double minMeasureDistance;
+		public double maxMeasureDistance;
+
+		public double earlierHasEndPunctuation;
+		public double earlierDistanceFromPunctuation;
+		public double laterHasEndPunctuation;
+		public double laterDistanceFromPunctuation;
+		
+		public RhymeAlignmentParameterization() {
+			noMatch = rand.nextInt(7)-3;
+			identicalVowel = rand.nextInt(7)-3;
+			differentVowel = rand.nextInt(7)-3;
+			hirjeeVowelMatchScore = rand.nextInt(7)-3;
+			patAlnScore = rand.nextInt(7)-3;
+			sameStress = rand.nextInt(7)-3;
+			bothLyricOnset = rand.nextInt(7)-3;
+			neitherLyricOnset = rand.nextInt(7)-3;
+			oneLyricOnsetOneNot = rand.nextInt(7)-3;
+			minMeasureDistance = rand.nextInt(7);
+			maxMeasureDistance = minMeasureDistance + rand.nextInt(7);
+			earlierHasEndPunctuation = rand.nextInt(7)-3;
+			earlierDistanceFromPunctuation = rand.nextInt(7)-3;
+			laterHasEndPunctuation = rand.nextInt(7)-3;
+			laterDistanceFromPunctuation = rand.nextInt(7)-3;
+		}
+
+		public RhymeAlignmentParameterization(String[] nextTokens) {
+			super(nextTokens);
+			
+			int i = 8;
+			this.noMatch = Double.parseDouble(nextTokens[i++]);
+			this.identicalVowel = Double.parseDouble(nextTokens[i++]);
+			this.differentVowel = Double.parseDouble(nextTokens[i++]);
+			this.hirjeeVowelMatchScore = Double.parseDouble(nextTokens[i++]);
+			this.patAlnScore = Double.parseDouble(nextTokens[i++]);
+			this.sameStress = Double.parseDouble(nextTokens[i++]);
+			this.bothLyricOnset = Double.parseDouble(nextTokens[i++]);
+			this.neitherLyricOnset = Double.parseDouble(nextTokens[i++]);
+			this.oneLyricOnsetOneNot = Double.parseDouble(nextTokens[i++]);
+			this.minMeasureDistance = Double.parseDouble(nextTokens[i++]);
+			this.maxMeasureDistance = Double.parseDouble(nextTokens[i++]);
+			this.earlierHasEndPunctuation = Double.parseDouble(nextTokens[i++]);
+			this.earlierDistanceFromPunctuation = Double.parseDouble(nextTokens[i++]);
+			this.laterHasEndPunctuation = Double.parseDouble(nextTokens[i++]);
+			this.laterDistanceFromPunctuation = Double.parseDouble(nextTokens[i++]);
+		}
+
+		@Override
+		public String toString() {
+			return 
+					super.toString() + ", " +
+					df2.format(noMatch) + ", " + 
+					df2.format(identicalVowel) + ", " + 
+					df2.format(differentVowel) + ", " + 
+					df2.format(hirjeeVowelMatchScore) + ", " + 
+					df2.format(patAlnScore) + ", " + 
+					df2.format(sameStress) + ", " + 
+					df2.format(bothLyricOnset) + ", " + 
+					df2.format(neitherLyricOnset) + ", " + 
+					df2.format(oneLyricOnsetOneNot) + ", " + 
+					df2.format(minMeasureDistance) + ", " + 
+					df2.format(maxMeasureDistance) + ", " + 
+					df2.format(earlierHasEndPunctuation) + ", " + 
+					df2.format(earlierDistanceFromPunctuation) + ", " + 
+					df2.format(laterHasEndPunctuation) + ", " + 
+					df2.format(laterDistanceFromPunctuation); 
+		}
+		
+		public RhymeAlignmentParameterization(GeneralizedGlobalStructureAlignmentParameterization p1g, GeneralizedGlobalStructureAlignmentParameterization p2g) {
+			super(p1g, p2g);
+			
+			RhymeAlignmentParameterization p1 = (RhymeAlignmentParameterization) p1g;
+			RhymeAlignmentParameterization p2 = (RhymeAlignmentParameterization) p2g;
+			
+			this.noMatch = (rand.nextBoolean()?p1.noMatch:p2.noMatch);
+			this.identicalVowel = (rand.nextBoolean()?p1.identicalVowel:p2.identicalVowel);
+			this.differentVowel = (rand.nextBoolean()?p1.differentVowel:p2.differentVowel);
+			this.hirjeeVowelMatchScore = (rand.nextBoolean()?p1.hirjeeVowelMatchScore:p2.hirjeeVowelMatchScore);
+			this.patAlnScore = (rand.nextBoolean()?p1.patAlnScore:p2.patAlnScore);
+			this.sameStress = (rand.nextBoolean()?p1.sameStress:p2.sameStress);
+			this.bothLyricOnset = (rand.nextBoolean()?p1.bothLyricOnset:p2.bothLyricOnset);
+			this.neitherLyricOnset = (rand.nextBoolean()?p1.neitherLyricOnset:p2.neitherLyricOnset);
+			this.oneLyricOnsetOneNot = (rand.nextBoolean()?p1.oneLyricOnsetOneNot:p2.oneLyricOnsetOneNot);
+			if (rand.nextBoolean()) {
+				this.minMeasureDistance = p1.minMeasureDistance;
+				this.maxMeasureDistance = p1.maxMeasureDistance;
+			} else {
+				this.minMeasureDistance = p2.minMeasureDistance;
+				this.maxMeasureDistance = p2.maxMeasureDistance;
+			}
+			this.earlierHasEndPunctuation = (rand.nextBoolean()?p1.earlierHasEndPunctuation:p2.earlierHasEndPunctuation);
+			this.earlierDistanceFromPunctuation = (rand.nextBoolean()?p1.earlierDistanceFromPunctuation:p2.earlierDistanceFromPunctuation);
+			this.laterHasEndPunctuation = (rand.nextBoolean()?p1.laterHasEndPunctuation:p2.laterHasEndPunctuation);
+			this.laterDistanceFromPunctuation = (rand.nextBoolean()?p1.laterDistanceFromPunctuation:p2.laterDistanceFromPunctuation);
+		}
+
+		public void mutateSubclassParameters() {
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.noMatch += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.identicalVowel += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.differentVowel += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2);
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.hirjeeVowelMatchScore += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.patAlnScore += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.sameStress += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.bothLyricOnset += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.neitherLyricOnset += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.oneLyricOnsetOneNot += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+			if (rand.nextDouble() < MUTATION_RATE) {
+				this.minMeasureDistance += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2);
+				if (this.minMeasureDistance < 0) {
+					this.minMeasureDistance = 0;
+				}
+			}
+			if (rand.nextDouble() < MUTATION_RATE) {
+				this.maxMeasureDistance += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2);
+				if (this.maxMeasureDistance < this.minMeasureDistance) {
+					this.maxMeasureDistance = this.minMeasureDistance;
+				}
+			}
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.earlierHasEndPunctuation += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.earlierDistanceFromPunctuation += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.laterHasEndPunctuation += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+			if (rand.nextDouble() < MUTATION_RATE)
+				this.laterDistanceFromPunctuation += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
+		}
+
+		@Override
+		public GeneralizedGlobalStructureAlignmentParameterization crossoverWith(
+				GeneralizedGlobalStructureAlignmentParameterization p2) {
+			return new RhymeAlignmentParameterization(this, (RhymeAlignmentParameterization) p2);
+		}
+		
+		private static double[][] hMatrix = HirjeeMatrix.load();
+
+		final private static Set<Character> endPunctuation = new HashSet<Character>();
+		static {
+			endPunctuation.add('!');
+			endPunctuation.add('?');
+			endPunctuation.add('.');
+			endPunctuation.add(';');
+			endPunctuation.add(',');
+		}
+		@Override
+		public double scoreMatch(MusicXMLAlignmentEvent musicXML1AlignmentEvent,
+				MusicXMLAlignmentEvent musicXML2AlignmentEvent) {
+			
+			if (musicXML1AlignmentEvent == musicXML2AlignmentEvent)
+				return noMatch;
+
+			NoteLyric mXML1NoteLyric = musicXML1AlignmentEvent.note.getLyric(musicXML1AlignmentEvent.segmentType.mustHaveDifferentLyricsOnRepeats());
+			NoteLyric mXML2NoteLyric = musicXML2AlignmentEvent.note.getLyric(musicXML2AlignmentEvent.segmentType.mustHaveDifferentLyricsOnRepeats());
+			
+			if (mXML1NoteLyric == null || mXML2NoteLyric == null) {
+				return noMatch;
+			}
+			
+			int mXML1Measure = musicXML1AlignmentEvent.measure;
+			int mXML2Measure = musicXML2AlignmentEvent.measure;
+			
+			double mXML1Beat = musicXML1AlignmentEvent.beat;
+			double mXML2Beat = musicXML2AlignmentEvent.beat;
+
+			if (mXML1Measure > mXML2Measure || mXML1Measure == mXML2Measure && mXML1Beat > mXML2Beat) { // let's make sure the 2nd event always comes after the first temporally
+				MusicXMLAlignmentEvent tmp = musicXML1AlignmentEvent;
+				musicXML1AlignmentEvent = musicXML2AlignmentEvent;
+				musicXML2AlignmentEvent = tmp;
+				
+				mXML1Measure = musicXML1AlignmentEvent.measure;
+				mXML2Measure = musicXML2AlignmentEvent.measure;
+				
+				mXML1Beat = musicXML1AlignmentEvent.beat;
+				mXML2Beat = musicXML2AlignmentEvent.beat;
+				
+				NoteLyric tmp2 = mXML1NoteLyric;
+				mXML1NoteLyric = mXML2NoteLyric;
+				mXML2NoteLyric = tmp2;
+			} 
+			
+			int measureDiff = mXML2Measure - mXML1Measure;
+			if (measureDiff < minMeasureDistance || measureDiff > maxMeasureDistance) {
+				return noMatch;
+			}
+			//has to be a lyric and a lyric onset to consider 
+			
+			double score = 0.0;
+			
+			List<Triple<String, StressedPhone[], StressedPhone>> mXML1LyricAndPronuns = mXML1NoteLyric.syllableStresses;
+			List<Triple<String, StressedPhone[], StressedPhone>> mXML2LyricAndPronuns = mXML2NoteLyric.syllableStresses;
+			
+			final String mXML1Text = mXML1LyricAndPronuns.get(0).getFirst();
+			if (endPunctuation.contains(mXML1Text.charAt(mXML1Text.length()-1))){
+				score += earlierHasEndPunctuation;
+			}
+			final String mXML2Text = mXML2LyricAndPronuns.get(0).getFirst();
+			if (endPunctuation.contains(mXML2Text.charAt(mXML2Text.length()-1))){
+				score += laterHasEndPunctuation;
+			}
+			
+			int maxSubScore = Integer.MIN_VALUE;
+			int subscore;
+			StressedPhone[] mXML1LyricPronun,mXML2LyricPronun;
+			StressedPhone mXML1VowelPronun, mXML2VowelPronun;
+			
+			for (Triple<String, StressedPhone[], StressedPhone> mXML1LyricAndPronun : mXML1LyricAndPronuns) {
+				for (Triple<String, StressedPhone[], StressedPhone> mXML2LyricAndPronun : mXML2LyricAndPronuns) {
+					subscore = 0;
+					mXML1LyricPronun = mXML1LyricAndPronun.getSecond();
+					mXML2LyricPronun = mXML2LyricAndPronun.getSecond();
+					mXML1VowelPronun = mXML1LyricAndPronun.getThird();
+					mXML2VowelPronun = mXML2LyricAndPronun.getThird();
+					if (mXML1VowelPronun.phone == mXML2VowelPronun.phone) {
+						subscore += identicalVowel;
+					} else {
+						subscore += differentVowel;
+					}
+					if (mXML1VowelPronun.stress == mXML2VowelPronun.stress){
+						subscore += sameStress;
+					}
+					
+					subscore += hirjeeVowelMatchScore * hMatrix[mXML1VowelPronun.phone][mXML2VowelPronun.phone];
+					subscore += patAlnScore * RhymeStructureAnalyzer.scoreRhymeByPatsRules(mXML1LyricPronun, mXML2LyricPronun);
+					
+					if (subscore > maxSubScore) {
+						maxSubScore = subscore;
+					}
+				}
+			}
+			score += maxSubScore;
+			
+			score += super.scoreOffset(musicXML1AlignmentEvent, musicXML2AlignmentEvent);
+
+			if (musicXML1AlignmentEvent.lyricOnset) {
+				if (musicXML2AlignmentEvent.lyricOnset) {
+					score *= bothLyricOnset;
+				} else {
+					score *= oneLyricOnsetOneNot;
+				}
+			} else {
+				if (musicXML2AlignmentEvent.lyricOnset) {
+					score *= oneLyricOnsetOneNot;
+				} else {
+					score *= neitherLyricOnset;
+				}
+			}
+			
+			return score;
+		}
+	}
+	
 	static int generation = 1;
 	private static final File[] files = new File(
 			TabDriver.dataDir + "/Wikifonia_edited_xmls").listFiles();
+	
+	private static Map<String, String> songTitleFromFileName = new HashMap<String, String>();
+	static{
+		songTitleFromFileName.put("Bill Danoff, Taffy Nivert & John Denver - Take Me Home, Country Roads.xml","Take Me Home, Country Roads");
+		songTitleFromFileName.put("Harold Arlen, Yip Harburg - Over The Rainbow.xml","Over the Rainbow");
+		songTitleFromFileName.put("John Lennon - Imagine.xml","Imagine");
+		songTitleFromFileName.put("John Lennon and Paul McCartney - Hey Jude.xml","Hey Jude");
+		songTitleFromFileName.put("Traditional - Twinkle, twinkle, little star.xml","Twinkle, Twinkle, Little Star");
+	}
+	
 	private static List<ParsedMusicXMLObject> trainingSongs;
 	static {
 //		PopDriver.annotateSysOutErrCalls();
 
 		trainingSongs = new ArrayList<ParsedMusicXMLObject>();
 		for (File file : files) {
-//			if (!file.getName().startsWith("Micha")) continue;
+//			if (!file.getName().startsWith("Trad")) continue; // TODO: Filenameadjust marker
 			if (!StructureExtractor.generalizedAnnotationsExistForFile(file)) {
 				System.out.println("No annotations for " + file.getName());
 				continue;
@@ -877,7 +1254,6 @@ public class GeneralizedGlobalStructureInferer {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-//			WikifoniaCorrection.applyManualCorrections(musicXMLParser, file.getName());
 			ParsedMusicXMLObject musicXML = musicXMLParser.parse(true);
 			if (musicXML == null) {
 				System.err.println("musicXML was null for " + file.getName());
@@ -889,41 +1265,30 @@ public class GeneralizedGlobalStructureInferer {
 				System.err.println("For " + file.getName() + ":\n");
 				throw new RuntimeException(e);
 			}
-//			if (!file.getName().startsWith("Micha")){
-//				List<Integer> playedToAbsoluteMeasureNumberMap = musicXML.playedToAbsoluteMeasureNumberMap;
-//				for (int i = 0; i < playedToAbsoluteMeasureNumberMap.size(); i++) {
-//					System.out.println("Played measure " + (i+1) + " corresponds to absolute measure " + (playedToAbsoluteMeasureNumberMap.get(i) + 1));
-//				}
-//			}
+			
 			trainingSongs.add(musicXML);
 		}
 	}
 
-	private final static String TYPE = "rhythm"; // if you change this, you will need to implement how accuracy is calculated
-	private static Class parameterizationClass = null;
-	static {
-		if (TYPE.equals("lyric"))
-			parameterizationClass = LyricAlignmentParameterization.class;
-		else if (TYPE.equals("pitch"))
-			parameterizationClass = PitchAlignmentParameterization.class;
-		if (TYPE.equals("harmony"))
-			parameterizationClass = HarmonicAlignmentParameterization.class;
-		if (TYPE.equals("rhythm"))
-			parameterizationClass = RhythmAlignmentParameterization.class;
-	}
-	private final static String POPULATION_FILE = "generalized_global_alignment_inference/parameterization_pop_"+ TYPE +".txt";
+	private static final int populationSize = 20;
+	private static final int LITTER_SIZE = 10;
+	private final static String TYPE = "verse"; 
+	private final static String POPULATION_FILE_PREFIX = "generalized_global_alignment_inference/parameterization_pop_";
 	private final static String HEATMAP_FILE_PREFIX = "generalized_global_alignment_inference/"+ TYPE +"_visualizations/";
-	private final static int TOTAL_GENERATIONS = 10000;
+	private final static int TOTAL_GENERATIONS = 5000;
+	
 	private static double prevBestAccuracy = 0.0;
-	public static void main(String[] args) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+	public static void main(String[] args) throws Exception {
+		
+		// TRAIN
 		// create/load initial population of x parameterizations and their accuracy scores when used to
 		List<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>> population = loadInitialPopulation(TYPE);
-		System.out.println("Previous Best Accuracy: " + prevBestAccuracy);
-		
-		for (int i = 0; i < TOTAL_GENERATIONS && prevBestAccuracy != 1.0; i++) {
+		System.out.println(generation + "\t" + prevBestAccuracy);
+
+		for (int i = 0; i < TOTAL_GENERATIONS && prevBestAccuracy < 1.0; i++) {
 			generation++;
 			// cross-over and mutate the scores, possible modifying just one score at a time?
-			List<GeneralizedGlobalStructureAlignmentParameterization> offSpring = generateNewPopulation(population);
+			List<GeneralizedGlobalStructureAlignmentParameterization> offSpring = generateNewPopulation(TYPE,population);
 			
 			// score solutions 
 			population.addAll(scoreParameterizations(offSpring, TYPE));
@@ -941,46 +1306,90 @@ public class GeneralizedGlobalStructureInferer {
 			final Pair<Double, GeneralizedGlobalStructureAlignmentParameterization> best = population.get(0);
 			if (best.getFirst() > prevBestAccuracy) {
 				prevBestAccuracy = best.getFirst();
-				scoreParameterization(best.getSecond(), TYPE, true); // save best heatmap
-				System.out.println(i + "\t" + prevBestAccuracy);
+				scoreParameterization(best.getSecond(), TYPE, HEATMAP_FILE_PREFIX); // save best heatmap
+				System.out.println(generation + "\t" + prevBestAccuracy);
 			}
 //			System.out.println(i + "\t" + prevBestAccuracy);
 
 			// print top y parameterizations
-			savePopulationToFile(population);
+			savePopulationToFile(population, TYPE);
 		}
 		
 		// when parameterizations have settled, test on a song not used in training
-		
 	}
 	
-	private static final int LITTER_SIZE = 10;
-	private static List<GeneralizedGlobalStructureAlignmentParameterization> generateNewPopulation(
-			List<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>> population) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+	private static void createDirForVisualizations(String path) {
+		File theDir = new File(path);
+
+		// if the directory does not exist, create it
+		if (!theDir.exists()) {
+		    System.out.println("creating directory: " + theDir.getName());
+		    boolean result = false;
+
+		    try{
+		        theDir.mkdir();
+		        result = true;
+		    } 
+		    catch(SecurityException se){
+		        //handle it
+		    }        
+		    if(result) {    
+		        System.out.println("DIR " + path + " created");  
+		    }
+		}
+	}
+
+	private static List<GeneralizedGlobalStructureAlignmentParameterization> generateNewPopulation(String viewpoint,
+			List<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>> population) throws Exception {
 		List<GeneralizedGlobalStructureAlignmentParameterization> newPop = new ArrayList<GeneralizedGlobalStructureAlignmentParameterization>();
 		
-		for (int i = 0; i < LITTER_SIZE; i++) {
+		while (newPop.size() < LITTER_SIZE) {
 			// selection
 			int parentIdx = rand.nextInt(population.size());
 			GeneralizedGlobalStructureAlignmentParameterization parent1 = population.get(parentIdx).getSecond();
-			parentIdx = rand.nextInt(population.size());
-			GeneralizedGlobalStructureAlignmentParameterization parent2 = population.get(parentIdx).getSecond();
+			GeneralizedGlobalStructureAlignmentParameterization parent2;
+			do {
+				parentIdx = rand.nextInt(population.size());
+				parent2 = population.get(parentIdx).getSecond();
+			} while (parent2 == parent1);
 			
 			// crossover
-			GeneralizedGlobalStructureAlignmentParameterization newOffspring = (GeneralizedGlobalStructureAlignmentParameterization) parameterizationClass.getDeclaredConstructor(GeneralizedGlobalStructureAlignmentParameterization.class, GeneralizedGlobalStructureAlignmentParameterization.class).newInstance(parent1,parent2);
+			GeneralizedGlobalStructureAlignmentParameterization newOffspring = (GeneralizedGlobalStructureAlignmentParameterization) getParameterizationClass(viewpoint).getDeclaredConstructor(GeneralizedGlobalStructureAlignmentParameterization.class, GeneralizedGlobalStructureAlignmentParameterization.class).newInstance(parent1,parent2);
 			// mutation
 			newOffspring.mutate();
-			
-			newPop.add(newOffspring);
+			if (!solutionIDMap.containsKey(newOffspring.toString())) {
+				newPop.add(newOffspring);
+			}
 		}
 		
 		return newPop;
 	}
 
+	private static Class getParameterizationClass(String viewpoint) {
+		Class parameterizationClass = null;
+		if (viewpoint.equals("lyric"))
+			parameterizationClass = LyricAlignmentParameterization.class;
+		else if (viewpoint.equals("pitch"))
+			parameterizationClass = PitchAlignmentParameterization.class;
+		else if (viewpoint.equals("harmony"))
+			parameterizationClass = HarmonicAlignmentParameterization.class;
+		else if (viewpoint.equals("rhythm"))
+			parameterizationClass = RhythmAlignmentParameterization.class;
+		else if (viewpoint.equals("rhyme"))
+			parameterizationClass = RhymeAlignmentParameterization.class;
+		else if (viewpoint.equals("chorus") || viewpoint.equals("verse")) {
+			parameterizationClass = CombinedAlignmentParameterization.class;
+		}
+		else 
+			throw new RuntimeException("Unknown viewpoint: " + viewpoint);
+		
+		return parameterizationClass;
+	}
+
 	static Map<String, Integer> solutionIDMap = new HashMap<String, Integer>();
 	
-	private static void savePopulationToFile(List<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>> population) {
-		try(FileWriter fw = new FileWriter(POPULATION_FILE, true);
+	private static void savePopulationToFile(List<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>> population, String targetSegment) {
+		try(FileWriter fw = new FileWriter(POPULATION_FILE_PREFIX + targetSegment + ".txt", true);
 				BufferedWriter bw = new BufferedWriter(fw);
 				PrintWriter out = new PrintWriter(bw))
 		{
@@ -994,20 +1403,22 @@ public class GeneralizedGlobalStructureInferer {
 		}
 	}
 
-	private static List<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>> scoreParameterizations(List<GeneralizedGlobalStructureAlignmentParameterization> offSpring, String targetSegment) {
+	private static List<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>> scoreParameterizations(List<GeneralizedGlobalStructureAlignmentParameterization> offSpring, String targetSegment) throws IOException {
 		List<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>> offSpringPopulation = new ArrayList<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>>();
 		boolean first = true;
 		for (GeneralizedGlobalStructureAlignmentParameterization globalStructureAlignmentParameterization : offSpring) {
-			double score = scoreParameterization(globalStructureAlignmentParameterization, targetSegment, false);
+			double score = scoreParameterization(globalStructureAlignmentParameterization, targetSegment, null);
 			first = false;
 			offSpringPopulation.add(new Pair<>(score, globalStructureAlignmentParameterization));
 		}
 		return offSpringPopulation;
 	}
 	
-	private static double scoreParameterization(GeneralizedGlobalStructureAlignmentParameterization globalStructureAlignmentParameterization, String targetSegment, boolean saveHeatmap) {
+	private static double scoreParameterization(GeneralizedGlobalStructureAlignmentParameterization globalStructureAlignmentParameterization, String targetSegment, String vizDirPath) throws IOException {
 		double correct = 0.0;
 		double total = 0.0;
+		
+		boolean isCombo = targetSegment.contains("_");
 		
 		if (DEBUG > 0) System.out.println("Scoring parameterization");
 		for (ParsedMusicXMLObject song : trainingSongs) {
@@ -1016,30 +1427,55 @@ public class GeneralizedGlobalStructureInferer {
 			Object[] matrices = align(song, globalStructureAlignmentParameterization);
 			double[][] alnMatrix = (double[][]) matrices[0];
 			char[][] ptrMatrix = (char[][]) matrices[1];
-//			Utils.normalizeByMaxVal(alnMatrix);
+//			
+//			
+//			//TODO remove
+//			for (double[] row : alnMatrix) {
+//				for (double col : row) {
+//					System.out.print(df2.format(col) + " ");
+//				}
+//				System.out.println();
+//			}
 			
 			// use the alignment to infer the locations of the target segment type
 			Object[] inferredSegments = inferTargetSegmentLocations(alnMatrix, ptrMatrix, globalStructureAlignmentParameterization);
 			List<Set<Integer>> inferredLocationStarts = (List<Set<Integer>>) inferredSegments[0];
 			double[][] pathsTaken = (double[][]) inferredSegments[1];
+			List<Pair<Pair<Integer,Integer>, Pair<Integer,Integer>>> matchedRegions = (List<Pair<Pair<Integer,Integer>, Pair<Integer,Integer>>>) inferredSegments[2];
+			
 			Utils.normalizeByMaxVal(pathsTaken);
 			
 			// Given the inferred locations of the target segment type and the actual global structure, compute the accuracy
-			final double computedAccuracy = computeAccuracy(song, inferredLocationStarts, song.getAlignmentEvents(globalStructureAlignmentParameterization.eventsPerBeat), targetSegment);
-			if (DEBUG > 0) System.out.println("Computed Accuracy: " + computedAccuracy);
+			final Triple<Double, Double, Double> precisionRecallFScore = isCombo ? null:computePrecisionRecallFScore(song, inferredLocationStarts, song.getAlignmentEvents(globalStructureAlignmentParameterization.eventsPerBeat), targetSegment);
+			if (DEBUG > 0 && !isCombo) System.out.println("Computed fScore: " + precisionRecallFScore.getThird());
 			
 //			if (total == 0.0 && generation % 100 == 0 && saveHeatmap) { // Always just print heatmap for first song
-			if (saveHeatmap) { // Always just print heatmap for first song
-				saveHeatmap(generation, computedAccuracy, pathsTaken, song.getGlobalStructureBySegmentTokenStart(), targetSegment, globalStructureAlignmentParameterization, song);
+			if (vizDirPath != null) { // Always just print heatmap for first song
+				String fileSuffix = isCombo? targetSegment:"_gen" + generation + "_id" + globalStructureAlignmentParameterization.getSolutionID();
+				createDirForVisualizations(vizDirPath);
+				final String txtPathname = vizDirPath + songTitleFromFileName.get(song.filename) + fileSuffix + ".txt";
+				BufferedWriter bw = new BufferedWriter(new FileWriter(txtPathname));
+				
+				if (!isCombo) {
+					bw.write("Precision:" + precisionRecallFScore.getFirst() + "\n");
+					bw.write("Recall:" + precisionRecallFScore.getSecond() + "\n");
+					bw.write("F-Score:" + precisionRecallFScore.getThird() + "\n\n");
+				}
+				
+				String mapTitle = isCombo? targetSegment:songTitleFromFileName.get(song.filename) + "      Viewpoint: " + StringUtils.capitalize(targetSegment) + "      Generation: " + generation + "      F-Score: " + df3.format(precisionRecallFScore.getThird());
+				String pathname = vizDirPath + songTitleFromFileName.get(song.filename) +(isCombo?targetSegment:("_gen" + generation + "_id" + globalStructureAlignmentParameterization.getSolutionID())) + ".jpeg";
+				saveHeatmap(pathname, mapTitle, pathsTaken, globalStructureAlignmentParameterization, song, matchedRegions, bw);
+				bw.close();
 			}
 			
-			correct += computedAccuracy;
-			total+=1;
+			if (!isCombo) {
+				correct += precisionRecallFScore.getThird();
+				total+=1;
+			}
 		}
 		
 		return correct/total;
 	}
-
 
 	static int minEventsFromDiagonal = -1; // how many events apart do events need to be before they can be considered for equality (computed to be about 2 measures)
 	
@@ -1187,6 +1623,8 @@ public class GeneralizedGlobalStructureInferer {
 //		}
 //		reduceViaMaxClique(localMaxima);
 		
+		List<Pair<Pair<Integer,Integer>, Pair<Integer,Integer>>> matchedRegions = new ArrayList<Pair<Pair<Integer,Integer>, Pair<Integer,Integer>>>();
+		
 		int maxRow,maxCol;
 		double maxVal = localMaxima.isEmpty()?-1.0:localMaxima.get(0).getFirst()*1.1;
 		for (Triple<Double, Integer, Integer> triple : localMaxima) {
@@ -1229,416 +1667,21 @@ public class GeneralizedGlobalStructureInferer {
 					break;
 				}
 			}
+			matchedRegions.add(new Pair<Pair<Integer,Integer>,Pair<Integer,Integer>>(new Pair<Integer,Integer>(row, maxRow-1), new Pair<Integer,Integer>(col, maxCol-1)));
 		}
 		
-		return new Object[]{inferredLocations,pathsTaken};
+		return new Object[]{inferredLocations,pathsTaken,matchedRegions};
 	}
-	
-	private static void reduceViaMaxClique(List<Triple<Double, Integer, Integer>> localMaxima) {
 		
-		Map<Integer,Integer> clusteredPointMap = clusterIndicesBasedOnProximityToClusters(localMaxima);
-//		Map<Integer,Integer> clusteredPointMap = clusterIndicesBasedOnProximityToNearestPoint(localMaxima);
-		
-		TreeMap<Integer,TreeMap<Integer,Double>> weightedEdges = new TreeMap<Integer,TreeMap<Integer,Double>>();
-		int row,col;
-		double weight;
-		for (Triple<Double, Integer, Integer> triple : localMaxima) {
-			weight = triple.getFirst();
-			row = clusteredPointMap.get(triple.getSecond());
-			col = clusteredPointMap.get(triple.getThird());
-			TreeMap<Integer, Double> edgesForRowNode = weightedEdges.get(row);
-			if (edgesForRowNode == null) {
-				edgesForRowNode = new TreeMap<Integer, Double>();
-				weightedEdges.put(row, edgesForRowNode);
-			}
-			if (!edgesForRowNode.containsKey(col) || edgesForRowNode.get(col) < weight) {
-				edgesForRowNode.put(col, weight);
-			}
-			TreeMap<Integer, Double> edgesForColNode = weightedEdges.get(col);
-			if (edgesForColNode == null) {
-				edgesForColNode = new TreeMap<Integer, Double>();
-				weightedEdges.put(col, edgesForColNode);
-			}
-			if (!edgesForColNode.containsKey(row) || edgesForColNode.get(row) < weight) {
-				edgesForColNode.put(row, weight);
-			}
-		}
-		
-		// find clique via recursive means
-		StopWatch watch = new StopWatch();
-		
-		watch.start();
-		Pair<Set<Integer>, Double> maxCliqueAndWeight = findMaxCliqueViaTaylor(weightedEdges);
-        watch.suspend();
-        long time1 = watch.getTime();
-        if (DEBUG > 1) System.out.println("In " + time1 + " ms the taylor max clique finder found the clique: \n" + maxCliqueAndWeight);
-//        watch.resume();
-//		Pair<Set<Integer>, Double> maxCliqueAndWeight2 = findMaxCliqueViaLoop(weightedEdges);
-//        watch.suspend();
-//        long time2 = watch.getTime();
-//        System.out.println("In " + (time2 - time1) + " ms the looping max clique finder found the clique: \n" + maxCliqueAndWeight2);
-//		watch.resume();
-//		Pair<Set<Integer>, Double> maxCliqueAndWeight3 = findMaxCliqueViaRecursion(weightedEdges);
-//		watch.suspend();
-//		long time3 = watch.getTime();
-//		System.out.println("In " + (time3 - time2) + " ms the recursive max clique finder found the clique: \n" + maxCliqueAndWeight3 );
-//		
-//		if (time2 - time1 > 10){
-//			maxCliqueAndWeight = findMaxCliqueViaTaylor(weightedEdges);
-//		}
-
-		final Set<Integer> maxClique = maxCliqueAndWeight.getFirst();
-		int maxCliqueSize = maxClique.size();
-		
-		if (DEBUG > 1) System.out.println("\nMax clique found " + maxCliqueSize + " mutually matching choruses");
-		
-		// now prune localMaxima using maxclique–both row and col must be in maxclique
-		if (DEBUG > 1) System.out.println("\nLocalMaxima:");
-		for (int i = localMaxima.size()-1; i >= 0; i--) {
-			Triple<Double, Integer, Integer> candidate = localMaxima.get(i);
-			if (!maxClique.contains(clusteredPointMap.get(candidate.getSecond())) || !maxClique.contains(clusteredPointMap.get(candidate.getThird()))) {
-				localMaxima.remove(i);
-			} else {
-				if (DEBUG > 1) System.out.println(candidate);
-			}
-		}
-	}
-	
-	private static int taylorMaxCliqueSize;
-	private static double taylorMaxCliqueWeight;
-	private static Set<Integer> taylorMaxClique;
-	
-	private static Set<Integer> taylorCurrClique;
-	
-	/**
-	 * Implemented from Alg 1 pseudocode in https://arxiv.org/pdf/1209.5818.pdf
-	 * @param weightedEdges
-	 * @return
-	 */
-	private static Pair<Set<Integer>, Double> findMaxCliqueViaTaylor(
-			TreeMap<Integer, TreeMap<Integer, Double>> weightedEdges) {
-		taylorMaxCliqueSize = 0;
-		taylorMaxCliqueWeight = -1.0;
-		taylorMaxClique = new HashSet<Integer>();
-		TreeSet<Integer> U;
-		for (Integer v_i : weightedEdges.navigableKeySet()) {
-			final TreeMap<Integer, Double> v_i_neighbors = weightedEdges.get(v_i);
-			if (v_i_neighbors.size()+1 >= taylorMaxCliqueSize) {
-				U = new TreeSet<Integer>();
-				taylorCurrClique = new HashSet<Integer>();
-				taylorCurrClique.add(v_i);
-				for (Integer v_j : v_i_neighbors.navigableKeySet()) {
-					if (v_j > v_i) { // because nodes are sorted by number, v_j > v_i => j > i
-						if (weightedEdges.get(v_j).size() >= taylorMaxCliqueSize) {
-							U.add(v_j);
-						}
-					}
-				}
-				taylorCliqueSubroutine(weightedEdges, U, 1, 0.0);
-			}
-		}
-		
-		return new Pair<Set<Integer>,Double>(taylorMaxClique,taylorMaxCliqueWeight);
-	}
-
-	private static void taylorCliqueSubroutine(TreeMap<Integer, TreeMap<Integer, Double>> weightedEdges,
-			TreeSet<Integer> U, int size, double weight) {
-		if (U.isEmpty()) {
-			if (size > taylorMaxCliqueSize || (size == taylorMaxCliqueSize && weight > taylorMaxCliqueWeight)) {
-				taylorMaxCliqueSize = size;
-				taylorMaxCliqueWeight = weight;
-				taylorMaxClique = new HashSet<Integer>(taylorCurrClique);
-			}
-			return;
-		}
-		while (!U.isEmpty()) {
-			if ((size + U.size()) < taylorMaxCliqueSize) {
-				return;
-			}
-			final Integer u = U.first();
-			U.remove(u);
-			TreeSet<Integer> neighbors_prime_u = new TreeSet<Integer>();
-			
-			TreeMap<Integer, Double> u_neighbors = weightedEdges.get(u);
-			for (Integer w : u_neighbors.navigableKeySet()) {
-				if (weightedEdges.get(w).size() >= taylorMaxCliqueSize && U.contains(w)) {
-					neighbors_prime_u.add(w);
-				}
-			}
-
-			// calculate weight added to clique from including u
-			double addedWeight = 0.0;
-			for (Integer prev_u : taylorCurrClique) {
-				Double edgeWeight = u_neighbors.get(prev_u);
-				if (edgeWeight != null) {
-					addedWeight += edgeWeight;
-				}
-			}
-			
-			taylorCurrClique.add(u);
-			taylorCliqueSubroutine(weightedEdges, neighbors_prime_u, size + 1, weight + addedWeight);
-			taylorCurrClique.remove(u);
-		}
-		
-	}
-
-	private static Pair<Set<Integer>, Double> findMaxCliqueViaLoop(TreeMap<Integer, TreeMap<Integer, Double>> weightedEdges) {
-		// TODO Auto-generated method stub
-		
-		Pair<Set<Integer>, Double> maxCliqueAndWeightSoFar = new Pair<Set<Integer>, Double>(new HashSet<Integer>(),-1.0); // default if no clique is found
-		int maxCliqueSizeSoFar = 0;
-		double maxCliqueWeightSoFar = 0.;
-		
-		List<Integer> sortedNodeList = new ArrayList<Integer>(weightedEdges.descendingKeySet());
-		// for each node in the keyset of edges (in reverse order to be facilitate terminating early)
-		for (Integer node: sortedNodeList) {
-			// find the max clique that 
-			// a) includes that node from the set of edges from that node
-			final SortedSet<Integer> edgesForNode = weightedEdges.get(node).navigableKeySet();
-			if (edgesForNode.size() < maxCliqueSizeSoFar) {
-				continue;
-			}
-			// b) excluding all other nodes that have already been considered previously
-			
-			SortedSet<Integer> setToComputeCliqueFor = new TreeSet<Integer>();
-			setToComputeCliqueFor.add(node);
-			for (Integer nodeToAdd: edgesForNode) {
-				if (nodeToAdd == node) break;
-				setToComputeCliqueFor.add(nodeToAdd);
-			}
-			// c) that has the potential of being bigger than maxCliqueSoFar
-			if (setToComputeCliqueFor.size() <= maxCliqueSizeSoFar) {
-				continue;
-			}
-			
-	        Set<Pair<Set<Integer>, Double>> cliquePowerSet = cliquePowerSet(setToComputeCliqueFor,weightedEdges);
-	        
-	        double weight;
-	        int cliqueSize;
-	        for (Pair<Set<Integer>, Double> cliqueAndWeight : cliquePowerSet) {
-	        	weight = cliqueAndWeight.getSecond();
-	        	cliqueSize = cliqueAndWeight.getFirst().size();
-				if (cliqueSize > maxCliqueSizeSoFar || cliqueSize == maxCliqueSizeSoFar && weight > maxCliqueWeightSoFar) {
-					maxCliqueSizeSoFar = cliqueSize;
-					maxCliqueAndWeightSoFar = cliqueAndWeight;
-					maxCliqueWeightSoFar = weight;
-				}
-			}
-		}
-		
-		return maxCliqueAndWeightSoFar;
-	}
-
-	private static Pair<Set<Integer>,Double> findMaxCliqueViaRecursion(TreeMap<Integer, TreeMap<Integer, Double>> weightedEdges) {
-		int maxCliqueSize = 0;
-		double maxCliqueWeight = 0.;
-		Pair<Set<Integer>,Double> maxCliqueAndWeight = new Pair<Set<Integer>,Double>(new HashSet<Integer>(),-1.0); // default if no clique is found
-        Set<Pair<Set<Integer>,Double>> cliquePowerSet = cliquePowerSet(weightedEdges.keySet(),weightedEdges);
-        Double weight;
-        int cliqueSize;
-        for (Pair<Set<Integer>,Double> cliqueAndWeight : cliquePowerSet) {
-        	weight = cliqueAndWeight.getSecond();
-        	cliqueSize = cliqueAndWeight.getFirst().size();
-			if (cliqueSize > maxCliqueSize || cliqueSize == maxCliqueSize && weight > maxCliqueWeight) {
-				maxCliqueSize = cliqueSize;
-				maxCliqueWeight = weight;
-				maxCliqueAndWeight = cliqueAndWeight;
-			}
-		}
-		return maxCliqueAndWeight;
-	}
-
-	private static Set<Pair<Set<Integer>,Double>> cliquePowerSet(Set<Integer> set, TreeMap<Integer, TreeMap<Integer, Double>> weightedEdges) {
-		Set<Pair<Set<Integer>,Double>> outerSet = new HashSet<Pair<Set<Integer>,Double>>();
-		
-		final double cliqueWeight = isClique(set,weightedEdges);
-		if (cliqueWeight != -1.0) {
-	//		  add set to outerset;
-			outerSet.add(new Pair<Set<Integer>,Double>(set, cliqueWeight));
-		}
-		
-//		  for each element in set
-		for (Integer node : set) {
-			Set<Integer> subset = new HashSet<Integer>();
-			subset.addAll(set);
-//		   let subset = set excluding element,
-			subset.remove(node);
-//		   add powerset(subset) to outerset
-			outerSet.addAll(cliquePowerSet(subset, weightedEdges));
-		}
-	  
-		return outerSet;      
-	}
-
-	private static double isClique(Set<Integer> set, TreeMap<Integer, TreeMap<Integer, Double>> weightedEdges) {
-		double cliqueWeight = 0;
-		Double weight;
-		for (Integer node1 : set) {
-			TreeMap<Integer, Double> edgesFromNode1 = weightedEdges.get(node1);
-			for (Integer node2 : set) {
-				if (node2 <= node1) continue;
-				weight = edgesFromNode1.get(node2);
-				if (weight == null) {
-					return -1.;
-				} else {
-					cliqueWeight += weight;
-				}
-			}
-		}
-		
-		return cliqueWeight;
-	}
-
-	private static Map<Integer, Integer> clusterIndicesBasedOnProximityToClusters(List<Triple<Double, Integer, Integer>> localMaxima) {
-		Map<Integer, Integer> clusteredPointMap = new TreeMap<Integer,Integer>();
-		
-		// one entry for each cluster; key is cluster mean, value is list of points belonging to that cluster
-		TreeMap<Double, List<Integer>> clustersByClusterCenter = new TreeMap<Double, List<Integer>>();
-		
-		if (DEBUG > 1) System.out.println("\nClustering...");
-		for (Triple<Double, Integer, Integer> localMaximum : localMaxima) {
-			int songSpot = localMaximum.getSecond();
-			List<Integer> songSpots = clustersByClusterCenter.get((double) songSpot);
-			if (songSpots == null) {
-				songSpots = new ArrayList<Integer>();
-				clustersByClusterCenter.put((double) songSpot, songSpots);
-			}
-			songSpots.add(songSpot);
-			songSpot = localMaximum.getThird();
-			songSpots = clustersByClusterCenter.get((double) songSpot);
-			if (songSpots == null) {
-				songSpots = new ArrayList<Integer>();
-				clustersByClusterCenter.put((double) songSpot, songSpots);
-			}
-			songSpots.add(songSpot);
-		}
-		
-		boolean pointsClustered;
-		Double firstClusterMeanToCombine;
-		Double secondClusterMeanToCombine;
-		double prevClusterMean;
-		double distance, minDistance;
-		do {
-			pointsClustered = false;
-			minDistance = Double.MAX_VALUE;
-			firstClusterMeanToCombine = -1.0;
-			secondClusterMeanToCombine = -1.0;
-			prevClusterMean = -1.0;
-			
-			// while there exists a point that is within minEventsFromDiagonal from a cluster mean
-			// add the point that is closest
-			for (Double clusterMean : clustersByClusterCenter.navigableKeySet()) {
-				if (prevClusterMean == -1.0) {
-					prevClusterMean = clusterMean;
-					continue;
-				}
-				
-				distance = clusterMean - prevClusterMean;
-				if (distance < minEventsFromDiagonal && distance < minDistance) {
-					minDistance = distance;
-					firstClusterMeanToCombine = prevClusterMean;
-					secondClusterMeanToCombine = clusterMean;
-				}
-				prevClusterMean = clusterMean;
-			}
-			
-			if (minDistance < Double.MAX_VALUE) {
-				pointsClustered = true;
-				List<Integer> pointsInFirstCluster = clustersByClusterCenter.remove(firstClusterMeanToCombine);
-				List<Integer> pointsInSecondCluster = clustersByClusterCenter.remove(secondClusterMeanToCombine);
-				final int firstClusterSize = pointsInFirstCluster.size();
-				final int secondClusterSize = pointsInSecondCluster.size();
-				double newClusterMean = (firstClusterMeanToCombine * firstClusterSize + secondClusterMeanToCombine * secondClusterSize ) / (firstClusterSize + secondClusterSize);
-				pointsInFirstCluster.addAll(pointsInSecondCluster);
-				clustersByClusterCenter.put(newClusterMean, pointsInFirstCluster);
-			}
-		} while(pointsClustered);
-		
-		if (DEBUG > 1) System.out.println("Clustering produced " + clustersByClusterCenter.size() + " clusters from " + localMaxima.size()*2 + " points:");
-
-		for (Double clusterMean : clustersByClusterCenter.navigableKeySet()) {
-			final int roundedClusterMean = (int) Math.round(clusterMean);
-			List<Integer> points = clustersByClusterCenter.get(clusterMean);
-			for (Integer point : points) {
-				clusteredPointMap.put(point, roundedClusterMean);
-				if (DEBUG > 1) System.out.println(point + " -> " + roundedClusterMean);
-			}
-		}
-		
-		return clusteredPointMap;
-	}
-	
-	private static Map<Integer, Integer> clusterIndicesBasedOnProximityToNearestPoint(List<Triple<Double, Integer, Integer>> localMaxima) {
-		Map<Integer, Integer> clusteredPointMap = new HashMap<Integer,Integer>();
-		
-		if (DEBUG > 1) System.out.println("\nClustering...");
-		List<Integer> allPoints = new ArrayList<Integer>();
-		for (Triple<Double, Integer, Integer> localMaximum : localMaxima) {
-			allPoints.add(localMaximum.getSecond());
-			allPoints.add(localMaximum.getThird());
-		}
-		Collections.sort(allPoints);
-		
-		int clusterSum = 0;
-		int clusterCount = 0;
-		int prevPoint = -1;
-		int clusterStartIdx = 0;
-		int nextPoint;
-		int numberOfClusters = 0;
-		for (int nextPointIdx = 0; nextPointIdx < allPoints.size(); nextPointIdx++ ) {
-			nextPoint = allPoints.get(nextPointIdx);
-			if (prevPoint != -1 && nextPoint - prevPoint <= minEventsFromDiagonal) {
-				clusterSum += nextPoint;
-				clusterCount++;
-			} else {
-				// close up previous cluster
-				if (clusterCount > 0) {
-					int clusterCenter = clusterSum / clusterCount;
-					for (int pointIdx = clusterStartIdx; pointIdx < nextPointIdx; pointIdx++) {
-						clusteredPointMap.put(allPoints.get(pointIdx), clusterCenter);
-						if (DEBUG > 2) System.out.println(allPoints.get(pointIdx) + " -> " + clusterCenter);
-					}
-					numberOfClusters++;
-				}
-				// start next cluster
-				clusterCount = 1;
-				clusterSum = nextPoint;
-				clusterStartIdx = nextPointIdx;
-			}
-			prevPoint = nextPoint;
-		}
-		// close up last cluster
-		if (clusterCount > 0) {
-			int clusterCenter = clusterSum / clusterCount;
-			for (int pointIdx = clusterStartIdx; pointIdx < allPoints.size(); pointIdx++) {
-				clusteredPointMap.put(allPoints.get(pointIdx), clusterCenter);
-				if (DEBUG > 2) System.out.println(allPoints.get(pointIdx) + " -> " + clusterCenter);
-			}
-			numberOfClusters++;
-		}
-		if (DEBUG > 1) System.out.println("Clustering produced " + numberOfClusters + " clusters");
-		
-		return clusteredPointMap;
-	}
-
-	private static boolean colIsTooCloseToExistingChorus(int col, List<Integer> inferredLocations, int minChorusLength) {
-		for (int prevMaxColIdx = 3; prevMaxColIdx < inferredLocations.size(); prevMaxColIdx += 4) {
-			int prevMaxCol = inferredLocations.get(prevMaxColIdx);
-			if (Math.abs(prevMaxCol-col) < minChorusLength) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	//attaches β times as much importance to recall as precision	
 	private static double fScoreBetaValueSquared = 1.0;
+	public static int groupLabelLength = 4;
 	/**
 	 * Given the inferred locations of the target segment type and the actual global structure, compute the accuracy 
 	 * @param song 
 	 * @param targetSegment 
 	 */
-	private static double computeAccuracy(ParsedMusicXMLObject song, List<Set<Integer>> inferredMatchLocations,
+	private static Triple<Double, Double, Double> computePrecisionRecallFScore(ParsedMusicXMLObject song, List<Set<Integer>> inferredMatchLocations,
 			List<ParsedMusicXMLObject.MusicXMLAlignmentEvent> songEvents, String type) {
 
 		Set<Integer> inferredMatchesForRowPosition;
@@ -1648,8 +1691,10 @@ public class GeneralizedGlobalStructureInferer {
 		Set<String> actualGroups;
 		MusicXMLAlignmentEvent currentSongEvent, inferredSongEvent;
 
-		Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> allMatchingGroups = getMatchingGroups(song, type);
+		@SuppressWarnings("rawtypes")
+		Map<Character, List> allMatchingGroups = getMatchingGroups(song, type);
 		Set<String> inferredGroups;
+		int allGroupsForLabelCount;
 		
 		Set<String> matchingRegions;
 		for (int i = 0; i < songEvents.size(); i++) {
@@ -1669,8 +1714,8 @@ public class GeneralizedGlobalStructureInferer {
 				matchingRegions = new HashSet<String>();
 				for (String actualGroup: actualGroups) { // for each actual group (and group ID) for this event
 					Character group = actualGroup.charAt(0); // abstract to the group label
-					final List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>> allGroupsForLabel = allMatchingGroups.get(group); // find all group IDs with this label
-					for (int j = 1; j <= allGroupsForLabel.size(); j++) { // for each of the group IDs with this label
+					allGroupsForLabelCount = allMatchingGroups.get(group).size(); // find all group IDs with this label
+					for (int j = 1; j <= allGroupsForLabelCount; j++) { // for each of the group IDs with this label
 						String groupID = "" + group + j;
 						if (!actualGroups.contains(groupID)) { // if the ID doesn't already belong to this event
 							matchingRegions.add(groupID); // then this even should match to that ID
@@ -1702,8 +1747,11 @@ public class GeneralizedGlobalStructureInferer {
 				}
 			}
 		}
+		Double precision = 1.0 * truePositive / (truePositive + falsePositive);
+		Double recall = 1.0 * truePositive / (truePositive + falseNegative);
+		Double fScore = ((1+fScoreBetaValueSquared) * truePositive) / ((1+fScoreBetaValueSquared) * truePositive + fScoreBetaValueSquared * falseNegative + falsePositive);
 		
-		return ((1+fScoreBetaValueSquared) * truePositive) / ((1+fScoreBetaValueSquared) * truePositive + fScoreBetaValueSquared * falseNegative + falsePositive);
+		return new Triple<Double,Double, Double>(precision,recall, fScore);
 	}
 
 	private static Set<String> getGroups(String type,
@@ -1716,21 +1764,34 @@ public class GeneralizedGlobalStructureInferer {
 			return currentSongEvent.getHarmonyGroups();
 		} else if (type.equals("rhythm")){
 			return currentSongEvent.getRhythmGroups();
+		} else if (type.equals("rhyme")){
+			return currentSongEvent.getRhymeGroups();
+		} else if (type.equals("chorus")){
+			return currentSongEvent.getChorusGroups();
+		} else if (type.equals("verse")){
+			return currentSongEvent.getVerseGroups();
 		} else {
 			throw new RuntimeException("Not yet implemented");
 		}
 	}
 
-	private static Map<Character, List<Pair<Pair<Integer, Double>, Pair<Integer, Double>>>> getMatchingGroups(
+	@SuppressWarnings("unchecked")
+	private static <T extends List> Map<Character, T> getMatchingGroups(
 			ParsedMusicXMLObject song, String type) {
 		if (type.equals("lyric")) {
-			return song.getAllMatchingLyricGroups();
+			return (Map<Character, T>) song.getAllMatchingLyricGroups();
 		} else if (type.equals("pitch")){
-			return song.getAllMatchingPitchGroups();
+			return (Map<Character, T>) song.getAllMatchingPitchGroups();
 		} else if (type.equals("harmony")){
-			return song.getAllMatchingHarmonyGroups();
+			return (Map<Character, T>) song.getAllMatchingHarmonyGroups();
 		} else if (type.equals("rhythm")){
-			return song.getAllMatchingRhythmGroups();
+			return (Map<Character, T>) song.getAllMatchingRhythmGroups();
+		} else if (type.equals("rhyme")){
+			return (Map<Character, T>) song.getAllMatchingRhymeGroups();
+		} else if (type.equals("chorus")){
+			return (Map<Character, T>) song.getAllMatchingChorusGroups();
+		} else if (type.equals("verse")){
+			return (Map<Character, T>) song.getAllMatchingVerseGroups();
 		} else {
 			throw new RuntimeException("Not yet implemented");
 		}
@@ -1739,13 +1800,68 @@ public class GeneralizedGlobalStructureInferer {
 	/**
 	 * Given a solution alignment matrix, a score, and the generation, output a heatmap representation of the matrix
 	 * @param song 
+	 * @param matchedRegions 
+	 * @throws IOException 
 	 */
-	private static void saveHeatmap(int generation, double computedAccuracy, double[][] pathsTaken,
-			SortedMap<Integer, SortedMap<Double, SegmentType>> globalStructureBySegmentTokenStart,
-			String targetSegment,
-			GeneralizedGlobalStructureAlignmentParameterization globalStructureAlignmentParameterization, ParsedMusicXMLObject song) {
-		
+	private static void saveHeatmap(String pathname, String mapTitle, double[][] pathsTaken,
+			GeneralizedGlobalStructureAlignmentParameterization globalStructureAlignmentParameterization, ParsedMusicXMLObject song, List<Pair<Pair<Integer,Integer>, 
+			Pair<Integer,Integer>>> matchedRegions,
+			BufferedWriter bw) throws IOException {
+
 		List<ParsedMusicXMLObject.MusicXMLAlignmentEvent> alignmentEvents = song.getAlignmentEvents(globalStructureAlignmentParameterization.eventsPerBeat);
+			
+		for (Pair<Pair<Integer, Integer>, Pair<Integer, Integer>> pair : matchedRegions) {
+			Pair<Integer,Integer> firstMatch = pair.getFirst();
+			Pair<Integer,Integer> secondMatch = pair.getSecond();
+			int firstMatchStart = firstMatch.getFirst();
+			int firstMatchEnd = firstMatch.getSecond();
+			int secondMatchStart = secondMatch.getFirst();
+			int secondMatchEnd = secondMatch.getSecond();
+			
+			MusicXMLAlignmentEvent event = alignmentEvents.get(firstMatchStart);
+			bw.write("" + event.measure);
+			bw.write('\t');
+			for (int i = firstMatchStart; i <= firstMatchEnd; i++) {
+				event = alignmentEvents.get(i);
+				if (!event.strippedLyricLowerCaseText.isEmpty()) {
+					if (event.lyricOnset) {
+						bw.write(event.lyric.text);
+						bw.write(' ');
+					} else if (i == firstMatchStart) {
+						bw.write('[');
+						bw.write(event.lyric.text);
+						bw.write(']');
+						bw.write(' ');
+					}
+				}
+			}
+			bw.write('\t');
+			bw.write("" + event.measure);
+			bw.write('\n');
+			
+			event = alignmentEvents.get(secondMatchStart);
+			bw.write("" + event.measure);
+			bw.write('\t');
+			for (int i = secondMatchStart; i <= secondMatchEnd; i++) {
+				event = alignmentEvents.get(i);
+				if (!event.strippedLyricLowerCaseText.isEmpty()) {
+					if (event.lyricOnset) {
+						bw.write(event.lyric.text);
+						bw.write(' ');
+					} else if (i == firstMatchStart) {
+						bw.write('[');
+						bw.write(event.lyric.text);
+						bw.write(']');
+						bw.write(' ');
+					}
+				}
+			}
+			bw.write('\t');
+			bw.write("" + event.measure);
+			bw.write('\n');
+			
+			bw.write('\n');
+		}
 		
 		int chartXDimension = alignmentEvents.size() + 1; 
 		int chartYDimension = alignmentEvents.size() + 1; 
@@ -1787,66 +1903,36 @@ public class GeneralizedGlobalStructureInferer {
 
 		HeatChart chart = new HeatChart(chartValues);
 		chart.setHighValueColour(Color.RED);
-		chart.setLowValueColour(Color.BLUE);
+		chart.setLowValueColour(Color.WHITE);
 		
-		chart.setYAxisLabel(song.filename);
-		chart.setXAxisLabel(song.filename);
-		chart.setTitle("Gen:" + generation + " Targ:" + targetSegment + " F-1: " + df3.format(computedAccuracy) + " Params:" + globalStructureAlignmentParameterization.toString());
+//		chart.setYAxisLabel(song.filename);
+//		chart.setXAxisLabel(song.filename);
+		chart.setTitle(mapTitle);
 		chart.setXValues(xValues);
 		chart.setYValues(yValues);
-		chart.setTitleFont(new Font("Times", Font.BOLD, (int) (chartXDimension/3.0)));
+		chart.setTitleFont(new Font("Times", Font.BOLD, (int) (chartXDimension/2)));
 		chart.setAxisLabelsFont(new Font("Times", Font.BOLD, (int) (chartXDimension/3.0)));
-		chart.setAxisValuesFont(new Font("Times", Font.BOLD, (int) (chartXDimension/3.2)));
+		chart.setAxisValuesFont(new Font("Times", Font.BOLD, (int) (chartXDimension/2.5)));
 //		chart.setCellSize(new Dimension(5,5));
 		
 		try {
-			final String pathname = HEATMAP_FILE_PREFIX + song.filename +"_gen" + generation + "_id" + globalStructureAlignmentParameterization.getSolutionID() + ".jpeg";
 			chart.saveToFile(new File(pathname));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}		
-		
 	}
 
-	private static List<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>> loadInitialPopulation(String targetSegment) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+	private static List<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>> loadInitialPopulation(String targetSegment) throws Exception {
 		List<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>> population = new ArrayList<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>>();
 		try {
-			Scanner fileScanner = new Scanner(new File(POPULATION_FILE));
-			System.out.println("Loading initial population from file");
-			while (fileScanner.hasNextLine()) {
-				generation = Integer.parseInt(fileScanner.nextLine().split(" ")[1]);
-				population = new ArrayList<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>>();
-				while (fileScanner.hasNextLine()){
-					String nextLine = fileScanner.nextLine();
-					if (nextLine.startsWith("*****")) {
-						fileScanner.nextLine();
-						break;
-					}
-					String[] nextTokens = nextLine.split("\\t",3);
-					final GeneralizedGlobalStructureAlignmentParameterization globalStructureAlignmentParameterization = (GeneralizedGlobalStructureAlignmentParameterization) parameterizationClass.getDeclaredConstructor(String[].class).newInstance(new Object[] {nextTokens[2].split(", ")});
-					int solutionID = Integer.parseInt(nextTokens[0]);
-					Integer existingSolutionID = solutionIDMap.get(globalStructureAlignmentParameterization.toString());
-					
-					if (existingSolutionID == null) {
-						solutionIDMap.put(globalStructureAlignmentParameterization.toString(), solutionID);
-					} else {
-						assert(existingSolutionID == solutionID);
-					}
-					
-					if (population.size() < populationSize) {
-						double score = Double.parseDouble(nextTokens[1]);
-						population.add(new Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>(score,globalStructureAlignmentParameterization));
-					}
-				}
-			}
-			fileScanner.close();
+			population = loadInitialPopulationFromFile(targetSegment, true);
 		} catch (FileNotFoundException e) {
 			System.out.println("Initializing population of parameterizations");
 			// need to create initial population!
 			for (int i = 0; i < populationSize; i++) {
-				final GeneralizedGlobalStructureAlignmentParameterization globalStructureAlignmentParameterization = (GeneralizedGlobalStructureAlignmentParameterization) parameterizationClass.newInstance();
+				final GeneralizedGlobalStructureAlignmentParameterization globalStructureAlignmentParameterization = (GeneralizedGlobalStructureAlignmentParameterization) getParameterizationClass(targetSegment).newInstance();
 				System.out.println("\tScoring initial parameterization:" + globalStructureAlignmentParameterization.toString());
-				final double score = scoreParameterization(globalStructureAlignmentParameterization, targetSegment, false);
+				final double score = scoreParameterization(globalStructureAlignmentParameterization, targetSegment, null);
 				System.out.println("\t\t" + score);
 				population.add(new Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>(score,globalStructureAlignmentParameterization));
 			}
@@ -1859,12 +1945,50 @@ public class GeneralizedGlobalStructureInferer {
 				}
 			});
 			Pair<Double, GeneralizedGlobalStructureAlignmentParameterization> initBest = population.get(0);
-			scoreParameterization(initBest.getSecond(), targetSegment, true); // save initial heatmap
+			scoreParameterization(initBest.getSecond(), targetSegment, HEATMAP_FILE_PREFIX); // save initial heatmap
 
-			savePopulationToFile(population);
+			savePopulationToFile(population, targetSegment);
 		}
 		prevBestAccuracy = population.get(0).getFirst();
 
+		return population;
+	}
+
+	private static List<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>> loadInitialPopulationFromFile(String targetSegment, boolean modifyGlobalVariables)
+			throws FileNotFoundException, InstantiationException, IllegalAccessException, InvocationTargetException,
+			NoSuchMethodException {
+		Scanner fileScanner = new Scanner(new File(POPULATION_FILE_PREFIX + targetSegment + ".txt"));
+		if (modifyGlobalVariables) System.out.println("Loading initial population from file");
+		List<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>> population = null;
+		while (fileScanner.hasNextLine()) {
+			if (modifyGlobalVariables) generation = Integer.parseInt(fileScanner.nextLine().split(" ")[1]);
+			else fileScanner.nextLine();
+			population = new ArrayList<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>>();
+			while (fileScanner.hasNextLine()){
+				String nextLine = fileScanner.nextLine();
+				if (nextLine.startsWith("*****")) {
+					fileScanner.nextLine();
+					break;
+				}
+				String[] nextTokens = nextLine.split("\\t",3);
+				final GeneralizedGlobalStructureAlignmentParameterization globalStructureAlignmentParameterization = (GeneralizedGlobalStructureAlignmentParameterization) getParameterizationClass(targetSegment).getDeclaredConstructor(String[].class).newInstance(new Object[] {nextTokens[2].split(", ")});
+				int solutionID = Integer.parseInt(nextTokens[0]);
+				if (modifyGlobalVariables) {
+					Integer existingSolutionID = solutionIDMap.get(globalStructureAlignmentParameterization.toString());
+					if (existingSolutionID == null) {
+						solutionIDMap.put(globalStructureAlignmentParameterization.toString(), solutionID);
+					} else {
+						assert(existingSolutionID == solutionID);
+					}
+				}
+				
+				if (population.size() < populationSize) {
+					double score = Double.parseDouble(nextTokens[1]);
+					population.add(new Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>(score,globalStructureAlignmentParameterization));
+				}
+			}
+		}
+		fileScanner.close();
 		return population;
 	}
 

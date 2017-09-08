@@ -444,8 +444,8 @@ public class GlobalStructureInferer {
 				
 				matchScore = 0.0;
 				
-				mXML1Lyric =  musicXML1AlignmentEvent.strippedLyricLCText;
-				mXML2Lyric = musicXML2AlignmentEvent.strippedLyricLCText;
+				mXML1Lyric =  musicXML1AlignmentEvent.strippedLyricLowerCaseText;
+				mXML2Lyric = musicXML2AlignmentEvent.strippedLyricLowerCaseText;
 				
 				lyricsBothEmpty = (mXML1Lyric.isEmpty() && mXML2Lyric.isEmpty());
 				lyricsEqual = (mXML1Lyric.equals(mXML2Lyric));

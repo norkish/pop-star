@@ -88,7 +88,7 @@ public class SegmentSpecificMelodyEngineer extends MelodyEngineer {
 				if (note == null || note.isChordWithPrevious)
 					continue;
 
-				Time currTime = musicXML.getTimeForMeasure(measure);
+				Time currTime = musicXML.getTimeForAbsoluteMeasure(measure);
 				SegmentType currType = Utils.valueForKeyBeforeOrEqualTo(measure, beatsOffset, globalStructure);
 				if (currType != prevType) {
 					prevNoteDurationInBeats = -1.0;

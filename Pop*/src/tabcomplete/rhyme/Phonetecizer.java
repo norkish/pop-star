@@ -24,7 +24,7 @@ import utils.Pair;
 
 public class Phonetecizer {
 
-	private static final String cmuFilePath = TabDriver.dataDir + "/pron_dict/cmudict-0.7b.txt";
+	private static final String cmuFilePath = TabDriver.dataDir + "/pron_dict/cmudict-0.7b.edited.txt";
 	private static final String phonesFilePath = TabDriver.dataDir + "/pron_dict/cmudict-0.7b.phones.reordered.txt";
 
 	private static Map<String, List<StressedPhone[]>> cmuDict = loadCMUDict();

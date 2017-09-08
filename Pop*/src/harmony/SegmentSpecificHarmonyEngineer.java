@@ -73,7 +73,7 @@ public class SegmentSpecificHarmonyEngineer extends HarmonyEngineer {
 				int measure = triple.getFirst();
 				int offsetInDivs = triple.getSecond();
 				double offsetInBeats = musicXML.divsToBeats(offsetInDivs, measure);
-				currTime = musicXML.getTimeForMeasure(measure);
+				currTime = musicXML.getTimeForAbsoluteMeasure(measure);
 				Triple<SegmentType, Integer, Double> segmentWithOffset = globalStructureByFormStart.get(measure);
 				SegmentType type = segmentWithOffset == null ? null : segmentWithOffset.getFirst();
 				if (type != null && type != prevType) {
@@ -161,12 +161,12 @@ public class SegmentSpecificHarmonyEngineer extends HarmonyEngineer {
 				duration = offsetInBeatsOfEnd - prevOffsetInBeats;
 			} else {
 				// the rest of the last measure
-				duration = musicXML.getTimeForMeasure(prevMeasure).beats - prevOffsetInBeats;
+				duration = musicXML.getTimeForAbsoluteMeasure(prevMeasure).beats - prevOffsetInBeats;
 				// and whatever is in this measure
 				duration += offsetInBeatsOfEnd;
 				// and the beats for whatever came in between this measure and the last measure
 				for (int i = prevMeasure+1; i < measure; i++) {
-					duration += musicXML.getTimeForMeasure(i).beats;
+					duration += musicXML.getTimeForAbsoluteMeasure(i).beats;
 				}
 			}
 			

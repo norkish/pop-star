@@ -1,18 +1,9 @@
 package tabcomplete.utils;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Scanner;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.FileHandler;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
-
-import tabcomplete.rawsheet.ChordSheet;
 
 public class Utils {
 	private static Scanner scanner = new Scanner(System.in);
