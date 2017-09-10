@@ -68,7 +68,7 @@ public class GeneralizedGlobalStructureInferer {
 		
 		// alignment non-scoring params
 		public double minThresholdForLocalMaxima;
-		public int distanceFromDiagonalInBeats = 6;
+		public int distanceFromDiagonalInBeats = 2;
 		public int eventsPerBeat = 2; //number of divisions into which the beat should be divided.
 		
 //		// measure offset match score
@@ -1294,8 +1294,9 @@ public class GeneralizedGlobalStructureInferer {
 	private static String HOLDOUT; 
 	private static String POPULATION_FILE;
 	private static String HEATMAP_FILE_PREFIX;
-	private final static int TOTAL_GENERATIONS = 2500;
-	private static final String[] viewpoints = new String[]{"harmony","pitch","rhythm","lyric","chorus","verse"};
+	private final static int TOTAL_GENERATIONS = 2000;
+	private static final String[] viewpoints = new String[]{"pitch","harmony","rhythm","lyric","chorus","verse"};
+	private static final int TOP_TO_KEEP = (int) (1.0 * populationSize);
 	
 	private static double prevBestAccuracy = 0.0;
 	public static void main(String[] args) throws Exception {
@@ -1340,11 +1341,11 @@ public class GeneralizedGlobalStructureInferer {
 						}
 					});
 					
-					List<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>> rest = population.subList(3, population.size());
-					Collections.shuffle(rest);
+//					List<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>> rest = population.subList(TOP_TO_KEEP, population.size());
+//					Collections.shuffle(rest);
 					
-					population = population.subList(0, 3);
-					population.addAll(rest.subList(0, populationSize-3));
+					population = population.subList(0, TOP_TO_KEEP);
+//					population.addAll(rest.subList(0, populationSize-TOP_TO_KEEP));
 					final Pair<Double, GeneralizedGlobalStructureAlignmentParameterization> best = population.get(0);
 					if (best.getFirst() > prevBestAccuracy) {
 						prevBestAccuracy = best.getFirst();
@@ -1734,7 +1735,7 @@ public class GeneralizedGlobalStructureInferer {
 
 		Map<Integer,Integer> inferredMatchesForRowPosition;
 		int truePositive = 0;
-//		int trueNegative = 0;
+		int trueNegative = 0;
 		int falsePositive = 0;
 		int falseNegative = 0;
 		Set<String> actualGroups;
@@ -1753,12 +1754,13 @@ public class GeneralizedGlobalStructureInferer {
 			
 			if (actualGroups.isEmpty()) { // didn't belong to any groups, so shouldn't have any matches
 				if (inferredMatchesForRowPosition == null) { // didn't find any matches
-//					trueNegative++; // didn't infer match, was no match
-					truePositive++;
+					trueNegative++; // didn't infer match, was no match
+//					truePositive++;
 				} else { // had matches (wrong)
-					for (Integer count : inferredMatchesForRowPosition.values()) {
-						falsePositive += count;
-					}
+					falsePositive += inferredMatchesForRowPosition.size();
+//					for (Integer count : inferredMatchesForRowPosition.values()) {
+//						falsePositive += count;
+//					}
 				}
 				// inferred matches, but was no match => incorrect
 			} else {
@@ -1802,7 +1804,7 @@ public class GeneralizedGlobalStructureInferer {
 		}
 		Double precision = 1.0 * truePositive / (truePositive + falsePositive);
 		Double recall = 1.0 * truePositive / (truePositive + falseNegative);
-		Double fScore = ((1+fScoreBetaValueSquared) * truePositive) / ((1+fScoreBetaValueSquared) * truePositive + fScoreBetaValueSquared * falseNegative + falsePositive);
+		Double fScore = ((1+fScoreBetaValueSquared) * truePositive + 1) / ((1+fScoreBetaValueSquared) * truePositive + fScoreBetaValueSquared * falseNegative + falsePositive + 1);
 		
 		return new Triple<Double,Double, Double>(precision,recall, fScore);
 	}
