@@ -1288,7 +1288,7 @@ public class GeneralizedGlobalStructureInferer {
 	private static String POPULATION_FILE;
 	private static String HEATMAP_FILE_PREFIX;
 	private static final String[] viewpoints = new String[]{"verse","rhythm","harmony","lyric","pitch","chorus","verse"};
-	private static int TOTAL_GENERATIONS = 5000;
+	private static int TOTAL_GENERATIONS = 1000;
 	
 	private static double prevBestAccuracy = 0.0;
 	public static void main(String[] args) throws Exception {
@@ -1314,11 +1314,12 @@ public class GeneralizedGlobalStructureInferer {
 				// create/load initial population of x parameterizations and their accuracy scores when used to
 				List<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>> population = loadInitialPopulation(TYPE);
 				System.out.println(generation + "\t" + prevBestAccuracy);
-		
+				List<GeneralizedGlobalStructureAlignmentParameterization>  offSpring;
+				Pair<Double, GeneralizedGlobalStructureAlignmentParameterization> best = null;
 				for (int i = 0; generation < TOTAL_GENERATIONS && prevBestAccuracy < 1.0; i++) {
 					generation++;
 					// cross-over and mutate the scores, possible modifying just one score at a time?
-					List<GeneralizedGlobalStructureAlignmentParameterization> offSpring = generateNewPopulation(TYPE,population);
+					offSpring = generateNewPopulation(TYPE,population);
 					
 					// score solutions 
 					population.addAll(scoreParameterizations(offSpring, TYPE));
@@ -1333,7 +1334,7 @@ public class GeneralizedGlobalStructureInferer {
 						}
 					});
 					population = population.subList(0, populationSize);
-					final Pair<Double, GeneralizedGlobalStructureAlignmentParameterization> best = population.get(0);
+					best = population.get(0);
 					if (best.getFirst() > prevBestAccuracy) {
 						prevBestAccuracy = best.getFirst();
 						scoreParameterization(best.getSecond(), TYPE, HEATMAP_FILE_PREFIX); // save best heatmap
@@ -1344,6 +1345,8 @@ public class GeneralizedGlobalStructureInferer {
 					// print top y parameterizations
 					savePopulationToFile(population, TYPE);
 				}
+				HOLDOUT = "None";
+				scoreParameterization(best.getSecond(), TYPE, HEATMAP_FILE_PREFIX); // save best heatmap
 			}
 		}
 		
