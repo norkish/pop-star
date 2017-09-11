@@ -1300,6 +1300,7 @@ public class GeneralizedGlobalStructureInferer {
 			// for each viewpoint
 			for (String viewpoint : viewpoints) {
 				System.out.println("Setting Type to " + viewpoint);
+				LyricAlignmentParameterization.swapEqualsAndUnequals(viewpoint.equals("verse"));
 				TYPE = viewpoint;
 				System.out.println("Resetting static vars...");
 				
@@ -1397,7 +1398,6 @@ public class GeneralizedGlobalStructureInferer {
 
 	private static Class getParameterizationClass(String viewpoint) {
 		Class parameterizationClass = null;
-		LyricAlignmentParameterization.swapEqualsAndUnequals(false);
 		if (viewpoint.equals("lyric"))
 			parameterizationClass = LyricAlignmentParameterization.class;
 		else if (viewpoint.equals("pitch"))
@@ -1410,10 +1410,9 @@ public class GeneralizedGlobalStructureInferer {
 			parameterizationClass = RhymeAlignmentParameterization.class;
 		else if (viewpoint.equals("chorus")) 
 			parameterizationClass = CombinedAlignmentParameterization.class;
-		else if (viewpoint.equals("verse")) {
+		else if (viewpoint.equals("verse")) 
 			parameterizationClass = CombinedAlignmentParameterization.class;
-			LyricAlignmentParameterization.swapEqualsAndUnequals(true);
-		} else 
+		else 
 			throw new RuntimeException("Unknown viewpoint: " + viewpoint);
 		
 		return parameterizationClass;
