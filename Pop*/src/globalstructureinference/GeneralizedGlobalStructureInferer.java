@@ -212,6 +212,7 @@ public class GeneralizedGlobalStructureInferer {
 	}
 
 	public static class LyricAlignmentParameterization extends GeneralizedGlobalStructureAlignmentParameterization {
+		private static boolean swapEqualsAndUnequals = false;
 
 		// pitch weights
 		public double bothRests;
@@ -246,8 +247,11 @@ public class GeneralizedGlobalStructureInferer {
 			this.oneRest = Double.parseDouble(nextTokens[i++]);
 			this.bothLyricsNull = Double.parseDouble(nextTokens[i++]);
 			this.oneLyricNull = Double.parseDouble(nextTokens[i++]);
-			this.lyricsUnequal = Double.parseDouble(nextTokens[i++]);
+			if (swapEqualsAndUnequals)
+				this.lyricsUnequal = Double.parseDouble(nextTokens[i++]);
 			this.lyricsEqual = Double.parseDouble(nextTokens[i++]);
+			if (!swapEqualsAndUnequals)
+				this.lyricsUnequal = Double.parseDouble(nextTokens[i++]);
 			this.bothLyricsOnset = Double.parseDouble(nextTokens[i++]);
 			this.oneLyricOnsetOneNot = Double.parseDouble(nextTokens[i++]);
 			this.bothLyricsNotOnset = Double.parseDouble(nextTokens[i++]);
@@ -266,6 +270,10 @@ public class GeneralizedGlobalStructureInferer {
 					df2.format(bothLyricsOnset) + ", " + 
 					df2.format(oneLyricOnsetOneNot) + ", " +
 					df2.format(bothLyricsNotOnset);
+		}
+		
+		public static void swapEqualsAndUnequals() {
+			swapEqualsAndUnequals = true;
 		}
 		
 		public LyricAlignmentParameterization(GeneralizedGlobalStructureAlignmentParameterization p1g, GeneralizedGlobalStructureAlignmentParameterization p2g) {
@@ -1304,7 +1312,7 @@ public class GeneralizedGlobalStructureInferer {
 				List<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>> population = loadInitialPopulation(TYPE);
 				System.out.println(generation + "\t" + prevBestAccuracy);
 		
-				for (int i = 0; i < TOTAL_GENERATIONS && prevBestAccuracy < 1.0; i++) {
+				for (int i = 0; generation < TOTAL_GENERATIONS && prevBestAccuracy < 1.0; i++) {
 					generation++;
 					// cross-over and mutate the scores, possible modifying just one score at a time?
 					List<GeneralizedGlobalStructureAlignmentParameterization> offSpring = generateNewPopulation(TYPE,population);
@@ -1440,8 +1448,7 @@ public class GeneralizedGlobalStructureInferer {
 		
 		if (DEBUG > 0) System.out.println("Scoring parameterization");
 		for (ParsedMusicXMLObject song : trainingSongs) {
-			if (HOLDOUT.equals(song)) {
-				System.out.println("Skipping " + song);
+			if (HOLDOUT.equals(song.filename)) {
 				continue;
 			}
 			if (DEBUG > 0) System.out.println(song.filename);
