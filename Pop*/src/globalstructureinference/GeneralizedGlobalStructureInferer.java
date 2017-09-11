@@ -1287,7 +1287,7 @@ public class GeneralizedGlobalStructureInferer {
 	private static String HOLDOUT; 
 	private static String POPULATION_FILE;
 	private static String HEATMAP_FILE_PREFIX;
-	private static final String[] viewpoints = new String[]{"verse","rhythm","harmony","lyric","pitch","chorus","verse"};
+	private static final String[] viewpoints = new String[]{"rhythm","harmony","lyric","pitch","chorus","verse"};
 	private static int TOTAL_GENERATIONS = 1000;
 	
 	private static double prevBestAccuracy = 0.0;
@@ -1346,7 +1346,8 @@ public class GeneralizedGlobalStructureInferer {
 					savePopulationToFile(population, TYPE);
 				}
 				HOLDOUT = "None";
-				scoreParameterization(best.getSecond(), TYPE, HEATMAP_FILE_PREFIX); // save best heatmap
+				scoreParameterization(population.get(0).getSecond(), TYPE, HEATMAP_FILE_PREFIX); // save best heatmap
+				HOLDOUT = holdoutSong;
 			}
 		}
 		
