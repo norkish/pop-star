@@ -1452,9 +1452,6 @@ public class GeneralizedGlobalStructureInferer {
 		
 		if (DEBUG > 0) System.out.println("Scoring parameterization");
 		for (ParsedMusicXMLObject song : trainingSongs) {
-			if (HOLDOUT.equals(song.filename)) {
-				continue;
-			}
 			if (DEBUG > 0) System.out.println(song.filename);
 			// do an alignment for each song in the training set using the parameterization
 			Object[] matrices = align(song, globalStructureAlignmentParameterization);
@@ -1498,9 +1495,11 @@ public class GeneralizedGlobalStructureInferer {
 				saveHeatmap(pathname, mapTitle, pathsTaken, globalStructureAlignmentParameterization, song, matchedRegions, bw);
 				bw.close();
 			}
-			
-			correct += precisionRecallFScore.getThird();
-			total+=1;
+		
+			if (!HOLDOUT.equals(song.filename)) {
+				correct += precisionRecallFScore.getThird();
+				total+=1;
+			}
 		}
 		
 		return correct/total;
