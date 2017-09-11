@@ -51,7 +51,7 @@ public class GeneralizedGlobalStructureInferer {
 	
 	private static DecimalFormat df2 = new DecimalFormat("#.##");
 	private static DecimalFormat df3 = new DecimalFormat("#.###");
-	protected final static Random rand = new Random(SongConfiguration.randSeed);
+	protected static Random rand = new Random(SongConfiguration.randSeed);
 
 	public static abstract class GeneralizedGlobalStructureAlignmentParameterization {
 		
@@ -273,6 +273,7 @@ public class GeneralizedGlobalStructureInferer {
 		}
 		
 		public static void swapEqualsAndUnequals(boolean swapVal) {
+			System.out.println("LyricsEqual and LyricsUnequal will "+ (swapVal?"":"not ") + "be swapped.");
 			swapEqualsAndUnequals = swapVal;
 		}
 		
@@ -1286,8 +1287,8 @@ public class GeneralizedGlobalStructureInferer {
 	private static String HOLDOUT; 
 	private static String POPULATION_FILE;
 	private static String HEATMAP_FILE_PREFIX;
-	private static final String[] viewpoints = new String[]{"harmony","lyric","rhythm","pitch","chorus","verse"};
-	private final static int TOTAL_GENERATIONS = 2500;
+	private static final String[] viewpoints = new String[]{"rhythm","harmony","lyric","pitch","chorus","verse"};
+	private static int TOTAL_GENERATIONS = 5000;
 	
 	private static double prevBestAccuracy = 0.0;
 	public static void main(String[] args) throws Exception {
@@ -1307,6 +1308,7 @@ public class GeneralizedGlobalStructureInferer {
 				generation = 1;
 				prevBestAccuracy = 0.0;
 				solutionIDMap = new HashMap<String, Integer>();
+				rand = new Random(SongConfiguration.randSeed);
 				// TRAIN
 				// create/load initial population of x parameterizations and their accuracy scores when used to
 				List<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>> population = loadInitialPopulation(TYPE);
