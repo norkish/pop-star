@@ -47,41 +47,6 @@ Coun	17	1
 // Almost heaven
 match	rhythm	A
 0.0	1	1
-0.0	3	1
-
-// West Virginia
-match	rhythm	B
-0.0	3	1
-0.0	5	1
-
-// Blue Ridge Mountains
-match	rhythm	A
-0.0	5	1
-0.0	7	1
-
-// Shenandoah River
-match	rhythm	C
-Shen	7	1
-0.0	10	1
-
-// Life is old there
-match	rhythm	A
-0.0	10	1
-old	12	1
-
-// older than the trees
-match	rhythm	D
-old	12	1
-Young	14	1
-
-// Younger than the mountains
-match	rhythm	C
-Young	14	1
-grow	16	1
-
-// growing like a breeze.
-match	rhythm	D
-grow	16	1
 Coun	17	1
 
 // Almost heaven...River
@@ -130,41 +95,21 @@ I	23	1
 //Country Roads 
 match	rhythm	E
 Coun	17	1
-take	19	1
-
-//take me home
-match	rhythm	E
-take	19	1
 to	21	1
 
 // to the place
 match	rhythm	E
 to	21	1
-I	23	1
-
-// I belong
-match	rhythm	E
-I	23	1
 West	25	1
 
 // West Virginia
-match	rhythm	A
+match	rhythm	B
 West	25	1
-moun	27	1
-
-// mountain momma
-match	rhythm	A
-moun	27	1
 Take	29	1
 
 // Take me home
 match	rhythm	E
 Take	29	1
-coun	31	1
-
-// country roads
-match	rhythm	E
-coun	31	1
 2.0	33	1
 
 // Country roads.. to the
@@ -236,41 +181,6 @@ tear	16	2
 // All my memories
 match	rhythm	A
 0.0	34	1
-0.0	3	2
-
-// Gather round her
-match	rhythm	B
-0.0	3	2
-0.0	5	2
-
-// Miner's lady
-match	rhythm	A
-0.0	5	2
-0.0	7	2
-
-// Stranger to blue water
-match	rhythm	C
-Stran	7	2
-0.0	10	2
-
-// Dark and dusty
-match	rhythm	A
-0.0	10	2
-pain	12	2
-
-// painted on the sky
-match	rhythm	D
-pain	12	2
-Mis	14	2
-
-// Misty taste of moonshine
-match	rhythm	C
-Mis	14	2
-tear	16	2
-
-// tear drops in my eye
-match	rhythm	D
-tear	16	2
 2.0	17	2
 
 // All my memories... Water
@@ -319,41 +229,21 @@ I	23	2
 //Country Roads 
 match	rhythm	E
 Coun	17	2
-take	19	2
-
-//take me home
-match	rhythm	E
-take	19	2
 to	21	2
 
 // to the place
 match	rhythm	E
 to	21	2
-I	23	2
-
-// I belong
-match	rhythm	E
-I	23	2
 West	25	2
 
 // West Virginia
-match	rhythm	A
+match	rhythm	B
 West	25	2
-moun	27	2
-
-// mountain momma
-match	rhythm	A
-moun	27	2
 Take	29	2
 
 // Take me home
 match	rhythm	E
 Take	29	2
-coun	31	2
-
-// country roads
-match	rhythm	E
-coun	31	2
 2.0	33	2
 
 // Country roads.. to the
@@ -385,22 +275,6 @@ day,	47	1
 rhyme
 day,	47	1
 day.	49	1
-
-match	rhythm	F
-the	36	1
-1.0	38	1
-
-match	rhythm	F
-re	39	1
-1.0	40	1
-
-match	rhythm	F
-and	42	1
-I	44	1
-
-match	rhythm	E
-yes	48	1
-Coun	50	1
 
 CHORUS	A	50	1	Coun	-1
 
@@ -438,41 +312,21 @@ I	23	3
 //Country Roads 
 match	rhythm	E
 Coun	50	1
-take	19	3
-
-//take me home
-match	rhythm	E
-take	19	3
 to	21	3
 
 // to the place
 match	rhythm	E
 to	21	3
-I	23	3
-
-// I belong
-match	rhythm	E
-I	23	3
 West	25	3
 
 // West Virginia
-match	rhythm	A
+match	rhythm	B
 West	25	3
-moun	27	3
-
-// mountain momma
-match	rhythm	A
-moun	27	3
 Take	29	3
 
 // Take me home
 match	rhythm	E
 Take	29	3
-coun	31	3
-
-// country roads
-match	rhythm	E
-coun	31	3
 2.0	52	1
 
 // Country roads.. to the
@@ -529,18 +383,10 @@ take	56	1
 
 match	rhythm	E
 take	52	1
-coun	54	1
-
-match	rhythm	E
-coun	54	1
 take	56	1
 
 match	rhythm	E
 take	56	1
-coun	58	1
-
-match	rhythm	E
-coun	58	1
 2.0	60	1
 
 match	chord	B

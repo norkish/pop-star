@@ -1,25 +1,5 @@
 INTRO	A	1	1	0.0	0
 
-// rest
-match	pitch	A
-0.0	1	1
-0.0	1	2
-
-// rest
-match	pitch	A
-0.0	1	2
-0.0	3	1
-
-// rest
-match	rhythm	A
-0.0	1	1
-0.0	1	2
-
-// rest
-match	rhythm	A
-0.0	1	2
-0.0	3	1
-
 match	chord	A
 0.0	1	1
 0.0	1	2
@@ -57,21 +37,6 @@ match	pitch	B
 // Imagine there's no heaven
 match	rhythm	B
 0.0	3	1
-0.0	5	1
-
-// It's easy if you try
-match	rhythm	B
-0.0	5	1
-0.0	7	1
-
-// No hell below us
-match	rhythm	B
-0.0	7	1
-0.0	9	1
-
-// Above us only sky
-match	rhythm	B
-0.0	9	1
 0.0	11	1
 
 // Imagine there's no heaven
@@ -109,13 +74,8 @@ match	pitch	C
 0.0	15	1
 
 // Imagine all the people
-match	rhythm	B
-0.0	11	1
-0.0	13	1
-
-// living for today
 match	rhythm	C
-0.0	13	1
+0.0	11	1
 0.0	15	1
 
 // Imagine all the people living for today
@@ -152,21 +112,6 @@ match	pitch	B
 // Imagine there's no countries
 match	rhythm	B
 0.0	15	1
-0.0	17	1
-
-// It isn't hard to do
-match	rhythm	B
-0.0	17	1
-0.0	19	1
-
-// Nothing to kill or die for
-match	rhythm	B
-0.0	19	1
-0.0	21	1
-
-// and no religion too
-match	rhythm	B
-0.0	21	1
 0.0	23	1
 
 // Imagine there's no countries
@@ -204,13 +149,8 @@ match	pitch	C
 0.0	27	1
 
 // Imagine all the people
-match	rhythm	B
-0.0	23	1
-0.0	25	1
-
-// living life in peace
 match	rhythm	C
-0.0	25	1
+0.0	23	1
 0.0	27	1
 
 // Imagine all the people living life in peace
@@ -252,21 +192,6 @@ match	pitch	F
 // You may say I'm a dreamer
 match	rhythm	D
 0.0	27	1
-0.0	29	1
-
-// but i'm not the only one
-match	rhythm	E
-0.0	29	1
-0.0	31	1
-
-// i hope someday you'll join us
-match	rhythm	D
-0.0	31	1
-0.0	33	1
-
-// and the world will be one
-match	rhythm	F
-0.0	33	1
 0.0	15	2
 
 // You may say I'm a dreamer
@@ -318,21 +243,6 @@ match	pitch	B
 // Imagine no possessions
 match	rhythm	B
 0.0	15	2
-0.0	17	2
-
-// I wonder if you can
-match	rhythm	B
-0.0	17	2
-0.0	19	2
-
-// No need for greed or hunger
-match	rhythm	B
-0.0	19	2
-0.0	21	2
-
-// a brotherhood of man
-match	rhythm	B
-0.0	21	2
 0.0	23	2
 
 // Imagine there's no countries
@@ -370,13 +280,8 @@ match	pitch	C
 0.0	27	2
 
 // Imagine all the people
-match	rhythm	B
-0.0	23	2
-0.0	25	2
-
-// sharing all the world
 match	rhythm	C
-0.0	25	2
+0.0	23	2
 0.0	27	2
 
 // Imagine all the people sharing all the world
@@ -418,21 +323,6 @@ END
 // You may say I'm a dreamer
 match	rhythm	D
 0.0	27	2
-0.0	29	2
-
-// but i'm not the only one
-match	rhythm	E
-0.0	29	2
-0.0	31	2
-
-// i hope someday you'll join us
-match	rhythm	D
-0.0	31	2
-0.0	33	2
-
-// and the world will be one
-match	rhythm	F
-0.0	33	2
 END
 
 // You may say I'm a dreamer

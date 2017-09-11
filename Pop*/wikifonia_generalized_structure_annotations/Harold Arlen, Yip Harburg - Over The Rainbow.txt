@@ -28,34 +28,6 @@ by.	8	1
 
 match	rhythm	A
 Some	1	1
-o	2	1
-
-match	rhythm	B
-o	2	1
-way	3	1
-
-match	rhythm	A
-way	3	1
-high,	4	1
-
-match	rhythm	C
-high,	4	1
-there's	5	1
-
-match	rhythm	A
-there's	5	1
-land	6	1
-
-match	rhythm	B
-land	6	1
-once	7	1
-
-match	rhythm	B
-once	7	1
-by.	8	1
-
-match	rhythm	C
-by.	8	1
 Some	1	2
 
 CHORUS	A	1	2	0.0	0
@@ -92,34 +64,6 @@ day	10	1
 
 match	rhythm	A
 Some	1	2
-o	2	2
-
-match	rhythm	B
-o	2	2
-skies	3	2
-
-match	rhythm	A
-skies	3	2
-blue,	4	2
-
-match	rhythm	C
-blue,	4	2
-and	5	2
-
-match	rhythm	A
-and	5	2
-dreams	6	2
-
-match	rhythm	B
-dreams	6	2
-dream	7	2
-
-match	rhythm	B
-dream	7	2
-true.	9	1
-
-match	rhythm	C
-true.	9	1
 Some	9	1
 
 BRIDGE	A	9	1	Some	-1
@@ -138,14 +82,6 @@ wake	11	1
 
 match	rhythm	D
 Some	9	1
-and	10	1
-
-match	rhythm	D
-and	10	1
-be	11	1
-
-match	rhythm	E
-be	11	1
 0.0	13	1
 
 rhyme
@@ -170,19 +106,7 @@ way	15	1
 
 match	rhythm	D
 Where	13	1
-a	14	1
-
-match	rhythm	D
-a	14	1
-that's	15	1
-
-match	rhythm	E
-that's	15	1
 find	17	1
-
-match	rhythm	E
-find	17	1
-Some	18	1
 
 CHORUS	A	18	1	0.0	0
 
@@ -218,36 +142,4 @@ END
 
 match	rhythm	A
 Some	18	1
-o	19	1
-
-match	rhythm	B
-o	19	1
-blue	20	1
-
-match	rhythm	A
-blue	20	1
-fly.	21	1
-
-match	rhythm	C
-fly.	21	1
-Birds	22	1
-
-match	rhythm	A
-Birds	22	1
-o	23	1
-
-match	lyric	B
-o	23	1
-why	24	1	1
-
-match	rhythm	B
-o	23	1
-why	24	1	1
-
-match	rhythm	B
-why	24	1	1
-I?	25	1
-
-match	rhythm	C
-I?	25	1
 END

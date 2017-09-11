@@ -36,6 +36,10 @@ Hey	9	1
 
 match	rhythm	A
 Hey	1	1
+don't	2	1
+
+match	rhythm	E
+don't	2	1
 Hey	9	1
 
 match	chord	A
@@ -73,6 +77,10 @@ Hey	9	1
 
 match	rhythm	A
 Hey	9	1
+don't	10	1
+
+match	rhythm	E
+don't	10	1
 3.0	17	1
 
 match	chord	A
@@ -171,6 +179,10 @@ Hey	30	1
 
 match	rhythm	A
 Hey	30	1
+don't	10	2
+
+match	rhythm	D
+don't	10	1
 3.0	17	2
 
 match	chord	A
@@ -264,8 +276,8 @@ match	pitch	A
 Hey	31	1
 1.0	39	1
 
-match	rhythm	A
-Hey	31	1
+match	rhythm	D
+don't	32	1
 1.0	39	1
 
 match	chord	A
