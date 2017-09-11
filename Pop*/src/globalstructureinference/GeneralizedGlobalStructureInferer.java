@@ -475,10 +475,14 @@ public class GeneralizedGlobalStructureInferer {
 			this.lyricWeight = (rand.nextBoolean()?p1.lyricWeight:p2.lyricWeight);
 			
 			parameterizations = new GeneralizedGlobalStructureAlignmentParameterization[]{
-					new HarmonicAlignmentParameterization(p1.parameterizations[0],p2.parameterizations[0]),
-					new PitchAlignmentParameterization(p1.parameterizations[1],p2.parameterizations[1]),
-					new RhythmAlignmentParameterization(p1.parameterizations[2],p2.parameterizations[2]),
-					new LyricAlignmentParameterization(p1.parameterizations[3],p2.parameterizations[3])
+					p1.parameterizations[0],
+					p1.parameterizations[1],
+					p1.parameterizations[2],
+					p1.parameterizations[3]
+//					new HarmonicAlignmentParameterization(p1.parameterizations[0],p2.parameterizations[0]),
+//					new PitchAlignmentParameterization(p1.parameterizations[1],p2.parameterizations[1]),
+//					new RhythmAlignmentParameterization(p1.parameterizations[2],p2.parameterizations[2]),
+//					new LyricAlignmentParameterization(p1.parameterizations[3],p2.parameterizations[3])
 			};
 		}
 
@@ -1337,7 +1341,7 @@ public class GeneralizedGlobalStructureInferer {
 					best = population.get(0);
 					if (best.getFirst() > prevBestAccuracy) {
 						prevBestAccuracy = best.getFirst();
-						scoreParameterization(best.getSecond(), TYPE, HEATMAP_FILE_PREFIX); // save best heatmap
+//						scoreParameterization(best.getSecond(), TYPE, HEATMAP_FILE_PREFIX); // save best heatmap
 						System.out.println(generation + "\t" + prevBestAccuracy);
 					}
 		//			System.out.println(i + "\t" + prevBestAccuracy);
