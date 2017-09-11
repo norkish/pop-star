@@ -66,8 +66,8 @@ public class GeneralizedGlobalStructureInferer {
 		
 		// alignment non-scoring params
 		public double minThresholdForLocalMaxima;
-		public int distanceFromDiagonalInBeats = 3;
-		public int eventsPerBeat = 1; //number of divisions into which the beat should be divided.
+		public int distanceFromDiagonalInBeats = 2;
+		public int eventsPerBeat = 2; //number of divisions into which the beat should be divided.
 		
 //		// measure offset match score
 		public double haveSameMeasureOffset;
@@ -81,8 +81,8 @@ public class GeneralizedGlobalStructureInferer {
 			gapOpenScore = rand.nextInt(7)-3;
 			gapExtendScore = rand.nextInt(7)-3;
 			minThresholdForLocalMaxima = rand.nextDouble() * 20;
-			distanceFromDiagonalInBeats = rand.nextInt(5)+6; // distance from diagonal
-			eventsPerBeat = (int) Math.pow(2,rand.nextInt(2)); // events per beat
+//			distanceFromDiagonalInBeats = rand.nextInt(5)+6; // distance from diagonal
+//			eventsPerBeat = (int) Math.pow(2,rand.nextInt(2)); // events per beat
 			haveSameMeasureOffset = rand.nextInt(7)-3;
 			haveDifferentMeasureOffset = rand.nextInt(7)-3;
 			measureOffsetDifference = rand.nextInt(7)-3;
@@ -96,8 +96,8 @@ public class GeneralizedGlobalStructureInferer {
 			this.gapOpenScore = (rand.nextBoolean() ? p1.gapOpenScore:p2.gapOpenScore);;
 			this.gapExtendScore = (rand.nextBoolean()? p1.gapExtendScore:p2.gapExtendScore);
 			this.minThresholdForLocalMaxima = (rand.nextBoolean() ? p1.minThresholdForLocalMaxima:p2.minThresholdForLocalMaxima);
-			this.distanceFromDiagonalInBeats = (rand.nextBoolean() ? p1.distanceFromDiagonalInBeats:p2.distanceFromDiagonalInBeats);
-			this.eventsPerBeat = (rand.nextBoolean() ? p1.eventsPerBeat:p2.eventsPerBeat);
+//			this.distanceFromDiagonalInBeats = (rand.nextBoolean() ? p1.distanceFromDiagonalInBeats:p2.distanceFromDiagonalInBeats);
+//			this.eventsPerBeat = (rand.nextBoolean() ? p1.eventsPerBeat:p2.eventsPerBeat);
 			this.haveSameMeasureOffset = (rand.nextBoolean()?p1.haveSameMeasureOffset:p2.haveSameMeasureOffset);
 			this.haveDifferentMeasureOffset = (rand.nextBoolean()?p1.haveDifferentMeasureOffset:p2.haveDifferentMeasureOffset);
 			this.measureOffsetDifference = (rand.nextBoolean()?p1.measureOffsetDifference:p2.measureOffsetDifference);
@@ -130,16 +130,16 @@ public class GeneralizedGlobalStructureInferer {
 				this.gapExtendScore += (rand.nextBoolean()?1:-1) * rand.nextInt(MAX_MUTATION_STEP);
 			if (rand.nextDouble() < MUTATION_RATE)
 				this.minThresholdForLocalMaxima *= rand.nextDouble() * 2;
-			if (rand.nextDouble() < MUTATION_RATE) {
-				this.distanceFromDiagonalInBeats += (rand.nextBoolean()?1:-1) * rand.nextInt(MAX_MUTATION_STEP);
-				if (this.distanceFromDiagonalInBeats > MAX_DISTANCE_FROM_DIAGNOAL_IN_BEATS) {
-					this.distanceFromDiagonalInBeats = MAX_DISTANCE_FROM_DIAGNOAL_IN_BEATS;
-				} else if (this.distanceFromDiagonalInBeats < MIN_DISTANCE_FROM_DIAGNOAL_IN_BEATS) {
-					this.distanceFromDiagonalInBeats = MIN_DISTANCE_FROM_DIAGNOAL_IN_BEATS;
-				}
-			}
-			if (rand.nextDouble() < MUTATION_RATE)
-				this.eventsPerBeat = (int) Math.pow(2,rand.nextInt(2));	
+//			if (rand.nextDouble() < MUTATION_RATE) {
+//				this.distanceFromDiagonalInBeats += (rand.nextBoolean()?1:-1) * rand.nextInt(MAX_MUTATION_STEP);
+//				if (this.distanceFromDiagonalInBeats > MAX_DISTANCE_FROM_DIAGNOAL_IN_BEATS) {
+//					this.distanceFromDiagonalInBeats = MAX_DISTANCE_FROM_DIAGNOAL_IN_BEATS;
+//				} else if (this.distanceFromDiagonalInBeats < MIN_DISTANCE_FROM_DIAGNOAL_IN_BEATS) {
+//					this.distanceFromDiagonalInBeats = MIN_DISTANCE_FROM_DIAGNOAL_IN_BEATS;
+//				}
+//			}
+//			if (rand.nextDouble() < MUTATION_RATE)
+//				this.eventsPerBeat = (int) Math.pow(2,rand.nextInt(2));	
 			
 			if (rand.nextDouble() < MUTATION_RATE)
 				this.haveSameMeasureOffset += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2); 
@@ -272,8 +272,8 @@ public class GeneralizedGlobalStructureInferer {
 					df2.format(bothLyricsNotOnset);
 		}
 		
-		public static void swapEqualsAndUnequals() {
-			swapEqualsAndUnequals = true;
+		public static void swapEqualsAndUnequals(boolean swapVal) {
+			swapEqualsAndUnequals = swapVal;
 		}
 		
 		public LyricAlignmentParameterization(GeneralizedGlobalStructureAlignmentParameterization p1g, GeneralizedGlobalStructureAlignmentParameterization p2g) {
@@ -1286,7 +1286,7 @@ public class GeneralizedGlobalStructureInferer {
 	private static String HOLDOUT; 
 	private static String POPULATION_FILE;
 	private static String HEATMAP_FILE_PREFIX;
-	private static final String[] viewpoints = new String[]{"lyric","pitch","rhythm","harmony","chorus","verse"};
+	private static final String[] viewpoints = new String[]{"harmony","lyric","rhythm","pitch","chorus","verse"};
 	private final static int TOTAL_GENERATIONS = 2500;
 	
 	private static double prevBestAccuracy = 0.0;
@@ -1395,6 +1395,7 @@ public class GeneralizedGlobalStructureInferer {
 
 	private static Class getParameterizationClass(String viewpoint) {
 		Class parameterizationClass = null;
+		LyricAlignmentParameterization.swapEqualsAndUnequals(false);
 		if (viewpoint.equals("lyric"))
 			parameterizationClass = LyricAlignmentParameterization.class;
 		else if (viewpoint.equals("pitch"))
@@ -1405,10 +1406,12 @@ public class GeneralizedGlobalStructureInferer {
 			parameterizationClass = RhythmAlignmentParameterization.class;
 		else if (viewpoint.equals("rhyme"))
 			parameterizationClass = RhymeAlignmentParameterization.class;
-		else if (viewpoint.equals("chorus") || viewpoint.equals("verse")) {
+		else if (viewpoint.equals("chorus")) 
 			parameterizationClass = CombinedAlignmentParameterization.class;
-		}
-		else 
+		else if (viewpoint.equals("verse")) {
+			parameterizationClass = CombinedAlignmentParameterization.class;
+			LyricAlignmentParameterization.swapEqualsAndUnequals(true);
+		} else 
 			throw new RuntimeException("Unknown viewpoint: " + viewpoint);
 		
 		return parameterizationClass;
