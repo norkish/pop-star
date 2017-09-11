@@ -493,9 +493,9 @@ public class GeneralizedGlobalStructureInferer {
 			if (rand.nextDouble() < MUTATION_RATE)
 				this.lyricWeight += (rand.nextDouble()-0.5) * (MAX_MUTATION_STEP*2);
 			
-			for (GeneralizedGlobalStructureAlignmentParameterization parameterization : parameterizations) {
-				parameterization.mutate();
-			}
+//			for (GeneralizedGlobalStructureAlignmentParameterization parameterization : parameterizations) {
+//				parameterization.mutate();
+//			}
 		}
 
 		@Override
@@ -1287,7 +1287,7 @@ public class GeneralizedGlobalStructureInferer {
 	private static String HOLDOUT; 
 	private static String POPULATION_FILE;
 	private static String HEATMAP_FILE_PREFIX;
-	private static final String[] viewpoints = new String[]{"rhythm","harmony","lyric","pitch","chorus","verse"};
+	private static final String[] viewpoints = new String[]{"verse","rhythm","harmony","lyric","pitch","chorus","verse"};
 	private static int TOTAL_GENERATIONS = 5000;
 	
 	private static double prevBestAccuracy = 0.0;
