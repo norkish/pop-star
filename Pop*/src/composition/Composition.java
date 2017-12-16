@@ -16,6 +16,7 @@ import globalstructure.SegmentType;
 import harmony.HarmonyEngineer;
 import inspiration.Inspiration;
 import inspiration.InspirationEngineer;
+import inspiration.InspirationSource;
 import lyrics.LyricalEngineer;
 import melody.MelodyEngineer;
 import segmentstructure.SegmentStructure;
@@ -25,11 +26,17 @@ public class Composition {
 
 	private String title = "BSSF (Best Song So Far)";
 	private String composer = "Pop*";
-	private Inspiration inspiration;
+	private Inspiration inspiration = new Inspiration(InspirationSource.RANDOM);
 	private GlobalStructure globalStructure;
 	Map<SegmentType, SegmentStructure> indexedSegmentStructures;
 	
 	Score score;
+
+	public Composition(Score newScore) {
+		this.score = newScore;
+	}
+
+	public Composition() {}
 
 	public void generateInspiration(InspirationEngineer inspirationEngineer) {
 		this.inspiration = inspirationEngineer.generateInspiration();

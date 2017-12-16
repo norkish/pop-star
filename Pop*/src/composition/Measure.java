@@ -14,6 +14,7 @@ import data.MusicXMLParser.Key;
 import data.MusicXMLParser.KeyMode;
 import data.MusicXMLParser.Note;
 import data.MusicXMLParser.NoteLyric;
+import data.MusicXMLParser.NoteTie;
 import data.MusicXMLParser.Quality;
 import data.MusicXMLParser.Time;
 import globalstructure.SegmentType;
@@ -40,7 +41,7 @@ public class Measure {
 		this.offsetWithinSegment = offset;
 	}
 
-	public void setDivions(int divisions) {
+	public void setDivisions(int divisions) {
 		this.divisionsPerQuarterNote = divisions;
 	}
 	
@@ -99,16 +100,22 @@ public class Measure {
 		}
 		
 		// do all notes
-		for (Note note : notes.values()) {
-			// this assumes note durations are sufficient to calculate note onsets (no gaps)
-			str.append(note.toXML(indentationLevel, true));
+		if (notes.isEmpty()) {
+			for (Note restNote : MelodyEngineer.createTiedNoteWithDuration(beatsToDivs((double) time.beats), Note.REST, divisionsPerQuarterNote)) {
+				str.append(restNote.toXML(indentationLevel, true));
+			}
+		} else {
+			for (Note note : notes.values()) {
+				// this assumes note durations are sufficient to calculate note onsets (no gaps)
+				str.append(note.toXML(indentationLevel, true));
+			}
 		}
 		// TODO: constraints
 		
 		return str.toString();
 	}
 
-	private int beatsToDivs(Double beats) {
+	public int beatsToDivs(Double beats) {
 		// beats * divs/quarter * quarters/beat
 		return (int) (beats * divisionsPerQuarterNote * (4.0/time.beatType));
 	}

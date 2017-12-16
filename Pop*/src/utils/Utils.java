@@ -141,6 +141,33 @@ public class Utils {
 		}		
 	}
 
+	public static <T> void incrementDoubleForKey(Map<T, Double> map, T key) {
+		incrementDoubleForKey(map, key, 1.0);
+	}
+	
+	public static <T> void incrementDoubleForKey(Map<T, Double> map, T key, Double incrementAmount) {
+		Double count = map.get(key);
+		map.put(key, count == null ? incrementAmount : count + incrementAmount);		
+	}
+	
+	public static <S, T> void incrementDoubleForKeys(Map<S, Map<T, Double>> map2d, S key1,
+			T key2) {
+		incrementDoubleForKeys(map2d, key1, key2, 1.0);
+	}
+	
+	public static <S, T> void incrementDoubleForKeys(Map<S, Map<T, Double>> map2d, S key1,
+			T key2, Double incrementAmount) {
+		Map<T,Double> map1d = map2d.get(key1);
+		if (map1d == null) { // never even seen prevState
+			map1d = new HashMap<T,Double>();
+			map1d.put(key2, incrementAmount);
+			map2d.put(key1, map1d);
+		} else { // seen prev state
+			Double count = map1d.get(key2);
+			map1d.put(key2, count == null ? 1 : count + incrementAmount);
+		}		
+	}
+	
 	public static <S extends Comparable<S>, T> T valueForKeyBeforeOrEqualTo(S currPos, SortedMap<S, T> tokens) {
 		T currToken = null;
 		for (S pos : tokens.keySet()) {

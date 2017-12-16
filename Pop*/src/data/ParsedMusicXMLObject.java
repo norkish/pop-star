@@ -466,9 +466,9 @@ public class ParsedMusicXMLObject {
 		boolean harmonyOnset;
 		NoteLyric currLyric = null;
 		boolean lyricOnset;
-		Iterator<Entry<Integer, Triple<SegmentType, Integer, Double>>> globalStructureIterator = globalStructureByFormStart.entrySet().iterator();
-		Entry<Integer, Triple<SegmentType, Integer, Double>> nextSegment = globalStructureIterator.next();
-		int nextSegmentMeasureStart = (nextSegment.getKey() + nextSegment.getValue().getSecond());
+		Iterator<Entry<Integer, Triple<SegmentType, Integer, Double>>> globalStructureIterator = globalStructureByFormStart == null ? null : globalStructureByFormStart.entrySet().iterator();
+		Entry<Integer, Triple<SegmentType, Integer, Double>> nextSegment = globalStructureIterator == null ? null : globalStructureIterator.next();
+		int nextSegmentMeasureStart = nextSegment == null ? -1 : (nextSegment.getKey() + nextSegment.getValue().getSecond());
 		SegmentType currSegment = null;
 		int measureOffsetIntoSegment = -1;
 		

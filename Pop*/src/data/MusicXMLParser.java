@@ -549,7 +549,7 @@ public class MusicXMLParser {
 			if (text.equals("6"))
 				text = "major-sixth";
 			else if (text.equals("7"))
-				text = "dominant-seventh";
+				text = "dominant";
 			else if (text.equals("9"))
 				text = "dominant-ninth";
 			else if (text.equals("minMaj7"))
@@ -668,7 +668,7 @@ public class MusicXMLParser {
 				notesOn[FLAT_SEVENTHi] = true;
 				text = text.substring(8);
 				kind = DOMINANT;
-				kindInterval = SEVENTH;
+//				kindInterval = SEVENTH;
 				if (text.equals("") || text.equals("-seventh")) {
 					return true;
 				} else if (text.equals("-ninth")) {
@@ -1035,6 +1035,8 @@ public class MusicXMLParser {
 			}
 			if (kindInterval != null)
 				builder.append(getShortInterval(kindInterval));
+			else if (kind == DOMINANT) 
+				builder.append(getShortInterval(SEVENTH));
 			if (degreeType != null)
 				builder.append(degreeType);
 			if (degreeValue > 0)

@@ -49,7 +49,7 @@ public class GeneralizedGlobalStructureInferer {
 
 	final private static int DEBUG = 0;
 	
-	private static DecimalFormat df2 = new DecimalFormat("#.##");
+	public static DecimalFormat df2 = new DecimalFormat("#.##");
 	private static DecimalFormat df3 = new DecimalFormat("#.###");
 	protected static Random rand = new Random(SongConfiguration.randSeed);
 
@@ -1292,7 +1292,7 @@ public class GeneralizedGlobalStructureInferer {
 	private static String POPULATION_FILE;
 	private static String HEATMAP_FILE_PREFIX;
 	private static final String[] viewpoints = new String[]{"rhythm","harmony","lyric","pitch","chorus","verse"};
-	private static int TOTAL_GENERATIONS = 1000;
+	private static int TOTAL_GENERATIONS = 5000;
 	
 	private static double prevBestAccuracy = 0.0;
 	public static void main(String[] args) throws Exception {
@@ -1519,7 +1519,7 @@ public class GeneralizedGlobalStructureInferer {
 	 * Given a parameterization and song, do an alignment 
 	 * @return 
 	 */
-	private static Object[] align(ParsedMusicXMLObject song,
+	public static Object[] align(ParsedMusicXMLObject song,
 			GeneralizedGlobalStructureAlignmentParameterization globalStructureAlignmentParameterization) {
 		
 //		String test = "IntroVERSEChorusverseChorusBridgeChorusOutro";
@@ -1601,8 +1601,7 @@ public class GeneralizedGlobalStructureInferer {
 	 * @param ptrMatrix 
 	 * @param targetSegment 
 	 */
-	@SuppressWarnings("unused")
-	private static Object[] inferTargetSegmentLocations(double[][] alnMatrix,
+	public static Object[] inferTargetSegmentLocations(double[][] alnMatrix,
 			char[][] ptrMatrix, GeneralizedGlobalStructureAlignmentParameterization globalStructureAlignmentParameterization) {
 		List<Set<Integer>> inferredLocations = new ArrayList<Set<Integer>>(Collections.nCopies(alnMatrix.length-1, null));
 		double[][] pathsTaken = new double[alnMatrix.length][alnMatrix.length];
@@ -1959,7 +1958,7 @@ public class GeneralizedGlobalStructureInferer {
 		}		
 	}
 
-	private static List<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>> loadInitialPopulation(String targetSegment) throws Exception {
+	public static List<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>> loadInitialPopulation(String targetSegment) throws Exception {
 		List<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>> population = new ArrayList<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>>();
 		try {
 			population = loadInitialPopulationFromFile(targetSegment, true);
@@ -1991,7 +1990,11 @@ public class GeneralizedGlobalStructureInferer {
 		return population;
 	}
 
-	private static List<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>> loadInitialPopulationFromFile(String targetSegment, boolean modifyGlobalVariables)
+	public static void setPopulationFile(String holdout) {
+		POPULATION_FILE = "generalized_global_alignment_inference/parameterization_holdout_" + songTitleFromFileName.get(holdout) + "_";
+	}
+	
+	public static List<Pair<Double, GeneralizedGlobalStructureAlignmentParameterization>> loadInitialPopulationFromFile(String targetSegment, boolean modifyGlobalVariables)
 			throws FileNotFoundException, InstantiationException, IllegalAccessException, InvocationTargetException,
 			NoSuchMethodException {
 		Scanner fileScanner = new Scanner(new File(POPULATION_FILE + targetSegment + ".txt"));

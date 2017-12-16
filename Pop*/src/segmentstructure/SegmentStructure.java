@@ -30,7 +30,7 @@ public class SegmentStructure implements Serializable {
 	}
 
 	public void addDivisionsPerQuarterNote(int measureNumber, int divisions) {
-		measures.get(measureNumber).setDivions(divisions);
+		measures.get(measureNumber).setDivisions(divisions);
 	}
 
 	public void addKey(int measureNumber, int fifths, KeyMode mode) {
