@@ -425,7 +425,7 @@ public class AlnNHMMSongGenerator {
 	final private static int lyricMarkovOrder = 1;
 	public static void main(String[] args) throws Exception {
 		
-
+		dbtb.main.Main.setRootPath("/Users/norkish/Archive/2017_BYU/ComputationalCreativity/");
 		// 0. STRUCTURE
 		// Load a song and structure from file
 		ParsedMusicXMLObject structureSong = loadSong(structureFilePath);
