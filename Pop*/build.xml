@@ -6,8 +6,8 @@
               as the first entry and export the buildfile again. --><project basedir="." default="build" name="Pop*">
     <property environment="env"/>
     <property name="debuglevel" value="source,lines,vars"/>
-    <property name="target" value="1.7"/>
-    <property name="source" value="1.7"/>
+    <property name="target" value="1.8"/>
+    <property name="source" value="1.8"/>
     <path id="Pop*.classpath">
         <pathelement location="bin"/>
         <pathelement location="lib/commons-lang3-3.4/commons-lang3-3.4-javadoc.jar"/>
@@ -18,12 +18,21 @@
         <pathelement location="lib/sphinx4-core-1.0.0.jar"/>
         <pathelement location="lib/sphinx4-data-1.0.0.jar"/>
         <pathelement location="lib/commons-csv-1.2/commons-csv-1.2.jar"/>
+        <pathelement location="lib/gson-2.8.0-javadoc.jar"/>
+        <pathelement location="lib/gson-2.8.0.jar"/>
+        <pathelement location="lib/jcommon-1.0.23.jar"/>
+        <pathelement location="lib/jfreechart-1.0.19.jar"/>
+        <pathelement location="lib/jheatchart-0.6.jar"/>
+        <pathelement location="lib/DBTB.jar"/>
+        <pathelement location="../../../../../Library/Java/stanford-corenlp-full-2016-10-31/stanford-corenlp-3.7.0-javadoc.jar"/>
+        <pathelement location="../../../../../Library/Java/stanford-corenlp-full-2016-10-31/stanford-corenlp-3.7.0-models.jar"/>
+        <pathelement location="../../../../../Library/Java/stanford-corenlp-full-2016-10-31/stanford-corenlp-3.7.0-sources.jar"/>
+        <pathelement location="../../../../../Library/Java/stanford-corenlp-full-2016-10-31/stanford-corenlp-3.7.0.jar"/>
     </path>
     <target name="init">
         <mkdir dir="bin"/>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src">
-                <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
@@ -55,13 +64,50 @@
         <property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
         <antcall target="build"/>
     </target>
-    <target name="PopDriver">
-        <java classname="main.PopDriver" failonerror="true" fork="yes">
+    <target name="AlnNHMMSongGenerator">
+        <java classname="main.AlnNHMMSongGenerator" failonerror="true" fork="yes">
+            <classpath refid="Pop*.classpath"/>
+        </java>
+    </target>
+    <target name="GlobalStructureInferer">
+        <java classname="globalstructureinference.GlobalStructureInferer" failonerror="true" fork="yes">
+            <classpath refid="Pop*.classpath"/>
+        </java>
+    </target>
+    <target name="MusicXMLParser">
+        <java classname="data.MusicXMLParser" failonerror="true" fork="yes">
+            <classpath refid="Pop*.classpath"/>
+        </java>
+    </target>
+    <target name="GeneralizedGlobalStructureInferer">
+        <java classname="globalstructureinference.GeneralizedGlobalStructureInferer" failonerror="true" fork="yes">
+            <jvmarg line="-Xmx4g"/>
+            <classpath refid="Pop*.classpath"/>
+        </java>
+    </target>
+    <target name="Syllabifier">
+        <java classname="syllabify.Syllabifier" failonerror="true" fork="yes">
+            <classpath refid="Pop*.classpath"/>
+        </java>
+    </target>
+    <target name="RhymeStructureAnalyzer">
+        <java classname="tabcomplete.rhyme.RhymeStructureAnalyzer" failonerror="true" fork="yes">
             <classpath refid="Pop*.classpath"/>
         </java>
     </target>
     <target name="TabDriver">
         <java classname="tabcomplete.main.TabDriver" failonerror="true" fork="yes">
+            <classpath refid="Pop*.classpath"/>
+        </java>
+    </target>
+    <target name="MusicXMLModelLearner">
+        <java classname="data.MusicXMLModelLearner" failonerror="true" fork="yes">
+            <classpath refid="Pop*.classpath"/>
+        </java>
+    </target>
+    <target name="PopDriver">
+        <java classname="main.PopDriver" failonerror="true" fork="yes">
+            <jvmarg line="-ea"/>
             <classpath refid="Pop*.classpath"/>
         </java>
     </target>
