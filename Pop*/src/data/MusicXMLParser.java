@@ -2198,7 +2198,7 @@ public class MusicXMLParser {
 				Node typeItem = child.getAttributes().getNamedItem("type");
 				final String typeContent = typeItem == null?null:typeItem.getTextContent().trim();
 				
-				if (numberContent.isEmpty() || typeContent != null && typeContent.equals("discontinue"))
+				if (numberContent.isEmpty() || typeContent != null && (typeContent.equals("discontinue")||typeContent.equals("stop")))
 					continue;
 				if (typeContent != null && typeContent.equals("discontinue"))
 					throw new RuntimeException("What ending type is this? " + typeContent);

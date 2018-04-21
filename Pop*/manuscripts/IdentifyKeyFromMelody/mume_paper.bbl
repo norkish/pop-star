@@ -1,0 +1,92 @@
+\begin{thebibliography}{}
+
+\bibitem[\protect\citeauthoryear{Bodily and Ventura}{2017}]{bodily2017hbpl}
+Bodily, P.~M., and Ventura, D.
+\newblock 2017.
+\newblock {HBPL}: a framework for debating, developing, and reusing
+  foundational models of musical metacreativity.
+\newblock In {\em Proceedings of the Fifth International Workshop on Musical
+  Metacreation}.
+
+\bibitem[\protect\citeauthoryear{Chafe, Mont-Reynaud, and
+  Rush}{1982}]{chafe1982toward}
+Chafe, C.; Mont-Reynaud, B.; and Rush, L.
+\newblock 1982.
+\newblock Toward an intelligent editor of digital audio: Recognition of musical
+  constructs.
+\newblock {\em Computer Music Journal} 6(1):30--41.
+
+\bibitem[\protect\citeauthoryear{Colton, Wiggins, and
+  others}{2012}]{colton2012computational}
+Colton, S.; Wiggins, G.~A.; et~al.
+\newblock 2012.
+\newblock Computational creativity: The final frontier?
+\newblock In {\em ECAI}, volume~12,  21--26.
+
+\bibitem[\protect\citeauthoryear{Hu and Saul}{2009}]{hu2009probabilistic}
+Hu, D., and Saul, L.~K.
+\newblock 2009.
+\newblock A probabilistic topic model for unsupervised learning of musical
+  key-profiles.
+\newblock In {\em ISMIR},  441--446.
+\newblock Citeseer.
+
+\bibitem[\protect\citeauthoryear{Krumhansl}{2001}]{krumhansl2001cognitive}
+Krumhansl, C.~L.
+\newblock 2001.
+\newblock {\em Cognitive foundations of musical pitch}.
+\newblock Oxford University Press.
+
+\bibitem[\protect\citeauthoryear{Longuet-Higgins and
+  Steedman}{1971}]{longuet1971interpreting}
+Longuet-Higgins, H.~C., and Steedman, M.~J.
+\newblock 1971.
+\newblock On interpreting bach.
+\newblock {\em Machine intelligence} 6:221--241.
+
+\bibitem[\protect\citeauthoryear{Mauch and Dixon}{2010}]{mauch2010simultaneous}
+Mauch, M., and Dixon, S.
+\newblock 2010.
+\newblock Simultaneous estimation of chords and musical context from audio.
+\newblock {\em IEEE Transactions on Audio, Speech, and Language Processing}
+  18(6):1280--1289.
+
+\bibitem[\protect\citeauthoryear{Pasquier, Eigenfeldt, and
+  Bown}{2012}]{pasquier2012preface}
+Pasquier, P.; Eigenfeldt, A.; and Bown, O.
+\newblock 2012.
+\newblock Preface.
+\newblock In {\em Proceedings of the First International Workshop on Musical
+  Metacreation}.
+
+\bibitem[\protect\citeauthoryear{Shenoy, Mohapatra, and
+  Wang}{2004}]{shenoy2004key}
+Shenoy, A.; Mohapatra, R.; and Wang, Y.
+\newblock 2004.
+\newblock Key determination of acoustic musical signals.
+\newblock In {\em Multimedia and Expo, 2004. ICME'04. 2004 IEEE International
+  Conference on}, volume~3,  1771--1774.
+\newblock IEEE.
+
+\bibitem[\protect\citeauthoryear{Temperley}{2002}]{temperley2002bayesian}
+Temperley, D.
+\newblock 2002.
+\newblock A bayesian approach to key-finding.
+\newblock In {\em Music and artificial intelligence}. Springer.
+\newblock  195--206.
+
+\bibitem[\protect\citeauthoryear{Vos and Van~Geenen}{1996}]{vos1996parallel}
+Vos, P.~G., and Van~Geenen, E.~W.
+\newblock 1996.
+\newblock A parallel-processing key-finding model.
+\newblock {\em Music Perception: An Interdisciplinary Journal} 14(2):185--223.
+
+\bibitem[\protect\citeauthoryear{Zhu, Kankanhalli, and
+  Gao}{2005}]{zhu2005music}
+Zhu, Y.; Kankanhalli, M.~S.; and Gao, S.
+\newblock 2005.
+\newblock Music key detection for musical audio.
+\newblock In {\em 11th International Multimedia Modelling Conference},  30--37.
+\newblock IEEE.
+
+\end{thebibliography}

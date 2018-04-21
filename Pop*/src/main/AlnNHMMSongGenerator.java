@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -22,7 +23,7 @@ import java.util.TreeSet;
 import org.w3c.dom.Document;
 
 import automaton.Automaton;
-import automaton.MatchDFABuilder;
+import automaton.MatchDFABuilderDFS;
 import automaton.RegularConstraintApplier;
 import automaton.RegularConstraintApplier.StateToken;
 import automaton.RhymeComparator;
@@ -41,6 +42,7 @@ import data.MusicXMLParser.Time;
 import data.MusicXMLSummaryGenerator;
 import data.ParsedMusicXMLObject;
 import data.ParsedMusicXMLObject.MusicXMLAlignmentEvent;
+import dbtb.constraint.AbsoluteStressConstraint;
 import dbtb.constraint.ConditionedConstraint;
 import dbtb.constraint.EndOfWordConstraint;
 import dbtb.constraint.StartOfWordConstraint;
@@ -221,9 +223,13 @@ public class AlnNHMMSongGenerator {
 				t = t2;
 			
 			Harmony other = ((HarmonyToken) t).harmony;
-			if (!other.root.equals(harmony.root))
+			if (other == null) {
+				return (harmony == null);
+			} else if (harmony == null) {
 				return false;
-			else {
+			} else if (!other.root.equals(harmony.root)) {
+				return false;
+			} else {
 				boolean[] pitches = harmony.quality.getPitches();
 				boolean[] otherPitches = other.quality.getPitches();
 				
@@ -423,9 +429,15 @@ public class AlnNHMMSongGenerator {
 	final private static int pitchMarkovOrder = 1;
 	final private static int rhythmMarkovOrder = 1;
 	final private static int lyricMarkovOrder = 1;
+	final private static int INSPIRING_FILE_COUNT = 10;
 	public static void main(String[] args) throws Exception {
 		
 		dbtb.main.Main.setRootPath("/Users/norkish/Archive/2017_BYU/ComputationalCreativity/");
+		
+		// MUSE
+		Muse muse = new Muse();
+//		files = muse.findInspiringFiles(INSPIRING_FILE_COUNT);
+		
 		// 0. STRUCTURE
 		// Load a song and structure from file
 		ParsedMusicXMLObject structureSong = loadSong(structureFilePath);
@@ -456,15 +468,22 @@ public class AlnNHMMSongGenerator {
 //		}
 		
 		List<SortedSet<Integer>> matchingPosesByPos = findMatchingPosesByPos(pathsTaken, ptrMatrix, globalStructureAlignmentParameterization);
-		int[] matchConstraintList = createMatchConstraintList(matchingPosesByPos);
+		int[][] harmonyMatchConstraintList = new int[2][];
+		harmonyMatchConstraintList[0] = createMatchConstraintList(matchingPosesByPos);
+		harmonyMatchConstraintList[1] = new int[harmonyMatchConstraintList[0].length];
+		Arrays.fill(harmonyMatchConstraintList[1], -1);
+		harmonyMatchConstraintList[1][31] = 64;
+		boolean[][] harmonyMatchConstraintOutcomeList = new boolean[2][harmonyMatchConstraintList[0].length];
+		Arrays.fill(harmonyMatchConstraintOutcomeList[0], true);
+		Arrays.fill(harmonyMatchConstraintOutcomeList[1], false);
 		
-//		int i = 0;
+//		int i2 = 0;
 //		for (Set<Integer> set : matchingPosesByPos) {
-//			System.out.print((i+1) +":" + matchConstraintList[i] + " -> ");
+//			System.out.print((i2) +":" + harmonyMatchConstraintList[0][i2] + " -> ");
 //			for (Integer integer : set) {
-//				System.out.print((integer+1)+",");
+//				System.out.print((integer)+",");
 //			}
-//			i++;
+//			i2++;
 //			System.out.println();
 //		}
 
@@ -473,20 +492,26 @@ public class AlnNHMMSongGenerator {
 		// Train NHMM on Wikifonia
 		int harmonyMarkovLength = matchingPosesByPos.size();
 		SparseVariableOrderMarkovModel<HarmonyToken> harmonyMarkovModel = models.get("Harmony");
-		List<List<ConditionedConstraint<StateToken<HarmonyToken>>>> harmonyConstraints = new ArrayList<List<ConditionedConstraint<StateToken<HarmonyToken>>>>();
+		List<List<ConditionedConstraint<HarmonyToken>>> harmonyConstraints = new ArrayList<List<ConditionedConstraint<HarmonyToken>>>();
+		List<List<ConditionedConstraint<StateToken<HarmonyToken>>>> harmonyStateConstraints = new ArrayList<List<ConditionedConstraint<StateToken<HarmonyToken>>>>();
 		for (int j = 0; j < harmonyMarkovLength; j++) {
-			harmonyConstraints.add(new ArrayList<ConditionedConstraint<StateToken<HarmonyToken>>>());
+			harmonyConstraints.add(new ArrayList<ConditionedConstraint<HarmonyToken>>());
+			harmonyStateConstraints.add(new ArrayList<ConditionedConstraint<StateToken<HarmonyToken>>>());
 		}
-		harmonyConstraints.get(0).add(new ConditionedConstraint<StateToken<HarmonyToken>>(new BeatConstraint<>(0.0)));
-		harmonyConstraints.get(0).add(new ConditionedConstraint<StateToken<HarmonyToken>>(new ChordConstraint<>(new Harmony(new Root(3), new Quality(), null))));
-		harmonyConstraints.get(28).add(new ConditionedConstraint<StateToken<HarmonyToken>>(new ChordConstraint<>(new Harmony(new Root(3), new Quality(), null))));
+		harmonyConstraints.get(0).add(new ConditionedConstraint<>(new BeatConstraint<>(0.0)));
+		harmonyStateConstraints.get(0).add(new ConditionedConstraint<>(new BeatConstraint<>(0.0)));
+		harmonyConstraints.get(0).add(new ConditionedConstraint<>(new ChordConstraint<>(new Harmony(new Root(3), new Quality(), null))));
+		harmonyStateConstraints.get(0).add(new ConditionedConstraint<>(new ChordConstraint<>(new Harmony(new Root(3), new Quality(), null))));
+		harmonyConstraints.get(28).add(new ConditionedConstraint<>(new ChordConstraint<>(new Harmony(new Root(3), new Quality(), null))));
+		harmonyStateConstraints.get(28).add(new ConditionedConstraint<>(new ChordConstraint<>(new Harmony(new Root(3), new Quality(), null))));
 		
 		System.out.println("Building Harmony Automaton");
 		
-		Automaton<HarmonyToken> harmonyAutomaton = MatchDFABuilder.buildEfficiently(matchConstraintList, harmonyMarkovModel);
-		System.out.println("Building Harmony NHMM");
+		//TODO: add all control constraints to DFS
+		Automaton<HarmonyToken> harmonyAutomaton = MatchDFABuilderDFS.buildEfficiently(harmonyMatchConstraintList, harmonyMatchConstraintOutcomeList, null, harmonyMarkovModel, harmonyConstraints);
+		System.out.println("\nBuilding Harmony NHMM");
 		
-		SparseVariableOrderNHMMMultiThreaded<StateToken<HarmonyToken>> NHMM = RegularConstraintApplier.combineAutomataWithMarkov(harmonyMarkovModel, harmonyAutomaton, harmonyMarkovLength, harmonyConstraints);
+		SparseVariableOrderNHMMMultiThreaded<StateToken<HarmonyToken>> NHMM = RegularConstraintApplier.combineAutomataWithMarkov(harmonyMarkovModel, harmonyAutomaton, harmonyMarkovLength, harmonyStateConstraints);
 		System.out.println("Sampling Harmony");
 		Map<String,Double> counts = new HashMap<String, Double>();
 		Map<String,Double> probs = new HashMap<String, Double>();
@@ -498,11 +523,10 @@ public class AlnNHMMSongGenerator {
 			printSummary = printSummary(harmonyGenerate, 2.0);
 			Utils.incrementDoubleForKey(counts, printSummary);
 			probs.put(printSummary, NHMM.probabilityOfSequence(harmonyGenerate.toArray(new Token[0])));
-//			if (!harmonyGenerate.get(0).token.equals(harmonyGenerate.get(32).token)) break;
-			if (printSummary.contains("G7") && !harmonyGenerate.get(7).token.equals(harmonyGenerate.get(39).token)) {
-				harmonyGenerates.add(harmonyGenerate);
-			}
+			harmonyGenerates.add(harmonyGenerate);
 		}
+		harmonyAutomaton = null;
+		NHMM = null;
 		
 		for (String generate : counts.keySet()) {
 			System.out.println("\t\tProb:" + probs.get(generate) + ", XProb:" + (counts.get(generate)/SAMPLE_COUNT) + "\t" + generate);
@@ -523,7 +547,10 @@ public class AlnNHMMSongGenerator {
 //		}
 		
 		matchingPosesByPos = findMatchingPosesByPos(pathsTaken, ptrMatrix, globalStructureAlignmentParameterization);
-		matchConstraintList = createMatchConstraintList(matchingPosesByPos);
+		int[] matchConstraintList = createMatchConstraintList(matchingPosesByPos);
+		
+		boolean[] matchConstraintOutcomeList = new boolean[matchConstraintList.length];
+		Arrays.fill(matchConstraintOutcomeList, true);
 		
 //		i = 0;
 //		for (Set<Integer> set : matchingPosesByPos) {
@@ -553,8 +580,8 @@ public class AlnNHMMSongGenerator {
 		
 		System.out.println("Building Rhythm Automaton");
 		
-		Automaton<RhythmToken> rhythmAutomaton = MatchDFABuilder.buildEfficiently(matchConstraintList, rhythmMarkovModel, rhythmConstraints);
-		System.out.println("Building Rhythm NHMM");
+		Automaton<RhythmToken> rhythmAutomaton = MatchDFABuilderDFS.buildEfficiently(matchConstraintList, matchConstraintOutcomeList, rhythmMarkovModel, rhythmConstraints);
+		System.out.println("\nBuilding Rhythm NHMM");
 		
 		SparseVariableOrderNHMMMultiThreaded<StateToken<RhythmToken>> rhythmNHMM = RegularConstraintApplier.combineAutomataWithMarkov(rhythmMarkovModel, rhythmAutomaton, rhythmMarkovLength, rhythmStateConstraints);
 		
@@ -578,6 +605,8 @@ public class AlnNHMMSongGenerator {
 		List<Comparator<SyllableToken>> equivalenceRelations = new ArrayList<Comparator<SyllableToken>>(){{
 			add(null);
 			add(new RhymeComparator());
+			add(null);
+			add(null);
 		}};
 		
 		System.out.println("Computing Pitch Matching constraints");
@@ -599,6 +628,9 @@ public class AlnNHMMSongGenerator {
 		matchingPosesByPos = findMatchingPosesByPos(pathsTaken, ptrMatrix, globalStructureAlignmentParameterization);
 		matchConstraintList = createMatchConstraintList(matchingPosesByPos);
 		
+		matchConstraintOutcomeList = new boolean[matchConstraintList.length];
+		Arrays.fill(matchConstraintOutcomeList, true);
+		
 //		i = 0;
 //		for (Set<Integer> set : matchingPosesByPos) {
 //			System.out.print((i+1) +":" + matchConstraintList[i] + " -> ");
@@ -615,9 +647,29 @@ public class AlnNHMMSongGenerator {
 		int pitchMarkovLength = matchingPosesByPos.size();
 		SparseVariableOrderMarkovModel<PitchToken> pitchMarkovModel = models.get("Pitch");
 
+		Set<List<StateToken<RhythmToken>>> rhythmGenerates = new HashSet<List<StateToken<RhythmToken>>>();
+		System.out.println("Sampling Rhythm");
+		counts = new HashMap<String, Double>();
+		probs = new HashMap<String, Double>();
+		for (int j = 0; j < 10*SAMPLE_COUNT; j++) {
+			List<StateToken<RhythmToken>> rhythmGenerate = rhythmNHMM.generate(rhythmMarkovLength);
+			rhythmGenerates.add(rhythmGenerate);
+			printSummary = printSummary(rhythmGenerate, 0.5);
+			Utils.incrementDoubleForKey(counts, printSummary);
+			probs.put(printSummary, rhythmNHMM.probabilityOfSequence(rhythmGenerate.toArray(new Token[0])));
+		}
+		rhythmAutomaton = null;
+		rhythmNHMM = null;
+		
+		for (String generate : counts.keySet()) {
+			System.out.println("\t\tProb:" + probs.get(generate) + ", XProb:" + (counts.get(generate)/SAMPLE_COUNT) + "\t" + generate);
+		}
+		
+		
 		int fileSuffix = 1;
 		Automaton<PitchToken> pitchAutomaton = null;
 		List<List<ConditionedConstraint<StateToken<PitchToken>>>> pitchStateConstraints = null;
+		System.out.println("Trying " + harmonyGenerates.size() + " harmonic progressions");
 		for (List<StateToken<HarmonyToken>> harmonyGenerate : harmonyGenerates) {
 			System.out.println("TRYING HARMONY:" + printSummary(harmonyGenerate,2.0));
 			try {
@@ -640,7 +692,7 @@ public class AlnNHMMSongGenerator {
 	//			pitchConstraints.get(0).add(new ConditionedConstraint<StateToken<PitchToken>>(new BeatConstraint<>(0.0)));
 				
 				System.out.println("Building Pitch Automaton");
-				pitchAutomaton = MatchDFABuilder.buildEfficiently(matchConstraintList, pitchMarkovModel, pitchConstraints);
+				pitchAutomaton = MatchDFABuilderDFS.buildEfficiently(matchConstraintList, matchConstraintOutcomeList, pitchMarkovModel, pitchConstraints);
 	
 			} catch (Exception e) {
 				System.err.println(e.getMessage());
@@ -663,7 +715,7 @@ public class AlnNHMMSongGenerator {
 			}
 			newScore.addMeasures(instantiatedMeasures);
 			
-			System.out.println("Building Pitch NHMM");
+			System.out.println("\nBuilding Pitch NHMM");
 			SparseVariableOrderNHMMMultiThreaded<StateToken<PitchToken>> pitchNHMM = RegularConstraintApplier.combineAutomataWithMarkov(pitchMarkovModel, pitchAutomaton, pitchMarkovLength, pitchStateConstraints);
 			//add harmony to score
 			int measureNumber = -1;
@@ -699,33 +751,23 @@ public class AlnNHMMSongGenerator {
 			}
 			System.out.println("KEEPING:" + printSummary);
 			
-			Set<List<StateToken<RhythmToken>>> rhythmGenerates = new HashSet<List<StateToken<RhythmToken>>>();
 			List<StateToken<SyllableToken>> lyricGenerate = null;
-			System.out.println("Sampling Rhythm");
-			counts = new HashMap<String, Double>();
-			probs = new HashMap<String, Double>();
-			for (int j = 0; j < SAMPLE_COUNT; j++) {
-				List<StateToken<RhythmToken>> rhythmGenerate = rhythmNHMM.generate(rhythmMarkovLength);
-				rhythmGenerates.add(rhythmGenerate);
-				printSummary = printSummary(rhythmGenerate, 0.5);
-				Utils.incrementDoubleForKey(counts, printSummary);
-				probs.put(printSummary, rhythmNHMM.probabilityOfSequence(rhythmGenerate.toArray(new Token[0])));
-			}
-			
-			for (String generate : counts.keySet()) {
-				System.out.println("\t\tProb:" + probs.get(generate) + ", XProb:" + (counts.get(generate)/SAMPLE_COUNT) + "\t" + generate);
-			}
-			
 			boolean foundLyricsRhythmMatch = false;
 			
 			List<List<StateToken<RhythmToken>>> rhythmGeneratesList = new ArrayList<List<StateToken<RhythmToken>>>(rhythmGenerates);
 			Collections.shuffle(rhythmGeneratesList);
 			for (List<StateToken<RhythmToken>> rhythmGenerate : rhythmGeneratesList) {
 				System.out.println("TRYING RHYTHM:" + printSummary(rhythmGenerate, 0.5));
-				
+
 				// 4. LYRICS
 				// Length (in syllables) is determined from the rhythm
 				int[][] lyricMatchConstraintLists = createLyricMatchConstraintLists(lyricMatchingPosesByPos, rhythmGenerate);
+				
+				boolean[][] lyricMatchConstraintOutcomeList = new boolean[4][lyricMatchConstraintLists[0].length];
+				for (int i = 0; i < lyricMatchConstraintOutcomeList.length; i++) {
+					boolean[] bs = lyricMatchConstraintOutcomeList[i];
+					Arrays.fill(bs, i<2);
+				}
 				
 //				for (int j = 0; j < lyricMatchConstraintLists[0].length; j++) {
 //					System.out.println((j+1) + ":" + lyricMatchConstraintLists[0][j] + "\t" + (j+1) + ":" + lyricMatchConstraintLists[1][j]);
@@ -741,15 +783,35 @@ public class AlnNHMMSongGenerator {
 					lyricStateConstraints.add(new ArrayList<ConditionedConstraint<StateToken<SyllableToken>>>());
 					lyricConstraints.add(new ArrayList<ConditionedConstraint<SyllableToken>>());
 				}
+
 				lyricStateConstraints.get(0).add(new ConditionedConstraint<>(new StartOfWordConstraint<>()));
 				lyricConstraints.get(0).add(new ConditionedConstraint<>(new StartOfWordConstraint<>()));
-				lyricStateConstraints.get(lyricMarkovLength-1).add(new ConditionedConstraint<>(new EndOfWordConstraint<>()));
-				lyricConstraints.get(lyricMarkovLength-1).add(new ConditionedConstraint<>(new EndOfWordConstraint<>()));
+
+				int numNotes = 0;
+				double durationSoFar = 0.0;
+				double nextPhraseEnding = 8.0;
+				// Make sure stressed syllables don't land on offbeats
+				for (StateToken<RhythmToken> stateToken : rhythmGenerate) {
+					if (stateToken.token.isOnset()) { // if it's a note
+						if (!stateToken.token.isRest && durationSoFar % 1.0 != 0.0) { // if it's not a rest and it's offbeat
+							lyricStateConstraints.get(numNotes).add(new ConditionedConstraint<>(new AbsoluteStressConstraint<>(0))); // make sure both phrases end 
+							lyricConstraints.get(numNotes).add(new ConditionedConstraint<>(new AbsoluteStressConstraint<>(0)));
+						}
+						durationSoFar += stateToken.token.durationInBeats;
+						if (!stateToken.token.isRest) numNotes++;
+					}
+					
+					if (durationSoFar >= nextPhraseEnding) {
+						lyricStateConstraints.get(numNotes-1).add(new ConditionedConstraint<>(new EndOfWordConstraint<>())); // make sure both phrases end 
+						lyricConstraints.get(numNotes-1).add(new ConditionedConstraint<>(new EndOfWordConstraint<>()));
+						nextPhraseEnding += 8.0;
+					}
+				}
 				
 				try {
 					System.out.println("Building Lyric Automaton");
 					
-					Automaton<SyllableToken> lyricAutomaton = MatchDFABuilder.buildEfficiently(lyricMatchConstraintLists, equivalenceRelations, lyricMarkovModel, lyricConstraints);
+					Automaton<SyllableToken> lyricAutomaton = MatchDFABuilderDFS.buildEfficiently(lyricMatchConstraintLists, lyricMatchConstraintOutcomeList, equivalenceRelations, lyricMarkovModel, lyricConstraints);
 					System.out.println("Building Lyric NHMM");
 					
 					SparseVariableOrderNHMMMultiThreaded<StateToken<SyllableToken>> lyricNHMM = RegularConstraintApplier.combineAutomataWithMarkov(lyricMarkovModel, lyricAutomaton, lyricMarkovLength, lyricStateConstraints);
@@ -767,6 +829,8 @@ public class AlnNHMMSongGenerator {
 					for (String generate : counts.keySet()) {
 						System.out.println("\t\tProb:" + probs.get(generate) + ", XProb:" + (counts.get(generate)/SAMPLE_COUNT) + "\t" + generate);
 					}
+					lyricGenerate = lyricNHMM.generate(lyricMarkovLength);
+					printSummary = printSummary(lyricGenerate, 0.5);
 					System.out.println("KEEPING:" + printSummary);
 				
 				} catch (Exception e) {
@@ -776,7 +840,6 @@ public class AlnNHMMSongGenerator {
 				
 				int measure = -1;
 				int nextLyricIdx = 0;
-				// TODO: THERE"S A BUG HERE SOMEWHERE!
 				System.out.println("Saving composition...");
 				for (int j = 0; j < rhythmGenerate.size(); j++) {
 					PitchToken pitchToken = pitchGenerate.get(j).token;
@@ -790,7 +853,8 @@ public class AlnNHMMSongGenerator {
 						int pitch = rhythmToken.isRest ? Note.REST : pitchToken.normalizedPitch;
 						final Measure measure2 = newScore.getMeasures().get(measure);
 						List<Note> createTiedNoteWithDuration = MelodyEngineer.createTiedNoteWithDuration(measure2.beatsToDivs((double) rhythmToken.durationInBeats), pitch, measure2.divisionsPerQuarterNote);
-						createTiedNoteWithDuration.get(0).setLyric(new NoteLyric(createNoteLyric(lyricGenerate.get(nextLyricIdx++))), true);
+						if (!rhythmToken.isRest)
+							createTiedNoteWithDuration.get(0).setLyric(new NoteLyric(createNoteLyric(lyricGenerate.get(nextLyricIdx++))), true);
 						double currBeat = rhythmToken.beat;
 						int currMeasure = measure;
 						for (Note note : createTiedNoteWithDuration) {
@@ -916,13 +980,19 @@ public class AlnNHMMSongGenerator {
 		
 		for (int i = 0; i < rhythmGenerate.size(); i++) {
 			RhythmToken rToken = rhythmGenerate.get(i).token;
-			if (rToken.isOnset()) {
+			if (rToken.isOnset() && !rToken.isRest) {
 				// then i represents an index for our Match ConstraintLists
 //				System.out.println(i + " is now " + oldToNewIdx.size());
 				oldToNewIdx.put(i, oldToNewIdx.size());
 			}
 		}
-		int[][] matchConstraintLists = new int[2][oldToNewIdx.size()];
+		int[][] matchConstraintLists = new int[4][oldToNewIdx.size()];
+		
+		// create constraints for required non-matches
+		matchConstraintLists[2][oldToNewIdx.get(oldToNewIdx.headMap(16).lastKey())] = oldToNewIdx.get(oldToNewIdx.headMap(32).lastKey()) + 1;
+		matchConstraintLists[2][oldToNewIdx.get(oldToNewIdx.headMap(32).lastKey())] = oldToNewIdx.get(oldToNewIdx.headMap(48).lastKey()) + 1;
+		matchConstraintLists[3][oldToNewIdx.get(oldToNewIdx.headMap(16).lastKey())] = oldToNewIdx.get(oldToNewIdx.headMap(48).lastKey()) + 1;
+		matchConstraintLists[3][oldToNewIdx.get(oldToNewIdx.headMap(48).lastKey())] = oldToNewIdx.get(oldToNewIdx.headMap(64).lastKey()) + 1;
 		
 		// create rhyme constraints (SPECIFIC TO TWINKLE, TWINKLE, LITTLE STAR)
 		matchConstraintLists[1][oldToNewIdx.get(oldToNewIdx.headMap(16).lastKey())] = oldToNewIdx.get(oldToNewIdx.headMap(32).lastKey()) + 1;
@@ -1030,7 +1100,7 @@ public class AlnNHMMSongGenerator {
 	}
 
 	private static final boolean ALL_STATES_INITIAL_STATES = true; 
-	private static final File[] files = new File(TabDriver.dataDir + "/Wikifonia_edited_xmls").listFiles();
+	private static File[] files = new File(TabDriver.dataDir + "/Wikifonia_edited_xmls").listFiles();
 	private static final int EVENTS_PER_BEAT = 2;
 	private static void trainModels() {
 		
@@ -1077,12 +1147,13 @@ public class AlnNHMMSongGenerator {
 		
 		// LYRIC
 		if (models.containsKey("Lyric")) {
-			lyricStatesByIndex = new BidirectionalVariableOrderPrefixIDMap<SyllableToken>(rhythmMarkovOrder);
+			lyricStatesByIndex = new BidirectionalVariableOrderPrefixIDMap<SyllableToken>(lyricMarkovOrder);
 			lyricPriors = new HashMap<Integer, Double>();
 			lyricTransitions = new HashMap<Integer, Map<Integer, Double>>();
 		}
 		
 		// train
+		System.out.println("TRAINING ON " + Arrays.toString(files));
 		for (File file : files) {
 			if (file.getName().startsWith(".DS")) continue;
 			System.out.println("Loading XML for " + file.getName());
@@ -1112,7 +1183,7 @@ public class AlnNHMMSongGenerator {
 			for (int i = 0; i < alignmentEvents.size(); i++) {
 				MusicXMLAlignmentEvent alignmentEvent = alignmentEvents.get(i);
 				// TRAIN HARMONY
-				if (harmonyStatesByIndex != null && file.getName().startsWith("Trad")) {
+				if (harmonyStatesByIndex != null && file.getName().contains("")) {
 					harmonyPrefix.addLast(new HarmonyToken(alignmentEvent.harmony,alignmentEvent.beat));
 					if (i >= (harmonyMarkovOrder-1)) {
 						nextHarmonyPrefixID = harmonyStatesByIndex.addPrefix(harmonyPrefix);
@@ -1127,7 +1198,7 @@ public class AlnNHMMSongGenerator {
 					}
 				}
 				// TRAIN PITCH
-				if (pitchStatesByIndex != null && file.getName().startsWith("Trad")) {
+				if (pitchStatesByIndex != null && file.getName().contains("")) {
 					pitchPrefix.addLast(new PitchToken(alignmentEvent.note.pitch,alignmentEvent.harmony, alignmentEvent.beat, 0, 0));
 					if (i >= (pitchMarkovOrder-1)) {
 						nextPitchPrefixID = pitchStatesByIndex.addPrefix(pitchPrefix);
@@ -1142,7 +1213,7 @@ public class AlnNHMMSongGenerator {
 					}
 				}
 				// TRAIN RHYTHM
-				if (rhythmStatesByIndex != null && file.getName().startsWith("Trad")) {
+				if (rhythmStatesByIndex != null && file.getName().contains("")) {
 					rhythmPrefix.addLast(new RhythmToken(alignmentEvent.note.duration/musicXML.getDivsPerQuarterForAbsoluteMeasure(alignmentEvent.measure), alignmentEvent.currBeatsSinceOnset, alignmentEvent.beat, alignmentEvent.note.pitch == Note.REST));
 					if (i >= (rhythmMarkovOrder-1)) {
 						nextRhythmPrefixID = rhythmStatesByIndex.addPrefix(rhythmPrefix);
@@ -1157,7 +1228,7 @@ public class AlnNHMMSongGenerator {
 					}
 				}
 				// TRAIN LYRIC
-				if (lyricStatesByIndex != null && (file.getName().startsWith("Trad")) && alignmentEvent.lyricOnset) { //  && alignmentEvent.lyric.syllabic == Syllabic.BEGIN?
+				if (lyricStatesByIndex != null && (file.getName().contains("")) && alignmentEvent.lyricOnset) { //  && alignmentEvent.lyric.syllabic == Syllabic.BEGIN?
 					str.append(alignmentEvent.lyric.text);
 					if (alignmentEvent.lyric.syllabic == Syllabic.END || alignmentEvent.lyric.syllabic == Syllabic.SINGLE)
 						str.append(' ');

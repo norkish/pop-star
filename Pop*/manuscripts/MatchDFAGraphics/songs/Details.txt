@@ -1,0 +1,44 @@
+Details:
+
+Begin the Movement
+Structure = Twinkle, Twinkle
+Harmony & Pitch = Over the Rainbow
+Rhythm = Mix of 5 songs
+Lyrics = Imagine/Hey Jude
+
+Make it Better, You have found her
+Structure = Twinkle, Twinkle
+Harmony, Pitch, Rhythm = Over the Rainbow
+Lyrics = Imagine/Hey Jude
+
+NONE
+Structure = Twinkle, Twinkle
+Harmony = Hey, Jude
+Pitch = Imagine
+Rhythm = Mix of 4 (not Twinkle)
+Lyrics = Country Roads
+
+NONE
+Structure = Twinkle, Twinkle
+Harmony & Pitch = Hey, Jude
+Rhythm = Imagine
+Lyrics = Country Roads
+
+NONE
+Structure = Twinkle, Twinkle
+Harmony & Pitch = Hey, Jude
+Rhythm = Mix of 5 songs
+Lyrics = Country Roads
+
+Rainbow Skies Are Up High
+Structure = Twinkle, Twinkle
+Harmony & Pitch = Imagine
+Rhythm = Mix of 5 songs
+Lyrics = ¬John
+
+
+Structure = Twinkle, Twinkle
+Harmony = Jude
+Pitch = John
+Rhythm = All
+Lyrics = ¬John
