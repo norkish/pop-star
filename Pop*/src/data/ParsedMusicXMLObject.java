@@ -39,6 +39,7 @@ public class ParsedMusicXMLObject {
 		}
 
 		public Note note;
+		public double tiedDurationOfCurrentNote;
 		public boolean noteOnset;
 		public double currBeatsSinceOnset;
 		public Harmony harmony;
@@ -266,10 +267,10 @@ public class ParsedMusicXMLObject {
 	public Time getTimeForAbsoluteMeasure(int absoluteMeasure) {
 		Time time = Utils.valueForKeyBeforeOrEqualTo(absoluteMeasure, timeByAbsoluteMeasure);
 
-		// We'll count anything in 2/2 as 4/4
-		if (time.equals(Time.TWO_TWO)) {
-			return Time.FOUR_FOUR;
-		}
+//		// We'll count anything in 2/2 as 4/4
+//		if (time.equals(Time.TWO_TWO)) {
+//			return Time.FOUR_FOUR;
+//		}
 		
 		return time;
 	}
@@ -455,7 +456,12 @@ public class ParsedMusicXMLObject {
 		return events;
 	}
 	
-	public List<ParsedMusicXMLObject.MusicXMLAlignmentEvent> computeAlignmentEvents(int eventsPerBeat) {
+	/**
+	 * 
+	 * @param quarterNoteSubdivisions integer representing the smallest note type (independent of time signature). 1=quarter, 2=eighth, 4 = 16th
+	 * @return
+	 */
+	public List<ParsedMusicXMLObject.MusicXMLAlignmentEvent> computeAlignmentEvents(int quarterNoteSubdivisions) {
 		int nextNoteIdx = 0;
 		Triple<Integer, Integer, Note> nextNote = notesByPlayedMeasure.get(nextNoteIdx++);
 		Note currNote = null;
@@ -517,8 +523,8 @@ public class ParsedMusicXMLObject {
 			if (divsPerQuarterByAbsoluteMeasure.containsKey(absoluteMeasure))
 				currDivsPerQuarter = divsPerQuarterByAbsoluteMeasure.get(absoluteMeasure);
 			currDivsPerBeat = (int) (currDivsPerQuarter * (4.0/currTime.beatType));
-			currDivsPerEvent = 1.0*currDivsPerBeat / eventsPerBeat; // calculate the number of divs per event
-			currEventsPerMeasure = currTime.beats * eventsPerBeat; // and the number of events per measure 
+			currDivsPerEvent = 1.0*currDivsPerQuarter / quarterNoteSubdivisions; // calculate the number of divs per event
+			currEventsPerMeasure = (int) ((4.0*currTime.beats/currTime.beatType) * quarterNoteSubdivisions); // and the number of events per measure 
 			currBeatsPerEvent = 1.0*currDivsPerEvent/currDivsPerBeat;
 			currDivs = 0.0;
 			currBeat = 0.0;
@@ -617,7 +623,36 @@ public class ParsedMusicXMLObject {
 			measureOffsetIntoSegment++;
 		}
 		
+		annotateTiedNoteDurations(events);
+		
 		return events;
+	}
+
+	private void annotateTiedNoteDurations(List<MusicXMLAlignmentEvent> events) {
+		double durationSum = 0.0;
+		int beginningEventIdxOfDuration = -1;
+		Note currNote = null;
+		for (int i = 0; i < events.size(); i++) {
+			MusicXMLAlignmentEvent event = events.get(i);
+			if (event.currBeatsSinceOnset == 0) {
+				if (beginningEventIdxOfDuration != -1) {
+					for (int j = beginningEventIdxOfDuration; j < i; j++) {
+						events.get(j).tiedDurationOfCurrentNote = durationSum;
+					}
+				}
+				durationSum = 0.0;
+				beginningEventIdxOfDuration = i;
+			}
+			if (event.note != currNote) {
+				currNote = event.note;
+				durationSum += currNote.duration;
+			}
+		}
+		if (durationSum != 0.0) {
+			for (int j = beginningEventIdxOfDuration; j < events.size(); j++) {
+				events.get(j).tiedDurationOfCurrentNote = durationSum;
+			}
+		}
 	}
 
 	public void setMatches(Map<Character, List<Pair<Integer, Double>>> rhymeMatches, 

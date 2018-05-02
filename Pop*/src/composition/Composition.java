@@ -125,4 +125,8 @@ public class Composition {
 	public GlobalStructure getGlobalStructure() {
 		return globalStructure;
 	}
+
+	public void setInspiration(Inspiration insp) {
+		this.inspiration = insp;
+	}
 }

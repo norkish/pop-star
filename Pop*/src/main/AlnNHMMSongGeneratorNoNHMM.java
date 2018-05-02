@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -136,25 +137,27 @@ public class AlnNHMMSongGeneratorNoNHMM {
 
 	public static class RhythmToken extends Token{
 
-		private double durationInBeats;
-		private double beatsSinceOnset;
-		private double beat;
+		private double durationInQuarterNotes;
+		private double durationInQuarterNotesOfTiedNotes;
+		private double beatsSinceOnsetInQuarterNotes;
+		private double measureOffsetInQuarterNotes;
 		private boolean isRest;
 
-		public RhythmToken(double duration, double currBeatsSinceOnset, double beat, boolean b) {
-			this.durationInBeats = duration;
-			this.beatsSinceOnset = currBeatsSinceOnset;
-			this.beat = beat;
+		public RhythmToken(double durationInQuarterNotes, double durationInQuarterNotesOfTiedNotes, double beatsSinceOnsetInQuarterNotes, double measureOffsetInQuarterNotes, boolean b) {
+			this.durationInQuarterNotes = durationInQuarterNotes;
+			this.durationInQuarterNotesOfTiedNotes = durationInQuarterNotesOfTiedNotes;
+			this.beatsSinceOnsetInQuarterNotes = beatsSinceOnsetInQuarterNotes;
+			this.measureOffsetInQuarterNotes = measureOffsetInQuarterNotes;
 			this.isRest = b;
 		}
 
 		public boolean isOnset() {
-			return beatsSinceOnset == 0.0;
+			return beatsSinceOnsetInQuarterNotes == 0.0;
 		}
 
 		@Override
 		public String toString() {
-			return durationInBeats + ", " + beatsSinceOnset + ", " + beat + ", " + isRest;
+			return durationInQuarterNotes + ", " + durationInQuarterNotesOfTiedNotes + ", " + beatsSinceOnsetInQuarterNotes + ", " + measureOffsetInQuarterNotes + ", " + isRest;
 		}
 
 		@Override
@@ -162,11 +165,13 @@ public class AlnNHMMSongGeneratorNoNHMM {
 			final int prime = 31;
 			int result = 1;
 			long temp;
-			temp = Double.doubleToLongBits(beat);
+			temp = Double.doubleToLongBits(measureOffsetInQuarterNotes);
 			result = prime * result + (int) (temp ^ (temp >>> 32));
-			temp = Double.doubleToLongBits(beatsSinceOnset);
+			temp = Double.doubleToLongBits(beatsSinceOnsetInQuarterNotes);
 			result = prime * result + (int) (temp ^ (temp >>> 32));
-			temp = Double.doubleToLongBits(durationInBeats);
+			temp = Double.doubleToLongBits(durationInQuarterNotesOfTiedNotes);
+			result = prime * result + (int) (temp ^ (temp >>> 32));
+			temp = Double.doubleToLongBits(durationInQuarterNotes);
 			result = prime * result + (int) (temp ^ (temp >>> 32));
 			result = prime * result + (isRest ? 1231 : 1237);
 			return result;
@@ -181,11 +186,13 @@ public class AlnNHMMSongGeneratorNoNHMM {
 			if (getClass() != obj.getClass())
 				return false;
 			RhythmToken other = (RhythmToken) obj;
-			if (Double.doubleToLongBits(beat) != Double.doubleToLongBits(other.beat))
+			if (Double.doubleToLongBits(measureOffsetInQuarterNotes) != Double.doubleToLongBits(other.measureOffsetInQuarterNotes))
 				return false;
-			if (Double.doubleToLongBits(beatsSinceOnset) != Double.doubleToLongBits(other.beatsSinceOnset))
+			if (Double.doubleToLongBits(beatsSinceOnsetInQuarterNotes) != Double.doubleToLongBits(other.beatsSinceOnsetInQuarterNotes))
 				return false;
-			if (Double.doubleToLongBits(durationInBeats) != Double.doubleToLongBits(other.durationInBeats))
+			if (Double.doubleToLongBits(durationInQuarterNotesOfTiedNotes) != Double.doubleToLongBits(other.durationInQuarterNotesOfTiedNotes))
+				return false;
+			if (Double.doubleToLongBits(durationInQuarterNotes) != Double.doubleToLongBits(other.durationInQuarterNotes))
 				return false;
 			if (isRest != other.isRest)
 				return false;
@@ -253,10 +260,10 @@ public class AlnNHMMSongGeneratorNoNHMM {
 	
 	public static class RhythmConstraint<T extends Token> implements StateConstraint<T> {
 		
-		Double durationInBeats;
+		Double durationInQuarterNoteBeats;
 		
 		public RhythmConstraint(Double durationInBeats) {
-			this.durationInBeats = durationInBeats;
+			this.durationInQuarterNoteBeats = durationInBeats;
 		}
 		
 		@Override
@@ -268,7 +275,7 @@ public class AlnNHMMSongGeneratorNoNHMM {
 			else
 				t = (RhythmToken) t2;
 			
-			return t.isOnset() && t.durationInBeats == durationInBeats;
+			return t.isOnset() && t.durationInQuarterNotes == durationInQuarterNoteBeats;
 		}
 		
 	}
@@ -295,7 +302,7 @@ public class AlnNHMMSongGeneratorNoNHMM {
 			} else if (t instanceof PitchToken) {
 				return ((PitchToken) t).beat == offset;
 			} else if (t instanceof RhythmToken) {
-				return ((RhythmToken) t).beat == offset;
+				return ((RhythmToken) t).measureOffsetInQuarterNotes == offset;
 			} else {
 				throw new RuntimeException("Unreachable");
 			}
@@ -428,17 +435,18 @@ public class AlnNHMMSongGeneratorNoNHMM {
 		models.put("Lyric", null);
 	}
 	
-	final private static int harmonyMarkovOrder = 1;
+	final private static int harmonyMarkovOrder = 2;
 	final private static int pitchMarkovOrder = 1;
 	final private static int rhythmMarkovOrder = 1;
 	final private static int lyricMarkovOrder = 1;
-	final private static int INSPIRING_FILE_COUNT = 10;
+	final private static int INSPIRING_FILE_COUNT = 15;
 	public static void main(String[] args) throws Exception {
 		
 		dbtb.main.Main.setRootPath("/Users/norkish/Archive/2017_BYU/ComputationalCreativity/");
 		
 		// MUSE
-		Muse muse = new Muse();
+//		Muse muse = new Muse();
+//		System.out.println("Muse's inspiration: " + muse.inspiringEmotion);
 //		files = muse.findInspiringFiles(INSPIRING_FILE_COUNT);
 		
 		// 0. STRUCTURE
@@ -500,7 +508,7 @@ public class AlnNHMMSongGeneratorNoNHMM {
 			harmonyConstraints.add(new ArrayList<ConditionedConstraint<HarmonyToken>>());
 		}
 		for (int i = 0; i < matchingPosesByPos.size(); i++) {
-			harmonyConstraints.get(i).add(new ConditionedConstraint<>(new BeatConstraint<>(0.0), (i%(globalStructureAlignmentParameterization.eventsPerBeat*4)==0)));
+			harmonyConstraints.get(i).add(new ConditionedConstraint<>(new BeatConstraint<>(0.0), (i%(EVENTS_PER_BEAT*4)==0)));
 		}
 		harmonyConstraints.get(0).add(new ConditionedConstraint<>(new ChordConstraint<>(new Harmony(new Root(3), new Quality(), null))));
 		harmonyConstraints.get(28).add(new ConditionedConstraint<>(new ChordConstraint<>(new Harmony(new Root(3), new Quality(), null))));
@@ -549,7 +557,7 @@ public class AlnNHMMSongGeneratorNoNHMM {
 		List<List<ConditionedConstraint<RhythmToken>>> rhythmConstraints = new ArrayList<List<ConditionedConstraint<RhythmToken>>>();
 		for (int j = 0; j < rhythmMarkovLength; j++) {
 			rhythmConstraints.add(new ArrayList<ConditionedConstraint<RhythmToken>>());
-			rhythmConstraints.get(j).add(new ConditionedConstraint<RhythmToken>(new BeatConstraint<>(0.0), (j%(globalStructureAlignmentParameterization.eventsPerBeat*4)==0)));
+			rhythmConstraints.get(j).add(new ConditionedConstraint<RhythmToken>(new BeatConstraint<>(0.0), (j%(EVENTS_PER_BEAT*4)==0)));
 		}
 		rhythmConstraints.get(28).add(new ConditionedConstraint<RhythmToken>(new RhythmConstraint<>(2.0)));
 		
@@ -589,6 +597,8 @@ public class AlnNHMMSongGeneratorNoNHMM {
 		pathsTaken = (double[][]) matchingSegments[0];
 		ptrMatrix = (char[][]) matchingSegments[1];
 		Utils.normalizeByMaxVal(pathsTaken);
+		matchingSegments = null;
+		
 		
 //		for (double[] row : pathsTaken) {
 //			for (double col : row) {
@@ -599,6 +609,8 @@ public class AlnNHMMSongGeneratorNoNHMM {
 		
 		matchingPosesByPos = findMatchingPosesByPos(pathsTaken, ptrMatrix, globalStructureAlignmentParameterization);
 		matchConstraintList = createMatchConstraintList(matchingPosesByPos);
+		pathsTaken = null;
+		ptrMatrix = null;
 		
 		matchConstraintOutcomeList = new boolean[matchConstraintList.length];
 		Arrays.fill(matchConstraintOutcomeList, true);
@@ -617,6 +629,7 @@ public class AlnNHMMSongGeneratorNoNHMM {
 		// create the NHMM n of length as long as the song with low markov order d
 		// Train NHMM on Wikifonia
 		int pitchMarkovLength = matchingPosesByPos.size();
+		matchingPosesByPos = null;
 		SparseVariableOrderMarkovModel<PitchToken> pitchMarkovModel = models.get("Pitch");
 
 		int fileSuffix = 1;
@@ -627,15 +640,11 @@ public class AlnNHMMSongGeneratorNoNHMM {
 			try {
 				List<List<ConditionedConstraint<PitchToken>>> pitchConstraints = new ArrayList<List<ConditionedConstraint<PitchToken>>>();
 				for (int j = 0; j < pitchMarkovLength; j++) {
-					final ArrayList<ConditionedConstraint<StateToken<PitchToken>>> pitchStateConstraintsAtJ = new ArrayList<ConditionedConstraint<StateToken<PitchToken>>>();
 					final ArrayList<ConditionedConstraint<PitchToken>> pitchConstraintsAtJ = new ArrayList<ConditionedConstraint<PitchToken>>();
 					pitchConstraints.add(pitchConstraintsAtJ);
 					if (j == 28) {
-						pitchStateConstraintsAtJ.add(new ConditionedConstraint<StateToken<PitchToken>>(new PitchConstraint<StateToken<PitchToken>>((harmonyGenerate.get(j).harmony.root.rootStep + 9)%12)));
 						pitchConstraintsAtJ.add(new ConditionedConstraint<PitchToken>(new PitchConstraint<PitchToken>((harmonyGenerate.get(j).harmony.root.rootStep + 9)%12)));
-					} else {
-//					if (j%(2*EVENTS_PER_BEAT) == 0){
-						pitchStateConstraintsAtJ.add(new ConditionedConstraint<StateToken<PitchToken>>(new PitchInChordConstraint<StateToken<PitchToken>>(harmonyGenerate.get(j).harmony)));
+					} else if (j%(2*EVENTS_PER_BEAT) == 0){
 						pitchConstraintsAtJ.add(new ConditionedConstraint<PitchToken>(new PitchInChordConstraint<PitchToken>(harmonyGenerate.get(j).harmony)));
 					}
 				}
@@ -645,11 +654,10 @@ public class AlnNHMMSongGeneratorNoNHMM {
 				pitchIterator = MatchIteratorBuilderDFS.buildEfficiently(matchConstraintList, matchConstraintOutcomeList, pitchMarkovModel, pitchConstraints);
 				
 			} catch (Exception e) {
-				System.err.println(e.getMessage());
+				System.out.println(e.getMessage());
 				continue;
 			}
 			
-			Score newScore = new Score();
 			
 			if(!pitchIterator.hasNext()) {
 				System.err.println("No pitch solution found");
@@ -670,6 +678,7 @@ public class AlnNHMMSongGeneratorNoNHMM {
 				newMeasure.setDivisions((int) (EVENTS_PER_BEAT * timeForAbsoluteMeasure.beatType / 4.0));
 				instantiatedMeasures.add(newMeasure);
 			}
+			Score newScore = new Score();
 			newScore.addMeasures(instantiatedMeasures);
 			
 			//add harmony to score
@@ -696,7 +705,13 @@ public class AlnNHMMSongGeneratorNoNHMM {
 
 				// 4. LYRICS
 				// Length (in syllables) is determined from the rhythm
-				int[][] lyricMatchConstraintLists = createLyricMatchConstraintLists(lyricMatchingPosesByPos, rhythmGenerate);
+				int[][] lyricMatchConstraintLists;
+				try {
+					lyricMatchConstraintLists = createLyricMatchConstraintLists(lyricMatchingPosesByPos, rhythmGenerate);
+				} catch (Exception e) {
+					System.out.println(e.getMessage());
+					continue;
+				}
 				
 				boolean[][] lyricMatchConstraintOutcomeList = new boolean[4][lyricMatchConstraintLists[0].length];
 				for (int i = 0; i < lyricMatchConstraintOutcomeList.length; i++) {
@@ -728,7 +743,7 @@ public class AlnNHMMSongGeneratorNoNHMM {
 						if (!stateToken.isRest && durationSoFar % 1.0 != 0.0) { // if it's not a rest and it's offbeat
 							lyricConstraints.get(numNotes).add(new ConditionedConstraint<>(new AbsoluteStressConstraint<>(0)));
 						}
-						durationSoFar += stateToken.durationInBeats;
+						durationSoFar += stateToken.durationInQuarterNotesOfTiedNotes;
 						if (!stateToken.isRest) numNotes++;
 					}
 					
@@ -749,50 +764,53 @@ public class AlnNHMMSongGeneratorNoNHMM {
 					System.out.println(e.getMessage());
 					continue;
 				}
+				foundLyricsRhythmMatch = true;
 				
-				int measure = -1;
+				int measure = 0;
 				int nextLyricIdx = 0;
-				System.out.println("Saving composition...");
-				for (int j = 0; j < rhythmGenerate.size(); j++) {
-					PitchToken pitchToken = pitchGenerate.get(j);
-					RhythmToken rhythmToken = rhythmGenerate.get(j);
+				System.out.println("Saving composition as ./compositions/newSong" + fileSuffix + ".xml...");
+				final List<Measure> measures = newScore.getMeasures();
+				for (int j = 0; j < rhythmGenerate.size(); j++) { // for every rhythm token (onset or not)
+					PitchToken pitchToken = pitchGenerate.get(j); // get the corresponding pitch token
+					RhythmToken rhythmToken = rhythmGenerate.get(j); // here's the rhythm token
 //					System.out.println("Considering note:" + rhythmToken + " with pitch:" + pitchToken);
-//					System.out.println("Measure:" + measure);
-					if (rhythmToken.beat == 0.0) {
-						measure++;
-					}
-					if (rhythmToken.isOnset()) { //adding a note
-						int pitch = rhythmToken.isRest ? Note.REST : pitchToken.normalizedPitch;
-						final Measure measure2 = newScore.getMeasures().get(measure);
-						List<Note> createTiedNoteWithDuration = MelodyEngineer.createTiedNoteWithDuration(measure2.beatsToDivs((double) rhythmToken.durationInBeats), pitch, measure2.divisionsPerQuarterNote);
+//					if (rhythmToken.measureOffsetInQuarterNotes == 0.0) { // we assume any rhythm token whose measure offset in quarternotes is 0 is a measure start.
+//						measure++;
+//					}
+					if (rhythmToken.isOnset()) { //add a note if it *IS* and onset
+						int pitch = rhythmToken.isRest ? Note.REST : pitchToken.normalizedPitch; // get MIDI pitch value (or rest)
+						Measure measure2 = measures.get(measure); // get a reference to the measure we're populating in the score
+						List<Note> createTiedNoteWithDuration = MelodyEngineer.createTiedNoteWithDuration(measure2.beatsToDivs((double) rhythmToken.durationInQuarterNotesOfTiedNotes), pitch, measure2.divisionsPerQuarterNote); // create a note for the note that is onset
 						if (!rhythmToken.isRest)
 							createTiedNoteWithDuration.get(0).setLyric(new NoteLyric(createNoteLyric(lyricGenerate.get(nextLyricIdx++))), true);
-						double currBeat = rhythmToken.beat;
-						int currMeasure = measure;
+						double currMeasureOffsetInQuarterNotes = rhythmToken.measureOffsetInQuarterNotes;
 						for (Note note : createTiedNoteWithDuration) {
-//							System.out.println("Adding note:" + note + " to msr " + currMeasure + " at beat " + currBeat);
+//							System.out.println("Adding note:" + note + " to msr " + measure + " at beat " + currMeasureOffsetInQuarterNotes);
 							
-							newScore.addNote(currMeasure, currBeat, note);
-							currBeat += note.duration / measure2.divisionsPerQuarterNote;
-							if (currBeat >= 4.0) {
-								currMeasure++;
-								currBeat %= 4.0;
+							newScore.addNote(measure, currMeasureOffsetInQuarterNotes, note);
+							currMeasureOffsetInQuarterNotes += 1.0 * note.duration / measures.get(measure).divisionsPerQuarterNote;
+							if (currMeasureOffsetInQuarterNotes >= 4.0) {
+								measure++;
+								currMeasureOffsetInQuarterNotes %= 4.0;
 							}
 						}
 					}
 				}
 				
 				Composition composition = new Composition(newScore);
+//				composition.setInspiration(muse.getInspiration());
 				Files.write(Paths.get("./compositions/newSong" + fileSuffix + ".xml"), composition.toString().getBytes());
 				
 				Orchestrator orchestrator = new CompingMusicXMLOrchestrator();
 				orchestrator.orchestrate(composition);
 				Files.write(Paths.get("./compositions/newSong" + fileSuffix + "Orchestrated.xml"), composition.toString().getBytes());
+
+//				Files.write(Paths.get("./compositions/newSong" + fileSuffix + ".description.txt"), muse.composeDescription(printSummary(lyricGenerate, 0.5)).getBytes());
 				fileSuffix++;
 				break;
 			}
 			if (!foundLyricsRhythmMatch) {
-				System.err.println("Could not find lyrics to match any rhythm");
+				System.out.println("Could not find lyrics to match any rhythm");
 			}
 		}
 	}
@@ -843,7 +861,7 @@ public class AlnNHMMSongGeneratorNoNHMM {
 			if (token instanceof HarmonyToken) {
 				HarmonyToken hToken = (HarmonyToken) token;
 				if (hToken.beat % printInterval == 0) { 
-					str.append(hToken.harmony.toShortString() + "(" + hToken.beat + ")");
+					str.append(hToken.harmony.toShortString());
 					str.append(" ");
 				}
 			} else if (token instanceof PitchToken) {
@@ -855,10 +873,10 @@ public class AlnNHMMSongGeneratorNoNHMM {
 			} 
 			else if (token instanceof RhythmToken) {
 				RhythmToken rToken = (RhythmToken) token;
-				if (rToken.beat % printInterval == 0 && rToken.beatsSinceOnset == 0.0) {
+				if (rToken.measureOffsetInQuarterNotes % printInterval == 0 && rToken.beatsSinceOnsetInQuarterNotes == 0.0) {
 					if (rToken.isRest)
 						str.append("(");
-					str.append(rToken.beat+1);
+					str.append(rToken.measureOffsetInQuarterNotes+1);
 					if (rToken.isRest)
 						str.append(") ");
 					else
@@ -884,7 +902,7 @@ public class AlnNHMMSongGeneratorNoNHMM {
 	 * @param rhythmGenerate
 	 * @return
 	 */
-	private static int[][] createLyricMatchConstraintLists(List<SortedSet<Integer>> matchingPosesByPos, List<RhythmToken> rhythmGenerate) {
+	private static int[][] createLyricMatchConstraintLists(List<SortedSet<Integer>> matchingPosesByPos, List<RhythmToken> rhythmGenerate) throws NoSuchElementException {
 
 		SortedMap<Integer, Integer> oldToNewIdx = new TreeMap<Integer, Integer>();
 		
@@ -1127,8 +1145,10 @@ public class AlnNHMMSongGeneratorNoNHMM {
 				// TRAIN RHYTHM
 //				if (rhythmStatesByIndex != null && file.getName().contains("")) {
 				if (rhythmStatesByIndex != null && file.getName().contains("")) {
-					rhythmPrefix.addLast(new RhythmToken(alignmentEvent.note.duration/musicXML.getDivsPerQuarterForAbsoluteMeasure(alignmentEvent.measure), alignmentEvent.currBeatsSinceOnset, alignmentEvent.beat, alignmentEvent.note.pitch == Note.REST));
+					int quarterNotesPerBeat = 4/musicXML.getTimeForAbsoluteMeasure(alignmentEvent.measure).beatType;
+					rhythmPrefix.addLast(new RhythmToken(alignmentEvent.note.duration/musicXML.getDivsPerQuarterForAbsoluteMeasure(alignmentEvent.measure), alignmentEvent.tiedDurationOfCurrentNote/musicXML.getDivsPerQuarterForAbsoluteMeasure(alignmentEvent.measure), alignmentEvent.currBeatsSinceOnset*quarterNotesPerBeat, alignmentEvent.beat*quarterNotesPerBeat, alignmentEvent.note.pitch == Note.REST));
 					if (i >= (rhythmMarkovOrder-1)) {
+//						System.out.println(rhythmPrefix.peekLast());
 						nextRhythmPrefixID = rhythmStatesByIndex.addPrefix(rhythmPrefix);
 						if (prevRhythmPrefixID == -1 || ALL_STATES_INITIAL_STATES) {
 							Utils.incrementDoubleForKey(rhythmPriors, nextRhythmPrefixID);

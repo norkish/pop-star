@@ -11,25 +11,51 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.Scanner;
 
-import config.SongConfiguration;
 import dbtb.data.CommandlineExecutor;
+import inspiration.Inspiration;
+import inspiration.InspirationSource;
 import tabcomplete.main.TabDriver;
 
 public class Muse {
 
-	Map<String,Double> inspiringEmpathVec;
+	private Map<String,Double> inspiringEmpathVec;
 	String inspiringEmotion = "Complex";
 	
 	public static final String[] ARRAY_OF_EMOTIONS = new String[]{"joy","surprise","anger","sadness","fear","disgust"};
-	private static final Random RAND = new Random(SongConfiguration.randSeed);
+	private static final Random RAND = new Random();
 	private static final String inspiringEmotionFile = "inspiring_empath.txt";
+	private static final String personaFile = "persona.txt";
 	private static final String matchListFile = "training_songs_sorted_by_relevance.txt";
 
-	public Muse() {
-		inspiringEmpathVec = defineRandomEmpathVector();
+	public Muse() throws IOException, InterruptedException {
+//		inspiringEmpathVec = defineRandomEmpathVector();
+//		printInspiringEmpathVecToFile();
+
+		inspiringEmpathVec = defineAndPrintEmpathVectorFromTwitter();
 	}
 	
+	private Map<String, Double> defineAndPrintEmpathVectorFromTwitter() throws IOException, InterruptedException {
+		CommandlineExecutor.execute("python script/computeSentimentVectorFromTweepyPersona.py " + personaFile, inspiringEmotionFile);
+		Thread.sleep(1000);
+		BufferedReader bf = new BufferedReader(new FileReader(inspiringEmotionFile));
+		
+		Map<String, Double> vector = new LinkedHashMap<String, Double>();
+		inspiringEmotion = bf.readLine();
+		String empath_vec = bf.readLine();
+		bf.close();
+	
+		Scanner sc = new Scanner(empath_vec);
+		String vec_item;
+		while((vec_item = sc.findInLine("'.*?': ")) != null) {
+			vector.put(vec_item.substring(1, vec_item.length()-3), Double.parseDouble(sc.findInLine("[0-9]+\\.[0-9]+")));
+		}
+		sc.close();
+		
+		return vector;
+	}
+
 	private Map<String, Double> defineRandomEmpathVector() {
 		Map<String, Double> vector = new LinkedHashMap<String, Double>(){{
 			put("help", 0.0);
@@ -234,10 +260,8 @@ public class Muse {
 	}
 
 	public File[] findInspiringFiles(int numberOfInspiringFiles) throws IOException {
-		File[] files = new File[numberOfInspiringFiles];
-		printInspiringEmpathVecToFile();
 		retrieveBestMatchesForTraining(numberOfInspiringFiles);
-		files = readBestMatches(numberOfInspiringFiles);
+		File[] files = readBestMatches(numberOfInspiringFiles);
 		//randomly choose a handful?
 		
 		return files;
@@ -277,9 +301,33 @@ public class Muse {
 		pw.close();
 	}
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, InterruptedException {
 		Muse muse = new Muse();
 		File[] files = muse.findInspiringFiles(10);
 		System.out.println(Arrays.toString(files));
+	}
+
+	public Inspiration getInspiration() {
+		Inspiration inspiration = new Inspiration(InspirationSource.RANDOM);
+		inspiration.analyzeInputForEmotion(inspiringEmotion);
+		return inspiration;
+	}
+
+	public String composeDescription(String generatedSongLyrics) {
+		StringBuilder str = new StringBuilder();
+		
+		str.append("Inspired by " + inspiringEmotion + " I wrote this song:" + generatedSongLyrics + ". I intended that the piece should be about " + inspiringEmpathVec + ", and/but in the end I felt that it did " + compareEmpathVectors(getEmpathVector(generatedSongLyrics), inspiringEmpathVec));
+		
+		return str.toString();
+	}
+
+	private String compareEmpathVectors(Map<String, Double> empathVector, Map<String, Double> inspiringEmpathVec2) {
+		// TODO Auto-generated method stub
+		return "NEED TO IMPLEMENT COMPARISON";
+	}
+
+	private Map<String,Double> getEmpathVector(String generatedSongLyrics) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
