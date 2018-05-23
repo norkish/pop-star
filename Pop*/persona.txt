@@ -1,1 +1,1 @@
-{"\"Salt Lake\" Weather":1.0,"Utah Jazz":2.0}
+{"\"Salt Lake\" Weather":1.0,"the Utah Jazz":1.0,"Donald Trump":1.0,"\"being in love\"":1.0, "break-ups":1.0, "\"new beginnings\"":1.0, "\"social media\"":1.0, "\"feeling depressed\"":1.0}

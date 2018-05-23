@@ -17,7 +17,7 @@ import data.ParsedMusicXMLObject;
 import tabcomplete.main.TabDriver;
 import utils.Triple;
 
-public class LyricPrinter {
+public class WikifoniaLyricPrinter {
 	private static final File[] files = new File(TabDriver.dataDir + "/Wikifonia_xmls").listFiles();
 
 	public static void main(String[] args) throws FileNotFoundException {

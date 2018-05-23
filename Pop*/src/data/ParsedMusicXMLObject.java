@@ -467,7 +467,7 @@ public class ParsedMusicXMLObject {
 		Note currNote = null;
 		boolean noteOnset;
 		int nextHarmonyIdx = 0;
-		Triple<Integer, Integer, Harmony> nextHarmony = unoverlappingHarmonyByPlayedMeasure.get(nextHarmonyIdx++);
+		Triple<Integer, Integer, Harmony> nextHarmony = nextHarmonyIdx < unoverlappingHarmonyByPlayedMeasure.size() ? unoverlappingHarmonyByPlayedMeasure.get(nextHarmonyIdx++) : null;
 		Harmony currHarmony = null;
 		boolean harmonyOnset;
 		NoteLyric currLyric = null;

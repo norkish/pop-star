@@ -18,6 +18,7 @@ import inspiration.Inspiration;
 import inspiration.InspirationEngineer;
 import inspiration.InspirationSource;
 import lyrics.LyricalEngineer;
+import main.Muse;
 import melody.MelodyEngineer;
 import segmentstructure.SegmentStructure;
 import segmentstructure.SegmentStructureEngineer;
@@ -27,6 +28,7 @@ public class Composition {
 	private String title = "BSSF (Best Song So Far)";
 	private String composer = "Pop*";
 	private Inspiration inspiration = new Inspiration(InspirationSource.RANDOM);
+	private Muse muse;
 	private GlobalStructure globalStructure;
 	Map<SegmentType, SegmentStructure> indexedSegmentStructures;
 	
@@ -102,7 +104,7 @@ public class Composition {
 		
 		xml = xml.replaceFirst("TITLE-PLACEHOLDER", title);
 		xml = xml.replaceFirst("COMPOSER-PLACEHOLDER", composer);
-		xml = xml.replaceFirst("LYRICIST-PLACEHOLDER", StringUtils.capitalize(inspiration.getMaxEmotion()));
+		xml = xml.replaceFirst("LYRICIST-PLACEHOLDER", "Inspired by: " + StringUtils.capitalize(muse.getEmpathSummary().replaceAll("_", " ")));
 		int systemsPerPage = score.hasOrchestration() ? 3 : 7;
 		xml = xml.replaceFirst("PART1-PLACEHOLDER\n", score.partToXML(2, 'l', systemsPerPage));
 		
@@ -126,7 +128,16 @@ public class Composition {
 		return globalStructure;
 	}
 
-	public void setInspiration(Inspiration insp) {
-		this.inspiration = insp;
+	public void setMuse(Muse muse) {
+		this.muse = muse;
+		this.inspiration = muse.getInspiration();
+	}
+
+	public void transpose(int suggestedTransposition) {
+		score.transpose(suggestedTransposition);
+	}
+
+	public void setTitle(String title2) {
+		this.title = StringUtils.capitalize(title2);
 	}
 }

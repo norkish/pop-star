@@ -20,6 +20,7 @@ public class Score {
 
 	List<Measure> measures = new ArrayList<Measure>();
 	private boolean hasOrchestration = false;
+	private int transpose = 0;
 
 	public void addMeasures(List<Measure> instantiatedMeasures) {
 		measures.addAll(instantiatedMeasures);
@@ -103,7 +104,7 @@ public class Score {
 					for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
 					str.append("<key>\n");
 					for (int j = 0; j <= indentationLevel+2; j++) str.append("    "); 
-					str.append("<fifths>").append(currKey.fifths).append("</fifths>\n");
+					str.append("<fifths>").append(((currKey.fifths + (transpose*7) + 6) %12) - 6).append("</fifths>\n");
 					for (int j = 0; j <= indentationLevel+2; j++) str.append("    "); 
 					str.append("<mode>").append(currKey.mode.toString().toLowerCase()).append("</mode>\n");
 					for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
@@ -163,10 +164,10 @@ public class Score {
 			
 			switch(part) {
 			case 'l':
-				str.append(measure.leadToXML(indentationLevel+1));
+				str.append(measure.leadToXML(indentationLevel+1, transpose));
 				break;
 				default:
-				str.append(measure.orchestrationToXML(indentationLevel+1,part));
+				str.append(measure.orchestrationToXML(indentationLevel+1,part, transpose));
 				break;
 			}
 			
@@ -244,5 +245,17 @@ public class Score {
 		} while (harmony == null && measure > 0);
 		
 		return harmony;
+	}
+
+	public void deleteOrchestration() {
+		for (Measure measure : measures) {
+			measure.deleteOrchestration();
+		}
+		
+		hasOrchestration = false;
+	}
+
+	public void transpose(int suggestedTransposition) {
+		this.transpose = suggestedTransposition;
 	}	
 }

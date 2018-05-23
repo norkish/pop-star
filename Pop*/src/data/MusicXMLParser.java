@@ -314,7 +314,7 @@ public class MusicXMLParser {
 					+ "isChordWithPrevious=" + isChordWithPrevious + "]";
 		}
 
-		public String toXML(int indentationLevel, boolean allowDownStem) {
+		public String toXML(int indentationLevel, boolean allowDownStem, int transpose) {
 			StringBuilder str = new StringBuilder();
 			
 			//open note tag
@@ -333,9 +333,9 @@ public class MusicXMLParser {
 				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
 				str.append("<rest/>\n");
 			} else {
-				String pitchString = Pitch.getPitchName((pitch+3)%12);
+				String pitchString = Pitch.getPitchName((pitch+3+transpose)%12);
 				char step = pitchString.charAt(0); 
-				int octave = pitch/12;
+				int octave = (pitch+transpose)/12;
 				
 				while(pitchString.length() > 1) {
 					switch(pitchString.charAt(1)) {
@@ -496,6 +496,10 @@ public class MusicXMLParser {
 			notesOn[FIFTHi] = true;
 		}
 		
+		public Quality(String text) {
+			parseKindContentText(text);
+		}
+
 		public boolean parseKindTextAttribute(Node node) {
 			if (node == null) {
 				return false;
@@ -1183,7 +1187,7 @@ public class MusicXMLParser {
 			return true;
 		}
 
-		public String toXML(int indentationLevel, int offset) {
+		public String toXML(int indentationLevel, int offset, int transpose) {
 			StringBuilder str = new StringBuilder();
 			
 			//open harmony tag
@@ -1192,7 +1196,7 @@ public class MusicXMLParser {
 			
 			//root
 			if (root != null) {
-				String rootString = Pitch.getPitchName(root.rootStep);
+				String rootString = Pitch.getPitchName((root.rootStep+transpose)%12);
 				char rootStep = rootString.charAt(0); 
 				int rootAlter = 0;
 				
@@ -1235,7 +1239,7 @@ public class MusicXMLParser {
 			
 			//bass
 			if (bass != null) {
-				String bassString = Pitch.getPitchName(bass.bassStep);
+				String bassString = Pitch.getPitchName((bass.bassStep+transpose)%12);
 				char bassStep = bassString.charAt(0); 
 				int bassAlter = 0;
 				

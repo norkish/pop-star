@@ -1,6 +1,8 @@
 import tweepy
+from HTMLParser import HTMLParser
 import time
 from empath import Empath
+import random
 import sys
 import datetime
 lexicon = Empath()
@@ -25,7 +27,7 @@ interests_and_weights = eval(open(sys.argv[1],'r').read())
 bssf_tweet = None
 bssf_empath = None
 bssf_score = -1.0
-since_date=datetime.date.today()-datetime.timedelta(days=3)
+since_date=datetime.date.today()-datetime.timedelta(days=1)
 
 def emotional_score(empath_vec):
     return sum(v for k,v in empath_vec.iteritems() if k in ["joy","surprise","anger","sadness","fear","disgust","positive_emotion","negative_emotion","optimism","hate","envy","love","lust","shame","disappointment","timidity"])
@@ -34,25 +36,24 @@ def emotional_score(empath_vec):
 for i,w in interests_and_weights.iteritems():
     max_tweets = 1000
     #Search the latest tweets t_i related to i
-    searched_tweets = [status for status in tweepy.Cursor(api.search, q=i + "  -filter:retweets", since=since_date,languages=["en"]).items(max_tweets)]
+    searched_tweets = [status for status in tweepy.Cursor(api.search, q=i + "  -filter:retweets", since=since_date,languages=["en"],tweet_mode='extended').items(max_tweets)]
 
     for idx,tweet in enumerate(searched_tweets):
         #print idx,tweet.text
         #For each tweet t_i, compute the empath vector
-        empath_vec = lexicon.analyze(tweet.text, normalize=True)
+        empath_vec = lexicon.analyze(tweet.full_text, normalize=True)
         #print empath_vec
         score = emotional_score(empath_vec) 
         #print "Score:",score,"*",w,"=",(score*w)
         score *= w
-        if score > bssf_score:
+        if bssf_score == -1.0 or (score > bssf_score and random.uniform(0,1) < 0.3):
             bssf_tweet = tweet
             bssf_tweet.persona_interest = i
             bssf_score = score
             bssf_empath = empath_vec
 
-    break
-
 #Report the interest i, tweet t_i, and empath vector v_t_i with the highest emotional value weighted by the interest weight w_i
-ts = bssf_tweet.created_at.strftime('%A, %B %d, %Y %I:%M %p')
-print bssf_tweet.persona_interest, bssf_tweet.user.name,ts,bssf_tweet.text.encode('utf-8'),bssf_score
+ts = bssf_tweet.created_at.strftime('%A, %B %d, %Y at %I:%M %p')
+h = HTMLParser()
+print "SEARCH_KEYWORD:",bssf_tweet.persona_interest, "USERNAME:", h.unescape(bssf_tweet.user.name).encode('utf-8'),"TIMESTAMP:",ts,"TWEETBODY:",h.unescape(bssf_tweet.full_text).encode('utf-8'),"MATCH_SCORE:",bssf_score
 print bssf_empath

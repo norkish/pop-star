@@ -34,7 +34,7 @@ public class Measure {
 	private TreeMap<Double, Harmony> harmonies = new TreeMap<Double, Harmony>();
 	private TreeMap<Double, Note> notes = new TreeMap<Double, Note>();
 	private TreeMap<Double, List<Note>> orchestration = null;
-	private TreeMap<Double, List<Note>> bassOrchestration;
+	private TreeMap<Double, List<Note>> bassOrchestration = null;
 	
 	public Measure(SegmentType segType, int offset) {
 		this.segmentType = segType;
@@ -87,30 +87,27 @@ public class Measure {
 		return constraints;
 	}
 
-	public String leadToXML(int indentationLevel) {
+	public String leadToXML(int indentationLevel, int transpose) {
 		StringBuilder str = new StringBuilder();
-		
-		// TODO: spread staves, make chords bigger
 		
 		// do all harmonies
 		for (Entry<Double, Harmony> offsetHarmony : harmonies.entrySet()) {
 			Double offsetInBeats = offsetHarmony.getKey();
 			int offsetInDivs = beatsToDivs(offsetInBeats);
-			str.append(offsetHarmony.getValue().toXML(indentationLevel, (int) (1 * offsetInDivs)));
+			str.append(offsetHarmony.getValue().toXML(indentationLevel, (int) (1 * offsetInDivs), transpose));
 		}
 		
 		// do all notes
 		if (notes.isEmpty()) {
 			for (Note restNote : MelodyEngineer.createTiedNoteWithDuration(beatsToDivs((double) time.beats), Note.REST, divisionsPerQuarterNote)) {
-				str.append(restNote.toXML(indentationLevel, true));
+				str.append(restNote.toXML(indentationLevel, true, transpose));
 			}
 		} else {
 			for (Note note : notes.values()) {
 				// this assumes note durations are sufficient to calculate note onsets (no gaps)
-				str.append(note.toXML(indentationLevel, true));
+				str.append(note.toXML(indentationLevel, true, transpose));
 			}
 		}
-		// TODO: constraints
 		
 		return str.toString();
 	}
@@ -120,7 +117,7 @@ public class Measure {
 		return (int) (beats * divisionsPerQuarterNote * (4.0/time.beatType));
 	}
 
-	public String orchestrationToXML(int indentationLevel, char part) {
+	public String orchestrationToXML(int indentationLevel, char part, int transpose) {
 		StringBuilder str = new StringBuilder();
 		
 		TreeMap<Double, List<Note>> partNotes = part == 'p' ? orchestration : bassOrchestration;
@@ -128,7 +125,7 @@ public class Measure {
 		// do chords, assigning to staves 
 		for (Entry<Double, List<Note>> offsetHarmony : partNotes.entrySet()) {
 			for (Note note : offsetHarmony.getValue()) {
-				str.append(note.toXML(indentationLevel, false));
+				str.append(note.toXML(indentationLevel, false, transpose));
 			}
 		}
 		
@@ -274,5 +271,8 @@ public class Measure {
 		return harmonies;
 	}
 
-
+	public void deleteOrchestration() {
+		orchestration = null;
+		bassOrchestration = null;		
+	}
 }
