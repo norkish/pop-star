@@ -76,7 +76,8 @@ public class CompingMusicXMLOrchestrator extends Orchestrator {
 			measure.addChordForHarmonyAt(1.0, 1.0);
 			measure.addChordForHarmonyAt(2.0, 1.0);
 			measure.addChordForHarmonyAt(3.0, 1.0);
-			measure.addBassNoteForHarmony(0.0, 2.5);
+			measure.addBassNoteForHarmony(0.0, 2.0);
+			measure.addBassNoteForHarmony(2.0, 0.5);
 			measure.addBassNoteForHarmony(2.5, 1.0);
 			measure.addBassNoteForHarmony(3.5, 0.5);
 		} else if (patternChoice == 5) {
