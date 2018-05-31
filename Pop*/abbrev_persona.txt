@@ -1,0 +1,1 @@
+{"\"being in love\"":1.0, "\"new beginnings\"":1.5, "\"feeling depressed\"":1.0}

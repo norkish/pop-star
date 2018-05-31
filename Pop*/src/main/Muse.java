@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -34,15 +36,25 @@ public class Muse {
 	public static final String[] ARRAY_OF_EMOTIONS = new String[]{"joy","surprise","anger","sadness","fear","disgust"};
 	private static final Random RAND = new Random();
 	private static final String inspiringEmotionFile = "inspiring_empath.txt";
-	private static final String personaFile = "persona.txt";
+	private static final String personaFile = "abbrev_persona.txt";
 	private static final String matchListFile = "training_songs_sorted_by_relevance.txt";
 	private static final String matchingLyricsEmpathListFile = "training_lyrics_sorted_by_relevance.txt";
 
+	boolean useExistingEmpaths = false;
+	private List<Pair<String, Map<String, Double>>> all_tweet_empath_vecs;
+	private int all_tweet_empath_vecs_idx = -1;
+	
 	public Muse() throws IOException, InterruptedException {
-		Pair<String, Map<String, Double>> empath_vec = defineAndPrintEmpathVectorFromTwitter();
+		all_tweet_empath_vecs = getEmpathVectorsFromTwitter();
+	}
+
+	public boolean setTweetAndVecToNext() {
+		if (all_tweet_empath_vecs_idx == all_tweet_empath_vecs.size()-1) return false;
+		Pair<String, Map<String, Double>> empath_vec = all_tweet_empath_vecs.get(++all_tweet_empath_vecs_idx);
 		inspiringTweet = parseTweet(empath_vec.getFirst());
 		inspiringEmpathVec = empath_vec.getSecond();
 		setInspiringEmotion(summarizeEmpathVec(inspiringEmpathVec));
+		return true;
 	}
 	
 	private Tweet parseTweet(String tweetString) {
@@ -67,28 +79,33 @@ public class Muse {
 		return newTweet;
 	}
 
-	private Pair<String, Map<String, Double>> defineAndPrintEmpathVectorFromTwitter() throws IOException, InterruptedException {
-		CommandlineExecutor.execute("python script/computeSentimentVectorFromTweepyPersona.py " + personaFile, inspiringEmotionFile);
+	private static final int NUM_TWEETS_TO_GATHER = 30; 
+	private List<Pair<String, Map<String, Double>>> getEmpathVectorsFromTwitter() throws IOException, InterruptedException {
+		if (!useExistingEmpaths) CommandlineExecutor.execute("python script/computeSentimentVectorFromTweepyPersona.py " + personaFile  + " " + NUM_TWEETS_TO_GATHER, inspiringEmotionFile);
 		Thread.sleep(1000);
 		return readInEmpathVecFromFile(inspiringEmotionFile);
 	}
 
-	private Pair<String, Map<String, Double>> readInEmpathVecFromFile(String filename) throws FileNotFoundException, IOException {
+	private List<Pair<String, Map<String, Double>>> readInEmpathVecFromFile(String filename) throws FileNotFoundException, IOException {
 		BufferedReader bf = new BufferedReader(new FileReader(filename));
 		
-		Map<String, Double> vector = new LinkedHashMap<String, Double>();
-		String metadata = bf.readLine();
-		String empath_vec = bf.readLine();
-		bf.close();
-	
-		Scanner sc = new Scanner(empath_vec);
-		String vec_item;
-		while((vec_item = sc.findInLine("'.*?': ")) != null) {
-			vector.put(vec_item.substring(1, vec_item.length()-3), Double.parseDouble(sc.findInLine("[0-9]+\\.[0-9]+")));
-		}
-		sc.close();
+		String metadata;
+		List<Pair<String, Map<String, Double>>> empathVecs = new ArrayList<Pair<String, Map<String, Double>>>();
+		while ((metadata = bf.readLine()) != null) {
+			String empath_vec = bf.readLine();
 		
-		return new Pair<String,Map<String, Double>>(metadata,vector);
+			Scanner sc = new Scanner(empath_vec);
+			String vec_item;
+			Map<String, Double> vector = new LinkedHashMap<String, Double>();
+			while((vec_item = sc.findInLine("'.*?': ")) != null) {
+				vector.put(vec_item.substring(1, vec_item.length()-3), Double.parseDouble(sc.findInLine("[0-9]+\\.[0-9]+")));
+			}
+			sc.close();
+			empathVecs.add(new Pair<String,Map<String, Double>>(metadata,vector));
+		}
+		bf.close();
+		
+		return empathVecs;
 	}
 
 	private Map<String, Double> defineRandomEmpathVector() {
@@ -316,24 +333,7 @@ public class Muse {
 	}
 
 	private void retrieveBestMatchesForTraining(int count) {
-		CommandlineExecutor.execute("python /Users/norkish/git/pop-star/Pop*/script/retrieveSongsWithClosestLyrics.py " + inspiringEmotionFile + " wikifonia_lyrics_empath.txt " + count, matchListFile);
-	}
-
-	private void printInspiringEmpathVecToFile() throws FileNotFoundException {
-		PrintWriter pw = new PrintWriter(inspiringEmotionFile);
-		
-		pw.write(getInspiringEmotion());
-		pw.write("\n{");
-		boolean first = true;
-		for (Entry<String, Double> entry : inspiringEmpathVec.entrySet()) {
-			if (first)
-				first = false;
-			else 
-				pw.write(", ");
-			pw.write("\'" + entry.getKey() + "\': " + entry.getValue());
-		}
-		pw.write("}");
-		pw.close();
+		if (!useExistingEmpaths) CommandlineExecutor.execute("python /Users/norkish/git/pop-star/Pop*/script/retrieveSongsWithClosestLyrics.py " + inspiringEmotionFile + " wikifonia_lyrics_empath.txt " + count + " " + all_tweet_empath_vecs_idx, matchListFile);
 	}
 
 	public static void main(String[] args) throws IOException, InterruptedException {
@@ -350,10 +350,8 @@ public class Muse {
 
 	Random rand = new Random();
 	
-	public String composeDescription(String generatedSongLyrics) throws InterruptedException, IOException {
+	public String composeDescription(Pair<String, Map<String, Double>> empathVecForGenSong, String lyricString) throws InterruptedException, IOException {
 		StringBuilder str = new StringBuilder();
-		
-		final Pair<String, Map<String, Double>> empathVecForGenSong = getEmpathVector(generatedSongLyrics);
 		
 		int i = rand.nextInt(4);
 		if(i==0)
@@ -429,7 +427,7 @@ public class Muse {
 		else
 			str.append(" and I couldn't help but write this song:");
 		
-		str.append("\n\n\"" + StringUtils.capitalize(generatedSongLyrics) + "\"\n\n");
+		str.append("\n\n\"" + StringUtils.capitalize(lyricString) + "\"\n\n");
 		
 		i = rand.nextInt(4);
 		if (i == 0)
@@ -520,7 +518,7 @@ public class Muse {
 				str.append("but it turned out to have more of a ");
 			else if (i==3)
 				str.append("however it really wound up with more of a ");
-			str.append(summarizeEmpathVec(generatedEmpathVec));
+			str.append(summarizeEmpathVec(generatedEmpathVec).replaceAll("_", " "));
 			str.append(" theme.");
 		}
 		return str.toString();
@@ -528,14 +526,14 @@ public class Muse {
 
 	private final static String generatedSongLyricsFile = "generatedSongLyrics.txt";
 	private final static String generatedSongLyricsEmpathFile = "generatedSongLyricsEmpath.txt";
-	private Pair<String, Map<String, Double>> getEmpathVector(String generatedSongLyrics) throws InterruptedException, IOException {
+	public Pair<String, Map<String, Double>> getEmpathVector(String generatedSongLyrics) throws InterruptedException, IOException {
 		PrintWriter pw = new PrintWriter(generatedSongLyricsFile);
 		pw.println("Generated Song Lyrics");
 		pw.println(generatedSongLyrics.replace("\n", " "));
 		pw.close();
-		CommandlineExecutor.execute("python script/computeSentimentVectorFromLyrics.py " + generatedSongLyricsFile, generatedSongLyricsEmpathFile);
+		if (!useExistingEmpaths) CommandlineExecutor.execute("python script/computeSentimentVectorFromLyrics.py " + generatedSongLyricsFile, generatedSongLyricsEmpathFile);
 		Thread.sleep(1000);
-		return readInEmpathVecFromFile(generatedSongLyricsEmpathFile);
+		return readInEmpathVecFromFile(generatedSongLyricsEmpathFile).get(0);
 	}
 
 	public String getEmpathSummary() {
@@ -556,8 +554,8 @@ public class Muse {
 	
 	public String[][] findInspiringLyricDBMatches(int inspiringFileCountLyricsDb) throws IOException {
 		System.out.println("Finding inspiring lyrics from the lyric database");
-		printInspiringEmpathVecToFile();
-		CommandlineExecutor.execute("python /Users/norkish/git/pop-star/Pop*/script/retrieveLyricsWithClosestLyrics.py " + inspiringEmotionFile + " /Users/norkish/Archive/2017_BYU/ComputationalCreativity/data/data/lyrics_db_empaths_deeper_dedup.txt " + inspiringFileCountLyricsDb, matchingLyricsEmpathListFile);
+//		printInspiringEmpathVecToFile();
+		if (!useExistingEmpaths) CommandlineExecutor.execute("python /Users/norkish/git/pop-star/Pop*/script/retrieveLyricsWithClosestLyrics.py " + inspiringEmotionFile + " /Users/norkish/Archive/2017_BYU/ComputationalCreativity/data/data/lyrics_db_empaths_deeper_dedup.txt " + inspiringFileCountLyricsDb + " " + all_tweet_empath_vecs_idx, matchingLyricsEmpathListFile);
 		String[][] matches = parseMatchingLyricsFromLyricsDB(inspiringFileCountLyricsDb);
 		
 		return matches;
@@ -577,6 +575,8 @@ public class Muse {
 			lyrics = lyrics.replaceAll("\\\\","");
 			matches[i++] = lyrics.split("\n");
 		}
+		
+		System.out.println("TRAINING LYRICS ON " + i + " (of requested " + inspiringFileCountLyricsDb + ") LYRIC FILES ");
 		
 		bf.close();
 		
@@ -786,5 +786,27 @@ public class Muse {
 
 	public Tweet getTweet() {
 		return inspiringTweet;
+	}
+
+	private static double empathVecWeightInRating = 0.5;
+	private static double lyricDiversityWeightInRating = 0.5;
+	
+	public double getRating(Pair<String, Map<String, Double>> empathVecForGenSong, String lyricString) throws InterruptedException, IOException {
+
+		double empathVecDifferenceScore = 0.0;
+		for (String key : inspiringEmpathVec.keySet()) {
+			empathVecDifferenceScore += Math.abs(inspiringEmpathVec.get(key) - empathVecForGenSong.getSecond().get(key));
+		}
+		empathVecDifferenceScore /= inspiringEmpathVec.size(); // normalize to be between 0 and 1
+		
+		Set<String> uniqWords = new HashSet<String>();
+		final String[] words = lyricString.split("\\s+");
+		for (String word : words) {
+			uniqWords.add(word.replaceAll("[^\\w]", ""));
+		}
+		
+		double lyricDiversityScore = uniqWords.size() * 1.0 / words.length;
+		
+		return empathVecWeightInRating * empathVecDifferenceScore + lyricDiversityWeightInRating * lyricDiversityScore;
 	}
 }

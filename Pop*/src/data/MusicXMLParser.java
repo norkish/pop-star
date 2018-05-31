@@ -1790,6 +1790,9 @@ public class MusicXMLParser {
 							} else if (gNodeName.equals("offset")||gNodeName.equals("staff")||gNodeName.equals("voice")) {
 
 							} else if (gNodeName.equals("sound")) {
+								if (musicXML.songTempo == -1 && mGrandchild.getAttributes().getNamedItem("tempo") != null) {
+									musicXML.songTempo = Double.parseDouble(mGrandchild.getAttributes().getNamedItem("tempo").getTextContent());
+								}
 								if  (!mGrandchild.getTextContent().isEmpty()) {
 //									throw new RuntimeException("Sound node stuff:" + gNodeName);
 								}
@@ -1828,7 +1831,9 @@ public class MusicXMLParser {
 					} else if (nodeName.equals("print")) {
 						// do nothing?
 					} else if (nodeName.equals("sound")) {
-						// do nothing?
+						if (musicXML.songTempo == -1 && mChild.getAttributes().getNamedItem("tempo") != null) {
+							musicXML.songTempo = Double.parseDouble(mChild.getAttributes().getNamedItem("tempo").getTextContent());
+						}
 					} else if (nodeName.equals("backup")) {
 						if (currMeasurePositionInDivisions == calculateTotalDivisionsInMeasure(currTime, currDivisionsPerQuarterNote)) {
 							break;

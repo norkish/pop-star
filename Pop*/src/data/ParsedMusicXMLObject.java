@@ -41,7 +41,7 @@ public class ParsedMusicXMLObject {
 		public Note note;
 		public double tiedDurationOfCurrentNote;
 		public boolean noteOnset;
-		public double currBeatsSinceOnset;
+		public double currBeatsSinceOnset; // Not including previous notes to which this note may be tied
 		public Harmony harmony;
 		public boolean harmonyOnset;
 		public NoteLyric lyric;
@@ -445,6 +445,7 @@ public class ParsedMusicXMLObject {
 	private Map<Integer, Map<Double, Set<String>>> verseMatchGroupsByPosition = new HashMap<Integer, Map<Double, Set<String>>>();
 	
 	private Map<Integer, Map<Double, Set<String>>> harPitRhyLyrMatchGroupsByPosition = new HashMap<Integer, Map<Double, Set<String>>>();
+	public double songTempo = -1.0;
 
 	public List<ParsedMusicXMLObject.MusicXMLAlignmentEvent> getAlignmentEvents(int eventsPerBeat) {
 		List<ParsedMusicXMLObject.MusicXMLAlignmentEvent> events = alignmentEvents.get(eventsPerBeat);

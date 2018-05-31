@@ -15,13 +15,16 @@ public abstract class Orchestrator {
 		Score score = newSong.getScore();
 		score.hasOrchestration(true);
 		List<Measure> measures = score.getMeasures();
+		int changePatternInterval = 4;
+		
+		int prevPatternChoice = -1;
 		for (int i = 0; i < measures.size(); i++) {
 			Measure measure = measures.get(i);
-			orchestrate(measure);
+			prevPatternChoice = orchestrate(measure, i == measures.size()-1, i % changePatternInterval == 0 ? -1 : prevPatternChoice);
 		}
 	}
 
-	abstract void orchestrate(Measure measure);
+	abstract int orchestrate(Measure measure, boolean lastMeasure, int prevMeasurePatternChoice);
 
 	public static Orchestrator getOrchestrator() {
 		Orchestrator orchestrator = null;

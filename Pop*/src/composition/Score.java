@@ -21,6 +21,7 @@ public class Score {
 	List<Measure> measures = new ArrayList<Measure>();
 	private boolean hasOrchestration = false;
 	private int transpose = 0;
+	private double tempo = 110; 
 
 	public void addMeasures(List<Measure> instantiatedMeasures) {
 		measures.addAll(instantiatedMeasures);
@@ -40,6 +41,10 @@ public class Score {
 
 	public List<Measure> getMeasures() {
 		return measures;
+	}
+	
+	public void setTempo(double newTempo) {
+		tempo = newTempo;
 	}
 
 	final static int measuresPerSystem = 3;
@@ -138,6 +143,39 @@ public class Score {
 				
 				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
 				str.append("</attributes>\n");
+			}
+			
+			if (part == 'l' && i == 0) {
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("<direction placement=\"above\">\n");
+				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+				str.append("<direction-type>\n");
+				for (int j = 0; j <= indentationLevel+2; j++) str.append("    "); 
+				str.append("<words font-weight=\"bold\" font-family=\"Times New Roman\" font-size=\"12\">(</words>\n");
+				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+				str.append("</direction-type>\n");
+				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+				str.append("<direction-type>\n");
+				for (int j = 0; j <= indentationLevel+2; j++) str.append("    "); 
+				str.append("<metronome parentheses=\"no\">\n");
+				for (int j = 0; j <= indentationLevel+3; j++) str.append("    "); 
+				str.append("<beat-unit>quarter</beat-unit>\n");
+				for (int j = 0; j <= indentationLevel+3; j++) str.append("    "); 
+				str.append("<per-minute>" + (int)tempo + "</per-minute>\n");
+				for (int j = 0; j <= indentationLevel+2; j++) str.append("    "); 
+				str.append("</metronome>\n");
+				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+				str.append("</direction-type>\n");
+				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+				str.append("<direction-type>\n");
+				for (int j = 0; j <= indentationLevel+2; j++) str.append("    "); 
+				str.append("<words font-weight=\"bold\" font-family=\"Times New Roman\" font-size=\"12\">)</words>\n");
+				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+				str.append("</direction-type>\n");
+				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
+				str.append("<sound tempo=\"" + tempo + "\"/>\n");
+				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
+				str.append("</direction>\n");
 			}
 			
 			if (segmentTypeChange) {

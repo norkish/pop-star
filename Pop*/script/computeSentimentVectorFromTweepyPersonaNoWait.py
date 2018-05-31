@@ -1,5 +1,4 @@
 import tweepy
-from random import shuffle
 from HTMLParser import HTMLParser
 import time
 from empath import Empath
@@ -20,7 +19,7 @@ consumer_secret = "cHtRVVWRaxw8gEDWW1HygNORV9Byc5Mhrlvzz2qtfbFkNZZzpA"
 auth = tweepy.OAuthHandler(consumer_key,consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 
-api = tweepy.API(auth,wait_on_rate_limit=True)
+api = tweepy.API(auth)
 
 #Read in a list of interests with a weight for interest
 interests_and_weights = eval(open(sys.argv[1],'r').read())
@@ -45,17 +44,16 @@ if len(sys.argv) > 3:
 else:
     count = 10
 
-topN = []
+topN = [None]*count
 
 #For each interest i,
 for i,w in interests_and_weights.iteritems():
-    iTopN = [None]*count
-    max_tweets = 500 # the number of requests consumed will be this number / 100 * the number of interests
+    max_tweets = 1000
     #Search the latest tweets t_i related to i
-    searched_tweets = [status for status in tweepy.Cursor(api.search, rpp=100, q=i + "  -filter:retweets", since=since_date,languages=["en"],tweet_mode='extended', count=max_tweets).items(max_tweets)]
+    searched_tweets = [status for status in tweepy.Cursor(api.search, q=i + "  -filter:retweets", since=since_date,languages=["en"],tweet_mode='extended').items(max_tweets)]
 
     for idx,tweet in enumerate(searched_tweets):
-        if len(tweet.full_text) < 100:
+        if len(tweet.full_text) < 50:
             continue
         #print idx,tweet.text
         #For each tweet t_i, compute the empath vector
@@ -64,22 +62,17 @@ for i,w in interests_and_weights.iteritems():
         score = emotional_score(empath_vec) 
         #print "Score:",score,"*",w,"=",(score*w)
         score *= w
-        for j,topI in enumerate(iTopN):
+        for j,topI in enumerate(topN):
             if topI == None or score > topI[1]:
                 tweet.persona_interest = i
-                iTopN.insert(j,[tweet,score,empath_vec])
-                iTopN.pop()
+                topN.insert(j,[tweet,score,empath_vec])
+                topN.pop()
                 break;
-    topN += iTopN
-
-shuffle(topN)
-
-topN = topN[0:count]
 
 #Report the interest i, tweet t_i, and empath vector v_t_i with the highest emotional value weighted by the interest weight w_i
 for j,topI in enumerate(topN):
     bssf_tweet = topI[0]
     ts = bssf_tweet.created_at.strftime('%A, %B %d, %Y at %I:%M %p')
     h = HTMLParser()
-    print "SEARCH_KEYWORD:",bssf_tweet.persona_interest, "USERNAME:", h.unescape(bssf_tweet.user.name).encode('utf-8'),"TIMESTAMP:",ts,"TWEETBODY:",h.unescape(bssf_tweet.full_text).encode('utf-8').replace('\n', ' '),"MATCH_SCORE:",topI[1]
+    print "SEARCH_KEYWORD:",bssf_tweet.persona_interest, "USERNAME:", h.unescape(bssf_tweet.user.name).encode('utf-8'),"TIMESTAMP:",ts,"TWEETBODY:",h.unescape(bssf_tweet.full_text).encode('utf-8'),"MATCH_SCORE:",topI[1]
     print topI[2]

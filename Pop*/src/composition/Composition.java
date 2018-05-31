@@ -111,7 +111,6 @@ public class Composition {
 		if (score.hasOrchestration()) {
 			xml = xml.replaceFirst("PART2-PLACEHOLDER\n", score.partToXML(2, 'p', systemsPerPage));
 			xml = xml.replaceFirst("PART3-PLACEHOLDER\n", score.partToXML(2, 'b', systemsPerPage));
-
 		} else {
 			xml = xml.replaceFirst("(?s) *<score-part id=\"P2\">.*</score-part>\n", "");
 			xml = xml.replaceFirst("(?s) *<part id=\"P2.*</part>\n", "");
@@ -139,5 +138,9 @@ public class Composition {
 
 	public void setTitle(String title2) {
 		this.title = StringUtils.capitalize(title2);
+	}
+
+	public void setTempo(double tempo) {
+		score.setTempo(tempo);
 	}
 }
