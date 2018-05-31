@@ -1145,7 +1145,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 			PitchToken pToken = pitchGenerate.get(i);
 			if (rToken.isOnset() && !rToken.isRest && pToken.normalizedPitch != Note.REST) {
 				// then i represents an index for our Match ConstraintLists
-				System.out.println(i + " is now " + oldToNewIdx.size());
+//				System.out.println(i + " is now " + oldToNewIdx.size());
 				oldToNewIdx.put(i, oldToNewIdx.size());
 			}
 		}
