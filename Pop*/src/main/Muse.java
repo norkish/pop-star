@@ -333,7 +333,7 @@ public class Muse {
 	}
 
 	private void retrieveBestMatchesForTraining(int count) {
-		if (!useExistingEmpaths) CommandlineExecutor.execute("python /Users/norkish/git/pop-star/Pop*/script/retrieveSongsWithClosestLyrics.py " + inspiringEmotionFile + " wikifonia_lyrics_empath.txt " + count + " " + all_tweet_empath_vecs_idx, matchListFile);
+		if (!useExistingEmpaths) CommandlineExecutor.execute("python script/retrieveSongsWithClosestLyrics.py " + inspiringEmotionFile + " wikifonia_lyrics_empath.txt " + count + " " + all_tweet_empath_vecs_idx, matchListFile);
 	}
 
 	public static void main(String[] args) throws IOException, InterruptedException {
@@ -555,7 +555,7 @@ public class Muse {
 	public String[][] findInspiringLyricDBMatches(int inspiringFileCountLyricsDb) throws IOException {
 		System.out.println("Finding inspiring lyrics from the lyric database");
 //		printInspiringEmpathVecToFile();
-		if (!useExistingEmpaths) CommandlineExecutor.execute("python /Users/norkish/git/pop-star/Pop*/script/retrieveLyricsWithClosestLyrics.py " + inspiringEmotionFile + " /Users/norkish/Archive/2017_BYU/ComputationalCreativity/data/data/lyrics_db_empaths_deeper_dedup.txt " + inspiringFileCountLyricsDb + " " + all_tweet_empath_vecs_idx, matchingLyricsEmpathListFile);
+		if (!useExistingEmpaths) CommandlineExecutor.execute("python script/retrieveLyricsWithClosestLyrics.py " + inspiringEmotionFile + " /Users/norkish/Archive/2017_BYU/ComputationalCreativity/data/data/lyrics_db_empaths_deeper_dedup.txt " + inspiringFileCountLyricsDb + " " + all_tweet_empath_vecs_idx, matchingLyricsEmpathListFile);
 		String[][] matches = parseMatchingLyricsFromLyricsDB(inspiringFileCountLyricsDb);
 		
 		return matches;

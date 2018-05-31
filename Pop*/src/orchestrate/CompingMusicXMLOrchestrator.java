@@ -20,10 +20,10 @@ public class CompingMusicXMLOrchestrator extends Orchestrator {
 		if (!timeIsThree && (patternChoice == 0 || lastMeasure)) {
 			boolean compOnFour = !lastMeasure && rand.nextBoolean();
 			measure.addChordForHarmonyAt(0.0, 1.0);
-			measure.addBassNoteForHarmony(0.0, 1.5);
 			measure.addChordForHarmonyAt(1.0, 1.0);
-			measure.addBassNoteForHarmony(1.5, 0.5);
 			measure.addChordForHarmonyAt(2.0, compOnFour?1.0:2.0);
+			measure.addBassNoteForHarmony(0.0, 1.5);
+			measure.addBassNoteForHarmony(1.5, 0.5);
 			measure.addBassNoteForHarmony(2.0, 2.0);
 			if (compOnFour){
 				measure.addChordForHarmonyAt(3.0, 1.0);
@@ -54,14 +54,14 @@ public class CompingMusicXMLOrchestrator extends Orchestrator {
 				}
 			}
 		} else if (patternChoice == 2) {
-			measure.addBassNoteForHarmony(0.0, 0.5);
 			measure.addChordForHarmonyAt(0.0, 1.0);
-			measure.addBassNoteForHarmony(0.5, 1.0);
 			measure.addChordForHarmonyAt(1.0, 1.0);
-			measure.addBassNoteForHarmony(1.5, 1.0);
 			measure.addChordForHarmonyAt(2.0, 1.0);
-			measure.addBassNoteForHarmony(2.5, 1.0);
 			measure.addChordForHarmonyAt(3.0, 1.0);
+			measure.addBassNoteForHarmony(0.0, 0.5);
+			measure.addBassNoteForHarmony(0.5, 1.0);
+			measure.addBassNoteForHarmony(1.5, 1.0);
+			measure.addBassNoteForHarmony(2.5, 1.0);
 			measure.addBassNoteForHarmony(3.5, 0.5);
 		} else if (patternChoice == 3) {
 			measure.addChordForHarmonyAt(0.0, 1.0);
@@ -80,8 +80,8 @@ public class CompingMusicXMLOrchestrator extends Orchestrator {
 			measure.addBassNoteForHarmony(2.5, 1.0);
 			measure.addBassNoteForHarmony(3.5, 0.5);
 		} else if (patternChoice == 5) {
-			measure.addChordForHarmonyAt(0.0, 1.0);
 			measure.addBassNoteForHarmony(0.0, 4.0);
+			measure.addChordForHarmonyAt(0.0, 1.0);
 			measure.addChordForHarmonyAt(1.0, 0.5);
 			measure.addChordForHarmonyAt(1.5, 1.0);
 			measure.addChordForHarmonyAt(2.5, 0.5);
