@@ -557,7 +557,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 					pitchMarkovOrder = 1;
 					rhythmMarkovOrder = 1;
 					lyricMarkovOrder = 1;
-					timeLimitFactor = 2;
+					timeLimitFactor = 3;
 					INSPIRING_FILE_COUNT_WIKIFONIA = 150;
 					INSPIRING_FILE_COUNT_LYRICS_DB = 4000;
 				} else if (structureChoice == 2) {
@@ -785,7 +785,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 					}
 		
 					
-					while (rhythmIterator.hasNext() && watch.getTime() < MAX_SEARCH_TIME && harmonyWatch.getTime() < 1000000 && songWatch.getTime() < MAX_SEARCH_TIME/3) {
+					while (rhythmIterator.hasNext() && watch.getTime() < MAX_SEARCH_TIME && harmonyWatch.getTime() < 1000000 * timeLimitFactor && songWatch.getTime() < MAX_SEARCH_TIME/3) {
 						List<RhythmToken> rhythmGenerate = rhythmIterator.next();
 						System.out.println("TRYING RHYTHM:" + printSummary(rhythmGenerate, 0.5));
 						// 4. LYRICS
