@@ -1167,10 +1167,6 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 			Arrays.fill(matchConstraintLists[i], -1);
 		}
 
-		for (int i = 0; i < matchConstraintLists[2].length - 1; i++) {
-			matchConstraintLists[2][i] = i + 2; // don't allow consecutive syllables to be the same (1-based)
-		}
-		
 		// create constraints for required non-matches (some over-writing here)
 		// create rhyme constraints (SPECIFIC TO TWINKLE, TWINKLE, LITTLE STAR)
 		if (structureChoice == 0) {
@@ -1239,6 +1235,16 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 			matchConstraintLists[2][oldToNewIdx.get(oldToNewIdx.headMap(416).lastKey())] = oldToNewIdx.get(oldToNewIdx.headMap(488).lastKey()) + 1;
 		} else throw new RuntimeException("Need to implement rhyme constraints for structureChoice " + structureChoice);
 		
+		Set<Integer> idcs = new HashSet<Integer>();
+		for (int i = 0; i < matchConstraintLists[2].length - 1; i++) {
+			if (matchConstraintLists[2][i] != -1)
+				idcs.add(matchConstraintLists[2][i]);
+		}
+		
+		for (int i = 0; i < matchConstraintLists[2].length - 1; i++) {
+			if (!idcs.contains(i+2)) // Can't constrain against multiple indices in same list, so if already constrained against above, we leave it
+				matchConstraintLists[2][i] = i + 2; // don't allow consecutive syllables to be the same (1-based)
+		}
 		
 		Integer newIdx,otherNewIndex;
 		for (int i = 0; i < matchingPosesByPos.size(); i++) {

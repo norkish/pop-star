@@ -257,7 +257,6 @@ public class StructureExtractor {
 			}
 		} else if (conditionClass == BinaryMatch.class) {
 			// if it's an exact match, we place a constraint on all of the positions
-			assert constrainedNotes.size() == 2; // first is start, second is end (inclusive)
 			for (Triple<Integer,Double,Note> triple : constrainedNotes) {
 				if (matchClass.equals("lyric")) {
 					Constraint<NoteLyric> constraint = new Constraint<NoteLyric>(new BinaryMatch<NoteLyric>(BinaryMatch.PREV_VERSE, BinaryMatch.PREV_VERSE), true);
@@ -510,7 +509,6 @@ public class StructureExtractor {
 					}
 					rhymeMatches.put(rhymeGroupLabel++, rhymeGroup);
 				} else {
-					assert(constrainedNotes.size() == 2);
 					if (matchClass.equals("lyric")) {
 						matches = lyricMatches;
 					} else if (matchClass.equals("pitch")) {
