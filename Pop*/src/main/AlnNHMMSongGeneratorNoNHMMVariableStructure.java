@@ -538,7 +538,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 				// 0. STRUCTURE
 				// Load a song and structure from file
 				
-				int structureChoice = rand.nextInt(2);
+				int structureChoice = 1;//rand.nextInt(2);
 				int timeLimitFactor = 1;
 				String structureFileName = null;
 				int harmonyMarkovOrder = -1, pitchMarkovOrder = -1, rhythmMarkovOrder = -1, lyricMarkovOrder = -1;
@@ -558,7 +558,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 					rhythmMarkovOrder = 1;
 					lyricMarkovOrder = 1;
 					timeLimitFactor = 3;
-					INSPIRING_FILE_COUNT_WIKIFONIA = 150;
+					INSPIRING_FILE_COUNT_WIKIFONIA = 100;
 					INSPIRING_FILE_COUNT_LYRICS_DB = 4000;
 				} else if (structureChoice == 2) {
 					structureFileName = "John Lennon - Imagine.xml";
@@ -762,7 +762,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 						}
 						
 		//				System.out.println("Building Pitch Iterator");
-						pitchIterator = MatchRandomIteratorBuilderDFS.buildEfficiently(pitchMatchConstraintList, pitchMatchConstraintOutcomeList, pitchMarkovModel, pitchConstraints, 200 * pitchMarkovLength * timeLimitFactor); // Last number represents max amount of ms to spend on finding pitches for this harmony
+						pitchIterator = MatchRandomIteratorBuilderDFS.buildEfficiently(pitchMatchConstraintList, pitchMatchConstraintOutcomeList, pitchMarkovModel, pitchConstraints, 300 * pitchMarkovLength * timeLimitFactor); // Last number represents max amount of ms to spend on finding pitches for this harmony
 					} catch (Exception e) {
 		//				System.out.println(e.getMessage());
 						continue;
@@ -785,7 +785,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 					}
 		
 					
-					while (rhythmIterator.hasNext() && watch.getTime() < MAX_SEARCH_TIME && harmonyWatch.getTime() < 1000000 * timeLimitFactor && songWatch.getTime() < MAX_SEARCH_TIME/3) {
+					while (rhythmIterator.hasNext() && watch.getTime() < MAX_SEARCH_TIME && harmonyWatch.getTime() < 1000000 * Math.pow(timeLimitFactor,2) && songWatch.getTime() < MAX_SEARCH_TIME/3) {
 						List<RhythmToken> rhythmGenerate = rhythmIterator.next();
 						System.out.println("TRYING RHYTHM:" + printSummary(rhythmGenerate, 0.5));
 						// 4. LYRICS
@@ -803,10 +803,6 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 							boolean[] bs = lyricMatchConstraintOutcomeList[i];
 							Arrays.fill(bs, i<2);
 						}
-						
-		//				for (int j = 0; j < lyricMatchConstraintLists[0].length; j++) {
-		//					System.out.println((j+1) + ":" + lyricMatchConstraintLists[0][j] + "\t" + (j+1) + ":" + lyricMatchConstraintLists[1][j]);
-		//				}
 						
 						// create the NHMM n of length as long as the song with low markov order d
 						// Train NHMM on Wikifonia
