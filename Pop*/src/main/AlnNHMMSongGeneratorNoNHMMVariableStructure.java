@@ -505,9 +505,14 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 	final private static boolean useWikifoniaLyrics = false;
 	final private static boolean useExternalLyrics = true;
 	final private static int MAX_SONGS_TO_CHOOSE_FROM = 10;
-	final private static long MAX_SEARCH_TIME = 1000*60*60*6; // 1000msec/sec * 60sec/min * 60min/hr * (24hr/day / 4songs/day)
+	final private static long MUSE_TIME_LIMIT = 1000*60*60*6; // 1000msec/sec * 60sec/min * 60min/hr * (24hr/day / 4songs/day)
+	final private static long SONG_TIME_LIMIT = MUSE_TIME_LIMIT/3; // 1000msec/sec * 60sec/min * 60min/hr * (24hr/day / 4songs/day)
 	final private static Random rand = new Random();
 	private static double tempo;
+	final private static int HARMONY_TIME_LIMIT = 100000;
+	final private static int PITCH_TIME_LIMIT = 20000;
+	final private static int RHTYHM_TIME_LIMIT = 100000;
+	final private static int LYRIC_TIME_LIMIT = 20000;
 	public static void main(String[] args) throws Exception {
 		
 		dbtb.main.Main.setRootPath("/Users/norkish/Archive/2017_BYU/ComputationalCreativity/");
@@ -526,11 +531,11 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 			String bestSongSoFar = null;
 			double bestSongSoFarScore = -1.0;
 			
-			StopWatch watch = new StopWatch();
-			watch.start();
+			StopWatch museWatch = new StopWatch();
+			museWatch.start();
 			
 			int fileSuffix = 1;
-			while (fileSuffix <= MAX_SONGS_TO_CHOOSE_FROM && watch.getTime() < MAX_SEARCH_TIME) {
+			while (fileSuffix <= MAX_SONGS_TO_CHOOSE_FROM && museWatch.getTime() < MUSE_TIME_LIMIT) {
 				System.gc();
 
 				StopWatch songWatch = new StopWatch();
@@ -652,7 +657,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 				System.out.println("Building Harmony Solution Iterator");
 				Iterator<List<HarmonyToken>> harmonyIterator = null;
 				try {
-					 harmonyIterator = MatchRandomIteratorBuilderDFS.buildEfficiently(harmonyMatchConstraintList, harmonyMatchConstraintOutcomeList, null, harmonyMarkovModel, harmonyConstraints, MAX_SEARCH_TIME/MAX_SONGS_TO_CHOOSE_FROM);
+					 harmonyIterator = MatchRandomIteratorBuilderDFS.buildEfficiently(harmonyMatchConstraintList, harmonyMatchConstraintOutcomeList, null, harmonyMarkovModel, harmonyConstraints, MUSE_TIME_LIMIT/MAX_SONGS_TO_CHOOSE_FROM);
 				} catch (Exception e) {
 					continue;
 				}
@@ -737,11 +742,20 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 		
 				Iterator<List<PitchToken>> pitchIterator = null;
 				boolean foundLyricsRhythmMatch = false;
-				while (harmonyIterator.hasNext() && !foundLyricsRhythmMatch && watch.getTime() < MAX_SEARCH_TIME && songWatch.getTime() < MAX_SEARCH_TIME/3) {
-					List<HarmonyToken> harmonyGenerate = harmonyIterator.next();
-					System.out.println("TRYING HARMONY:" + printSummary(harmonyGenerate,2.0));
+				while (!foundLyricsRhythmMatch && museWatch.getTime() < MUSE_TIME_LIMIT && songWatch.getTime() < SONG_TIME_LIMIT) {
+					System.out.print("TRYING HARMONY:");
 					StopWatch harmonyWatch = new StopWatch();
 					harmonyWatch.start();
+					while(!harmonyIterator.hasNext() && museWatch.getTime() < MUSE_TIME_LIMIT && songWatch.getTime() < SONG_TIME_LIMIT && harmonyWatch.getTime() < HARMONY_TIME_LIMIT * timeLimitFactor) {
+						//keep looking
+					}
+					if (!harmonyIterator.hasNext()) {
+						System.out.println("none");
+						break;
+					}
+					List<HarmonyToken> harmonyGenerate = harmonyIterator.next();
+					System.out.println(printSummary(harmonyGenerate,2.0));
+					List<PitchToken> pitchGenerate = null;
 					try {
 						List<List<ConditionedConstraint<PitchToken>>> pitchConstraints = new ArrayList<List<ConditionedConstraint<PitchToken>>>();
 						for (int j = 0; j < pitchMarkovLength; j++) {
@@ -761,15 +775,20 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 							}
 						}
 						
-		//				System.out.println("Building Pitch Iterator");
-						pitchIterator = MatchRandomIteratorBuilderDFS.buildEfficiently(pitchMatchConstraintList, pitchMatchConstraintOutcomeList, pitchMarkovModel, pitchConstraints, 200 * pitchMarkovLength * timeLimitFactor); // Last number represents max amount of ms to spend on finding pitches for this harmony
+						pitchIterator = MatchRandomIteratorBuilderDFS.buildEfficiently(pitchMatchConstraintList, pitchMatchConstraintOutcomeList, pitchMarkovModel, pitchConstraints, timeLimitFactor*pitchMarkovLength); // Last number represents max amount of ms to spend on finding pitches for this harmony
+						System.out.print("TRYING PITCH:");
+						
+						StopWatch pitchWatch = new StopWatch();
+						pitchWatch.start();
+						
+						while(!pitchIterator.hasNext() && museWatch.getTime() < MUSE_TIME_LIMIT && pitchWatch.getTime() < PITCH_TIME_LIMIT * timeLimitFactor && songWatch.getTime() < SONG_TIME_LIMIT) {}
+						pitchGenerate = pitchIterator.next();
 					} catch (Exception e) {
-		//				System.out.println(e.getMessage());
+						System.out.println("none");
 						continue;
 					}
 					
-					List<PitchToken> pitchGenerate = pitchIterator.next();
-					System.out.println("TRYING PITCH:" + printSummary(pitchGenerate,1.0));
+					System.out.println(printSummary(pitchGenerate,1.0));
 					
 					List<SyllableToken> lyricGenerate = null;
 					
@@ -778,23 +797,34 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 					Iterator<List<RhythmToken>> rhythmIterator;
 					
 					try {
-						rhythmIterator = MatchRandomIteratorBuilderDFS.buildEfficiently(rhythmMatchConstraintList, rhythmMatchConstraintOutcomeList, rhythmMarkovModel, rhythmConstraints, 200 * rhythmMarkovLength);
+						rhythmIterator = MatchRandomIteratorBuilderDFS.buildEfficiently(rhythmMatchConstraintList, rhythmMatchConstraintOutcomeList, rhythmMarkovModel, rhythmConstraints, timeLimitFactor*25*rhythmMarkovLength);
 					} catch (Exception e) {
 		//				System.out.println(e.getMessage());
 						continue;
 					}
-		
-					
-					while (rhythmIterator.hasNext() && watch.getTime() < MAX_SEARCH_TIME && harmonyWatch.getTime() < 1000000 * timeLimitFactor && songWatch.getTime() < MAX_SEARCH_TIME/3) {
+										
+					while (museWatch.getTime() < MUSE_TIME_LIMIT && songWatch.getTime() < SONG_TIME_LIMIT) {
+						System.out.print("TRYING RHYTHM:");
+						StopWatch rhythmWatch = new StopWatch();
+						rhythmWatch.start();
+						
+						while (!rhythmIterator.hasNext() && museWatch.getTime() < MUSE_TIME_LIMIT && rhythmWatch.getTime() < RHTYHM_TIME_LIMIT * timeLimitFactor && songWatch.getTime() < SONG_TIME_LIMIT) {
+							// keep reseeding to find quick solutions
+						}
+						
+						if (!rhythmIterator.hasNext()) {
+							System.out.println("none");
+							break;
+						}
 						List<RhythmToken> rhythmGenerate = rhythmIterator.next();
-						System.out.println("TRYING RHYTHM:" + printSummary(rhythmGenerate, 0.5));
+						System.out.println(printSummary(rhythmGenerate, 0.5));
 						// 4. LYRICS
 						// Length (in syllables) is determined from the rhythm
 						int[][] lyricMatchConstraintLists;
 						try {
 							lyricMatchConstraintLists = createLyricMatchConstraintLists(lyricMatchingPosesByPos, rhythmGenerate, pitchGenerate, structureChoice);
 						} catch (Exception e) {
-		//					System.out.println(e.getMessage());
+							System.out.println(e.getMessage());
 							continue;
 						}
 						
@@ -803,10 +833,6 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 							boolean[] bs = lyricMatchConstraintOutcomeList[i];
 							Arrays.fill(bs, i<2);
 						}
-						
-		//				for (int j = 0; j < lyricMatchConstraintLists[0].length; j++) {
-		//					System.out.println((j+1) + ":" + lyricMatchConstraintLists[0][j] + "\t" + (j+1) + ":" + lyricMatchConstraintLists[1][j]);
-		//				}
 						
 						// create the NHMM n of length as long as the song with low markov order d
 						// Train NHMM on Wikifonia
@@ -842,15 +868,21 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 						
 						String lyricString = null;
 						try {
-		//					System.out.println("Building Lyric Iterator");
+							StopWatch lyricWatch = new StopWatch();
+							lyricWatch.start();
+							System.out.print("KEEPING LYRICS:");
+							Iterator<List<SyllableToken>> lyricIterator = MatchRandomIteratorBuilderDFS.buildEfficiently(lyricMatchConstraintLists, lyricMatchConstraintOutcomeList, equivalenceRelations, lyricMarkovModel, lyricConstraints, timeLimitFactor*rhythmMarkovLength);
+							while (!lyricIterator.hasNext() && museWatch.getTime() < MUSE_TIME_LIMIT && songWatch.getTime() < SONG_TIME_LIMIT
+									&& lyricWatch.getTime() < LYRIC_TIME_LIMIT * timeLimitFactor) {
+								// keep reseeding to find quick solutions
+							}
 							
-							Iterator<List<SyllableToken>> lyricIterator = MatchRandomIteratorBuilderDFS.buildEfficiently(lyricMatchConstraintLists, lyricMatchConstraintOutcomeList, equivalenceRelations, lyricMarkovModel, lyricConstraints, 500 * rhythmMarkovLength * timeLimitFactor); 
-							lyricGenerate = lyricIterator.next();
+							lyricIterator.next();
 							lyricString = printSummary(lyricGenerate, 0.5);
-							System.out.println("KEEPING:" + lyricString);
+							System.out.println(lyricString);
 						
 						} catch (Exception e) {
-		//					System.out.println(e.getMessage());
+							System.out.println("none");
 							continue;
 						}
 						foundLyricsRhythmMatch = true;
@@ -999,8 +1031,8 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 					}
 				}
 			}
-			if (watch.getTime() >= MAX_SEARCH_TIME) {
-				System.out.println("Reached max search time of " + MAX_SEARCH_TIME);
+			if (museWatch.getTime() >= MUSE_TIME_LIMIT) {
+				System.out.println("Reached max search time of " + MUSE_TIME_LIMIT);
 			}
 			System.out.println("Of " + (fileSuffix-1) + " songs created, we chose the best to be " + bestSongSoFar);
 			// File (or directory) with old name
@@ -1022,7 +1054,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 			
 		}
 	}
-
+	
 	private static String createDirectoryForTweet(Tweet tweet, String empathDescr) {
 		if (tweet == null)
 			System.out.println("Tweet is null.");
@@ -1238,7 +1270,12 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 		Set<Integer> idcs = new HashSet<Integer>();
 		for (int i = 0; i < matchConstraintLists[2].length - 1; i++) {
 			if (matchConstraintLists[2][i] != -1)
-				idcs.add(matchConstraintLists[2][i]);
+				if (!idcs.add(matchConstraintLists[2][i])) throw new RuntimeException("Not enough lyrics to satisfy constraints");
+		}
+		Set<Integer> check = new HashSet<Integer>();
+		for (int i = 0; i < matchConstraintLists[3].length - 1; i++) {
+			if (matchConstraintLists[3][i] != -1)
+				if (!check.add(matchConstraintLists[3][i]))  throw new RuntimeException("Not enough lyrics to satisfy constraints");
 		}
 		
 		for (int i = 0; i < matchConstraintLists[2].length - 1; i++) {

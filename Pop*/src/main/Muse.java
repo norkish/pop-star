@@ -43,7 +43,7 @@ public class Muse {
 	private static final String matchListFile = "training_songs_sorted_by_relevance.txt";
 	private static final String matchingLyricsEmpathListFile = "training_lyrics_sorted_by_relevance.txt";
 
-	boolean useExistingEmpaths = false;
+	boolean useExistingEmpaths = true;
 	private List<Pair<String, Map<String, Double>>> all_tweet_empath_vecs;
 	private int all_tweet_empath_vecs_idx = -1;
 	
