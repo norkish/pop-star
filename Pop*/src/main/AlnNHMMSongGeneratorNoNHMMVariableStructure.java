@@ -538,7 +538,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 				// 0. STRUCTURE
 				// Load a song and structure from file
 				
-				int structureChoice = 1;//rand.nextInt(2);
+				int structureChoice = rand.nextInt(2);
 				int timeLimitFactor = 1;
 				String structureFileName = null;
 				int harmonyMarkovOrder = -1, pitchMarkovOrder = -1, rhythmMarkovOrder = -1, lyricMarkovOrder = -1;
