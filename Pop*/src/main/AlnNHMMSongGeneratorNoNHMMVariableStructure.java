@@ -538,7 +538,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 				// 0. STRUCTURE
 				// Load a song and structure from file
 				
-				int structureChoice = rand.nextInt(2);
+				int structureChoice = 1;//rand.nextInt(2);
 				int timeLimitFactor = 1;
 				String structureFileName = null;
 				int harmonyMarkovOrder = -1, pitchMarkovOrder = -1, rhythmMarkovOrder = -1, lyricMarkovOrder = -1;
@@ -1177,12 +1177,12 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 			matchConstraintLists[2][oldToNewIdx.get(oldToNewIdx.headMap(16).lastKey())] = oldToNewIdx.get(oldToNewIdx.headMap(32).lastKey()) + 1;
 			matchConstraintLists[3][oldToNewIdx.get(oldToNewIdx.headMap(16).lastKey())] = oldToNewIdx.get(oldToNewIdx.headMap(48).lastKey()) + 1;
 			matchConstraintLists[2][oldToNewIdx.get(oldToNewIdx.headMap(32).lastKey())] = oldToNewIdx.get(oldToNewIdx.headMap(48).lastKey()) + 1;
-			matchConstraintLists[2][oldToNewIdx.get(oldToNewIdx.headMap(32).lastKey())] = oldToNewIdx.get(oldToNewIdx.headMap(64).lastKey()) + 1;
-			matchConstraintLists[3][oldToNewIdx.get(oldToNewIdx.headMap(48).lastKey())] = oldToNewIdx.get(oldToNewIdx.headMap(64).lastKey()) + 1;
+			matchConstraintLists[3][oldToNewIdx.get(oldToNewIdx.headMap(32).lastKey())] = oldToNewIdx.get(oldToNewIdx.headMap(64).lastKey()) + 1;
+			matchConstraintLists[2][oldToNewIdx.get(oldToNewIdx.headMap(48).lastKey())] = oldToNewIdx.get(oldToNewIdx.headMap(64).lastKey()) + 1;
 			matchConstraintLists[3][oldToNewIdx.get(oldToNewIdx.headMap(48).lastKey())] = oldToNewIdx.get(oldToNewIdx.headMap(80).lastKey()) + 1;
-			matchConstraintLists[3][oldToNewIdx.get(oldToNewIdx.headMap(64).lastKey())] = oldToNewIdx.get(oldToNewIdx.headMap(80).lastKey()) + 1;
+			matchConstraintLists[2][oldToNewIdx.get(oldToNewIdx.headMap(64).lastKey())] = oldToNewIdx.get(oldToNewIdx.headMap(80).lastKey()) + 1;
 			matchConstraintLists[3][oldToNewIdx.get(oldToNewIdx.headMap(64).lastKey())] = oldToNewIdx.get(oldToNewIdx.headMap(96).lastKey()) + 1;
-			matchConstraintLists[3][oldToNewIdx.get(oldToNewIdx.headMap(80).lastKey())] = oldToNewIdx.get(oldToNewIdx.headMap(96).lastKey()) + 1;
+			matchConstraintLists[2][oldToNewIdx.get(oldToNewIdx.headMap(80).lastKey())] = oldToNewIdx.get(oldToNewIdx.headMap(96).lastKey()) + 1;
 		} else if (structureChoice == 1) {
 			matchConstraintLists[1][oldToNewIdx.get(oldToNewIdx.headMap(32).lastKey())] = oldToNewIdx.get(oldToNewIdx.headMap(64).lastKey()) + 1; // first verse
 			matchConstraintLists[1][oldToNewIdx.get(oldToNewIdx.headMap(96).lastKey())] = oldToNewIdx.get(oldToNewIdx.headMap(128).lastKey()) + 1; // second verse
@@ -1242,7 +1242,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 		}
 		
 		for (int i = 0; i < matchConstraintLists[2].length - 1; i++) {
-			if (!idcs.contains(i+2)) // Can't constrain against multiple indices in same list, so if already constrained against above, we leave it
+			if (matchConstraintLists[2][i] == -1 && !idcs.contains(i+2)) // Can't constrain against multiple indices in same list, so if already constrained against above, we leave it
 				matchConstraintLists[2][i] = i + 2; // don't allow consecutive syllables to be the same (1-based)
 		}
 		
