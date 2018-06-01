@@ -571,7 +571,9 @@ public class Muse {
 		while((line=bf.readLine())!=null) {
 			String lyrics = parseLyricLine(line)[3];
 			lyrics = lyrics.substring(1, lyrics.length()-1).trim();
-			lyrics = lyrics.replaceAll("(( *\\\\n *)|( *\\\\r *))+","\n");
+			lyrics = lyrics.replaceAll(" *\\\\n *","\n");
+			lyrics = lyrics.replaceAll(" *\\\\r *","\n");
+			lyrics = lyrics.replaceAll("\\\\n\\\\n+","\n");
 			lyrics = lyrics.replaceAll("\\\\","");
 			matches[i++] = lyrics.split("\n");
 		}
