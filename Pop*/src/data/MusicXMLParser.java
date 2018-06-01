@@ -424,7 +424,7 @@ public class MusicXMLParser {
 				str.append("<syllabic>").append(lyric.syllabic.toString().toLowerCase()).append("</syllabic>\n");
 				
 				for (int j = 0; j <= indentationLevel+1; j++) str.append("    "); 
-				str.append("<text>").append(lyric.text).append("</text>\n");
+				str.append("<text>").append(lyric.text.equals("'s")?"is":(lyric.text.equals("'m")?"am":lyric.text)).append("</text>\n");
 				
 				for (int j = 0; j <= indentationLevel; j++) str.append("    "); 
 				str.append("</lyric>\n");
