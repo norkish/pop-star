@@ -61,6 +61,7 @@ import dbtb.markov.SparseVariableOrderMarkovModel;
 import dbtb.markov.Token;
 import dbtb.utils.Pair;
 import dbtb.utils.Triple;
+import edu.stanford.nlp.util.StringUtils;
 import globalstructure.StructureExtractor;
 import globalstructureinference.GeneralizedGlobalStructureInferer;
 import globalstructureinference.GeneralizedGlobalStructureInferer.GeneralizedGlobalStructureAlignmentParameterization;
@@ -550,8 +551,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 					lyricMarkovOrder = 3;
 					INSPIRING_FILE_COUNT_WIKIFONIA = 75;
 					INSPIRING_FILE_COUNT_LYRICS_DB = 3000;
-				}
-				else if (structureChoice == 1) { 
+				} else if (structureChoice == 1) { 
 					structureFileName = "Harold Arlen, Yip Harburg - Over The Rainbow.xml";
 					harmonyMarkovOrder = 1;
 					pitchMarkovOrder = 1;
@@ -922,9 +922,12 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 									if (!rhythmToken.isRest && !lyricAdded) {
 										final SyllableToken sToken = lyricGenerate.get(nextLyricIdx++);
 										final NoteLyric newNoteLyric = new NoteLyric(createNoteLyric(sToken));
+										
+										if (titleBuilder.length() == 0) newNoteLyric.text = StringUtils.capitalize(newNoteLyric.text);
+										
 										createTiedNoteWithDuration.get(0).setLyric(newNoteLyric, true);
 										if (addTitle && measure > 1 && (newNoteLyric.syllabic == Syllabic.BEGIN || newNoteLyric.syllabic == Syllabic.SINGLE)) addTitle = false;
-										if (addTitle && sToken.getPositionInContext() == 0) titleBuilder.append(sToken.getStringRepresentation() + " ");
+										if (addTitle && sToken.getPositionInContext() == 0) titleBuilder.append(newNoteLyric.text + " ");
 									}
 									lyricAdded = true;
 								} while(remainingDuration > 0.0);
@@ -1094,7 +1097,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 		if (idx < syllabifiedWord.size())
 			text = syllabifiedWord.get(idx).getFirst();
 		
-		return new NoteLyric(syllabic, text, false, false);
+		return new NoteLyric(syllabic, text.equals("'s")?"is":(text.equals("'m")?"am":text), false, false);
 	}
 
 	private static <T extends Token> String printSummary(List<T> generate, double printInterval) {
