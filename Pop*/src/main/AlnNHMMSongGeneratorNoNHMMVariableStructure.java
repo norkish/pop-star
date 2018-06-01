@@ -518,7 +518,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 			Muse muse = new Muse();
 			do {
 				muse.setTweetAndVecToNext();
-				System.out.println("Muse's inspiration: " + muse.getInspiringEmotion());
+				System.out.println("NEW MUSE: Muse's inspiration: " + muse.getInspiringEmotion());
 			} while ((dirName = createDirectoryForTweet(muse.getTweet(), muse.getEmpathSummary())) == null);
 			
 			//Choose structure
@@ -538,6 +538,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 				// Load a song and structure from file
 				
 				int structureChoice = rand.nextInt(2);
+				int timeLimitFactor = 1;
 				String structureFileName = null;
 				int harmonyMarkovOrder = -1, pitchMarkovOrder = -1, rhythmMarkovOrder = -1, lyricMarkovOrder = -1;
 				
@@ -556,6 +557,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 					pitchMarkovOrder = 1;
 					rhythmMarkovOrder = 1;
 					lyricMarkovOrder = 1;
+					timeLimitFactor = 2;
 					INSPIRING_FILE_COUNT_WIKIFONIA = 150;
 					INSPIRING_FILE_COUNT_LYRICS_DB = 4000;
 				} else if (structureChoice == 2) {
@@ -576,7 +578,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 					INSPIRING_FILE_COUNT_LYRICS_DB = 4500;
 					throw new RuntimeException("Didn't do rhyme constraints for this yet");
 				}
-				System.out.println("Using structure from " + structureFileName);
+				System.out.println("NEW SONG: Using structure from " + structureFileName);
 				String structureFilePath = structureFileDir + "/" + structureFileName; 
 				
 				ParsedMusicXMLObject structureSong = loadSong(structureFilePath);
@@ -760,7 +762,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 						}
 						
 		//				System.out.println("Building Pitch Iterator");
-						pitchIterator = MatchRandomIteratorBuilderDFS.buildEfficiently(pitchMatchConstraintList, pitchMatchConstraintOutcomeList, pitchMarkovModel, pitchConstraints, 200 * pitchMarkovLength); // Last number represents max amount of ms to spend on finding pitches for this harmony
+						pitchIterator = MatchRandomIteratorBuilderDFS.buildEfficiently(pitchMatchConstraintList, pitchMatchConstraintOutcomeList, pitchMarkovModel, pitchConstraints, 200 * pitchMarkovLength * timeLimitFactor); // Last number represents max amount of ms to spend on finding pitches for this harmony
 					} catch (Exception e) {
 		//				System.out.println(e.getMessage());
 						continue;
@@ -842,7 +844,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 						try {
 		//					System.out.println("Building Lyric Iterator");
 							
-							Iterator<List<SyllableToken>> lyricIterator = MatchRandomIteratorBuilderDFS.buildEfficiently(lyricMatchConstraintLists, lyricMatchConstraintOutcomeList, equivalenceRelations, lyricMarkovModel, lyricConstraints, 500 * rhythmMarkovLength); 
+							Iterator<List<SyllableToken>> lyricIterator = MatchRandomIteratorBuilderDFS.buildEfficiently(lyricMatchConstraintLists, lyricMatchConstraintOutcomeList, equivalenceRelations, lyricMarkovModel, lyricConstraints, 500 * rhythmMarkovLength * timeLimitFactor); 
 							lyricGenerate = lyricIterator.next();
 							lyricString = printSummary(lyricGenerate, 0.5);
 							System.out.println("KEEPING:" + lyricString);
@@ -1002,7 +1004,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 			File file = new File("./compositions/" + dirName + "/" + bestSongSoFar + ".descr.txt");
 
 			// File (or directory) with new name
-			File file2 = new File("./compositions/" + dirName + "/" + bestSongSoFar + ".winner.descr.txt");
+			File file2 = new File("./compositions/" + dirName + "/" + bestSongSoFar + ".descr.WINNER.txt");
 
 			if (file2.exists())
 			   throw new java.io.IOException("file exists");

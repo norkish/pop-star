@@ -2301,7 +2301,7 @@ public class MusicXMLParser {
 		
 //		assert validChordOffsets.size() != 0 : "no valid chord positions in interval";
 		while (validChordOffsets.size() < harmonies.size()) {
-			System.err.println("insufficient measure divisions for overlapping chord resolution");
+//			System.err.println("insufficient measure divisions for overlapping chord resolution");
 			harmonies.remove(0);
 			removedChordsCount++;
 		}
