@@ -513,12 +513,6 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 		String structureFileDir = TabDriver.dataDir + "/Wikifonia_edited_xmls"; 
 		
 		while(true) {
-			Map<String, SparseVariableOrderMarkovModel> models = new HashMap<String, SparseVariableOrderMarkovModel>();
-			models.put("Harmony", null);
-			models.put("Pitch", null);
-			models.put("Rhythm", null);
-			models.put("Lyric", null);
-			
 			// MUSE
 			String dirName;
 			Muse muse = new Muse();
@@ -536,6 +530,8 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 			
 			int fileSuffix = 1;
 			while (fileSuffix <= MAX_SONGS_TO_CHOOSE_FROM && watch.getTime() < MAX_SEARCH_TIME) {
+				System.gc();
+
 				StopWatch songWatch = new StopWatch();
 				songWatch.start();
 				// 0. STRUCTURE
@@ -586,7 +582,15 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 				ParsedMusicXMLObject structureSong = loadSong(structureFilePath);
 				
 				// 0.5 LOAD TRAINING FROM WIKIFONIA
+				files = null;
 				files = muse.findInspiringWikifoniaFiles(INSPIRING_FILE_COUNT_WIKIFONIA);
+				
+				Map<String, SparseVariableOrderMarkovModel> models = new HashMap<String, SparseVariableOrderMarkovModel>();
+				models.put("Harmony", null);
+				models.put("Pitch", null);
+				models.put("Rhythm", null);
+				models.put("Lyric", null);
+				
 				trainModels(muse, models, harmonyMarkovOrder, pitchMarkovOrder, rhythmMarkovOrder, lyricMarkovOrder);
 		
 				// Tell GeneralizedGlobalStructureInferer which parameterizations to load from
@@ -644,9 +648,12 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 				} else throw new RuntimeException("Structure not supported");
 				
 				System.out.println("Building Harmony Solution Iterator");
-				
-				//TODO: add all control constraints to DFS
-				Iterator<List<HarmonyToken>> harmonyIterator = MatchRandomIteratorBuilderDFS.buildEfficiently(harmonyMatchConstraintList, harmonyMatchConstraintOutcomeList, null, harmonyMarkovModel, harmonyConstraints, MAX_SEARCH_TIME/MAX_SONGS_TO_CHOOSE_FROM);
+				Iterator<List<HarmonyToken>> harmonyIterator = null;
+				try {
+					 harmonyIterator = MatchRandomIteratorBuilderDFS.buildEfficiently(harmonyMatchConstraintList, harmonyMatchConstraintOutcomeList, null, harmonyMarkovModel, harmonyConstraints, MAX_SEARCH_TIME/MAX_SONGS_TO_CHOOSE_FROM);
+				} catch (Exception e) {
+					continue;
+				}
 				
 				// 3. RHYTHM (must go before lyrics to inform lyrics to maintain rhythmic patterns across verses)
 				System.out.println("Loading rhythm constraints from file");
@@ -712,6 +719,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 				matchingSegments = null;
 				
 				matchingPosesByPos = findMatchingPosesByPos(pathsTaken, ptrMatrix, globalStructureAlignmentParameterization);
+				globalStructureAlignmentParameterization = null;
 				int[] pitchMatchConstraintList = createMatchConstraintList(matchingPosesByPos);
 				pathsTaken = null;
 				ptrMatrix = null;
