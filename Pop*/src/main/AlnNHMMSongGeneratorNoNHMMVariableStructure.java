@@ -538,7 +538,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 				// 0. STRUCTURE
 				// Load a song and structure from file
 				
-				int structureChoice = 1;//rand.nextInt(2);
+				int structureChoice = rand.nextInt(2);
 				int timeLimitFactor = 1;
 				String structureFileName = null;
 				int harmonyMarkovOrder = -1, pitchMarkovOrder = -1, rhythmMarkovOrder = -1, lyricMarkovOrder = -1;
@@ -982,7 +982,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 						
 						final Pair<String, Map<String, Double>> empathVecForGenSong = muse.getEmpathVector(lyricString);
 						
-						double songRating = muse.getRating(empathVecForGenSong, lyricString);
+						double songRating = muse.getRating(empathVecForGenSong, lyricString, harmonyGenerate, pitchGenerate, rhythmGenerate);
 						System.out.println("Song rating: " + songRating);
 						if (songRating > bestSongSoFarScore) { 
 							bestSongSoFar = title.replaceAll("\\W+", "_") + "." + fileSuffix;

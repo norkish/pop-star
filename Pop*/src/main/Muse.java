@@ -25,6 +25,9 @@ import dbtb.data.CommandlineExecutor;
 import dbtb.utils.Pair;
 import inspiration.Inspiration;
 import inspiration.InspirationSource;
+import main.AlnNHMMSongGeneratorNoNHMMVariableStructure.HarmonyToken;
+import main.AlnNHMMSongGeneratorNoNHMMVariableStructure.PitchToken;
+import main.AlnNHMMSongGeneratorNoNHMMVariableStructure.RhythmToken;
 import tabcomplete.main.TabDriver;
 
 public class Muse {
@@ -792,8 +795,12 @@ public class Muse {
 
 	private static double empathVecWeightInRating = 0.5;
 	private static double lyricDiversityWeightInRating = 0.5;
+	private static double harmonyDiversityWeightInRating = 0.5;
+	private static double pitchDiversityWeightInRating = 0.5;
+	private static double rhythmDiversityWeightInRating = 0.5;
+	private static double lengthWeightInRating = 0.1;
 	
-	public double getRating(Pair<String, Map<String, Double>> empathVecForGenSong, String lyricString) throws InterruptedException, IOException {
+	public double getRating(Pair<String, Map<String, Double>> empathVecForGenSong, String lyricString, List<HarmonyToken> harmonyGenerate, List<PitchToken> pitchGenerate, List<RhythmToken> rhythmGenerate) throws InterruptedException, IOException {
 
 		double empathVecDifferenceScore = 0.0;
 		for (String key : inspiringEmpathVec.keySet()) {
@@ -809,6 +816,10 @@ public class Muse {
 		
 		double lyricDiversityScore = uniqWords.size() * 1.0 / words.length;
 		
-		return empathVecWeightInRating * empathVecDifferenceScore + lyricDiversityWeightInRating * lyricDiversityScore;
+		double harmonyDiversity = 0.0;
+		double pitchDiversity = 0.0;
+		double rhythmDiversity = 0.0;
+		
+		return empathVecWeightInRating * empathVecDifferenceScore + lyricDiversityWeightInRating * lyricDiversityScore + lengthWeightInRating * words.length + harmonyDiversityWeightInRating * harmonyDiversity + pitchDiversityWeightInRating * pitchDiversity + rhythmDiversityWeightInRating * rhythmDiversity;
 	}
 }
