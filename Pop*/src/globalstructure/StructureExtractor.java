@@ -405,7 +405,6 @@ public class StructureExtractor {
 					}
 					
 					int deltaFromFormStart = Integer.parseInt(tokens[5]);
-					assert structure.isEmpty() || segmentStartMeasure > structure.lastKey(): "Global Structure annotation should be in order by measure number where segment starts occur";
 					structure.put(segmentStartMeasure - deltaFromFormStart, new Triple<SegmentType, Integer, Double>(currType, deltaFromFormStart, 0.0));
 					
 					if (prevType == SegmentType.CHORUS) {
@@ -488,8 +487,6 @@ public class StructureExtractor {
 					}
 					
 					// add it to constrained Notes
-					assert (constrainedNotes.isEmpty() || constrainedNotes.get(constrainedNotes.size()-1).getFirst() < measure  ||
-							constrainedNotes.get(constrainedNotes.size()-1).getFirst() == measure && constrainedNotes.get(constrainedNotes.size()-1).getSecond() <= offsetInBeats);
 					constrainedNotes.add(new Triple<Integer, Double, Note>(measure, offsetInBeats, offsetNote.getSecond()));
 				}
 
