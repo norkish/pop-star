@@ -509,9 +509,9 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 	final private static Random rand = new Random();
 	private static double tempo;
 	final private static int HARMONY_SEARCH_LIMIT = 10000;
-	final private static int PITCH_SEARCH_LIMIT = 50;
-	final private static int RHTYHM_SEARCH_LIMIT = 10000;
-	final private static int LYRIC_SEARCH_LIMIT = 50;
+	final private static int PITCH_SEARCH_LIMIT = 5;
+	final private static int RHTYHM_SEARCH_LIMIT = 1000;
+	final private static int LYRIC_SEARCH_LIMIT = 5;
 	public static void main(String[] args) throws Exception {
 		
 		dbtb.main.Main.setRootPath("/Users/norkish/Archive/2017_BYU/ComputationalCreativity/");
@@ -742,7 +742,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 				Iterator<List<PitchToken>> pitchIterator = null;
 				boolean foundLyricsRhythmMatch = false;
 				while (!foundLyricsRhythmMatch && museWatch.getTime() < MUSE_TIME_LIMIT && songWatch.getTime() < SONG_TIME_LIMIT) {
-					System.out.print("TRYING HARMONY:");
+					System.out.print("TRYING HARMONY (" + harmonyMarkovLength + " length):");
 					int tries = 0;
 					while(museWatch.getTime() < MUSE_TIME_LIMIT && songWatch.getTime() < SONG_TIME_LIMIT && tries < HARMONY_SEARCH_LIMIT && !harmonyIterator.hasNext()) {
 						//keep looking
@@ -777,7 +777,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 						}
 						
 						pitchIterator = MatchRandomIteratorBuilderDFS.buildEfficiently(pitchMatchConstraintList, pitchMatchConstraintOutcomeList, pitchMarkovModel, pitchConstraints, 2*pitchMarkovLength); // Last number represents max amount of ms to spend on finding pitches for this harmony
-						System.out.print("TRYING PITCH:");
+						System.out.print("TRYING PITCH (" + pitchMarkovLength + " length):");
 						
 						while(museWatch.getTime() < MUSE_TIME_LIMIT && tries < PITCH_SEARCH_LIMIT && songWatch.getTime() < SONG_TIME_LIMIT && !pitchIterator.hasNext()) {
 							tries++;	
@@ -804,7 +804,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 					}
 										
 					while (museWatch.getTime() < MUSE_TIME_LIMIT && songWatch.getTime() < SONG_TIME_LIMIT) {
-						System.out.print("TRYING RHYTHM:");
+						System.out.print("TRYING RHYTHM (" + rhythmMarkovLength + " length):");
 						
 						tries = 0;
 						while (museWatch.getTime() < MUSE_TIME_LIMIT && tries < RHTYHM_SEARCH_LIMIT && songWatch.getTime() < SONG_TIME_LIMIT && !rhythmIterator.hasNext()) {
@@ -881,7 +881,10 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 							System.out.println("(" + tries + " tries)" + lyricString);
 						
 						} catch (Exception e) {
-							System.out.println("none (" + tries + " tries) " + e.getMessage());
+							if (e.getMessage() == null || !e.getMessage().equals("(Called next on null)")) {
+								e.printStackTrace();
+							}
+							System.out.println("none (" + tries + " tries)");
 							continue;
 						}
 						foundLyricsRhythmMatch = true;
@@ -1605,25 +1608,32 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 		Integer toTokenID;
 		Integer fromTokenID = null;
 		List<SyllableToken> trainingSentenceTokens = new ArrayList<SyllableToken>();
-//		System.out.print("LYR TRAIN: ");
+		Set<Integer> phraseStartIndices = new HashSet<Integer>();
 		for (String trainingSentence : trainingSentences) {
 			final List<List<SyllableToken>> convertToSyllableTokens = DataLoader.convertToSyllableTokens(dl.cleanSentence(trainingSentence));
-			if (convertToSyllableTokens == null) continue;
-//			System.out.print(trainingSentence + " ");
-			trainingSentenceTokens.add(null);
+			if (convertToSyllableTokens == null) continue; // if the sentence was empty, move on.
+			phraseStartIndices.add(trainingSentenceTokens.size()); // keep track of where phrases start
 			trainingSentenceTokens.addAll(convertToSyllableTokens.get(0));
 		}
-//		System.out.println();
 		
-		if (trainingSentenceTokens.size() < (lyricMarkovOrder + trainingSentences.length)) return;
+		if (trainingSentenceTokens.size() < lyricMarkovOrder) return; // if there aren't enough tokens to train anything, return
+		
+		//get the first prefix
 		LinkedList<SyllableToken> prefix = new LinkedList<SyllableToken>(trainingSentenceTokens.subList(0, lyricMarkovOrder));
+		
+		for (SyllableToken syllableToken : prefix) {
+			assert syllableToken != null: "Null token in training syllable list (at song start):" + prefix;
+		}
+		
 		fromTokenID = lyricStatesByIndex.addPrefix(prefix);
+
 		for (int j = lyricMarkovOrder; j < trainingSentenceTokens.size(); j++ ) {
-			final SyllableToken nextItem = trainingSentenceTokens.get(j);
-			if (nextItem == null) {
-				Utils.incrementDoubleForKey(lyricPriors, fromTokenID, 1.0); // we do this for every sentence-start token 
-				continue;
+			if (phraseStartIndices.contains(j - lyricMarkovOrder)) { // if this prefix marks the beginning of a phrase
+				Utils.incrementDoubleForKey(lyricPriors, fromTokenID, 1.0); // we do this for every sentence-start token
 			}
+			
+			final SyllableToken nextItem = trainingSentenceTokens.get(j);
+			assert nextItem != null: "Null token in training syllable list at position " + j + ":" + prefix;
 			prefix.removeFirst();
 			prefix.addLast(nextItem);
 			
@@ -1631,6 +1641,9 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 			Utils.incrementDoubleForKeys(lyricTransitions, fromTokenID, toTokenID, 1.0);
 			
 			fromTokenID = toTokenID;
+		}
+		if (phraseStartIndices.contains(trainingSentenceTokens.size() - lyricMarkovOrder)) { // if this prefix marks the beginning of a phrase
+			Utils.incrementDoubleForKey(lyricPriors, fromTokenID, 1.0); // we do this for every sentence-start token
 		}
 	}
 
