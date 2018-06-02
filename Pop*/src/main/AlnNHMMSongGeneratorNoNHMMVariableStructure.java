@@ -499,8 +499,10 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 	
 	public static DecimalFormat df4 = new DecimalFormat("#.####");
 
-	private static int INSPIRING_FILE_COUNT_WIKIFONIA = 100;
-	private static int INSPIRING_FILE_COUNT_LYRICS_DB = 4000;
+	private static int LOAD_FILE_COUNT_WIKIFONIA = 150;
+	private static int LOAD_FILE_COUNT_LYRICS_DB = 4000;
+	private static int INSPIRING_FILE_COUNT_WIKIFONIA;
+	private static int INSPIRING_FILE_COUNT_LYRICS_DB;
 	final private static boolean useWikifoniaLyrics = false;
 	final private static boolean useExternalLyrics = true;
 	final private static int MAX_SONGS_TO_CHOOSE_FROM = 10;
@@ -527,8 +529,9 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 			} while ((dirName = createDirectoryForTweet(muse.getTweet(), muse.getEmpathSummary())) == null);
 			
 			files = null;
-			muse.retreiveWikifoniaFiles(INSPIRING_FILE_COUNT_WIKIFONIA);
-			if (useExternalLyrics) muse.retreiveClosestLyrics(INSPIRING_FILE_COUNT_LYRICS_DB);
+			
+			muse.retreiveWikifoniaFiles(LOAD_FILE_COUNT_WIKIFONIA);
+			if (useExternalLyrics) muse.retreiveClosestLyrics(LOAD_FILE_COUNT_LYRICS_DB);
 			
 			//Choose structure
 			String bestSongSoFar = null;
@@ -584,6 +587,10 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 					INSPIRING_FILE_COUNT_LYRICS_DB = 4500;
 					throw new RuntimeException("Didn't do rhyme constraints for this yet");
 				}
+				
+				assert LOAD_FILE_COUNT_LYRICS_DB >= INSPIRING_FILE_COUNT_LYRICS_DB;
+				assert LOAD_FILE_COUNT_WIKIFONIA >= INSPIRING_FILE_COUNT_WIKIFONIA;
+				
 				System.out.println("NEW SONG: Using structure from " + structureFileName);
 				String structureFilePath = structureFileDir + "/" + structureFileName; 
 				
