@@ -43,7 +43,7 @@ public class Muse {
 	private static final String matchListFile = "training_songs_sorted_by_relevance.txt";
 	private static final String matchingLyricsEmpathListFile = "training_lyrics_sorted_by_relevance.txt";
 
-	boolean useExistingEmpaths = true;
+	boolean useExistingEmpaths = false;
 	private List<Pair<String, Map<String, Double>>> all_tweet_empath_vecs;
 	private int all_tweet_empath_vecs_idx = -1;
 	
@@ -315,8 +315,6 @@ public class Muse {
 	}
 
 	public File[] findInspiringWikifoniaFiles(int numberOfInspiringFiles) throws IOException, InterruptedException {
-		retrieveBestMatchesForTraining(numberOfInspiringFiles);
-		Thread.sleep(1000);
 		File[] files = readBestMatches(numberOfInspiringFiles);
 		
 		return files;
@@ -329,14 +327,18 @@ public class Muse {
 		
 		String line;
 		int i = 0;
-		while((line=bf.readLine())!=null) {
+		while((line=bf.readLine())!=null && i < numberOfInspiringFiles) {
 			files[i++] = new File(TabDriver.dataDir + "/Wikifonia_xmls/" + line.split("\\s+", 2)[1]);
 		}
+		
 		return files;
 	}
 
-	private void retrieveBestMatchesForTraining(int count) {
-		if (!useExistingEmpaths) CommandlineExecutor.execute("python script/retrieveSongsWithClosestLyrics.py " + inspiringEmotionFile + " wikifonia_lyrics_empath.txt " + count + " " + all_tweet_empath_vecs_idx, matchListFile);
+	public void retreiveWikifoniaFiles(int count) {
+		if (!useExistingEmpaths) {
+			System.out.println("Finding inspiring songs from the songs database");
+			CommandlineExecutor.execute("python script/retrieveSongsWithClosestLyrics.py " + inspiringEmotionFile + " wikifonia_lyrics_empath.txt " + count + " " + all_tweet_empath_vecs_idx, matchListFile);
+		}
 	}
 
 	public static void main(String[] args) throws IOException, InterruptedException {
@@ -556,9 +558,7 @@ public class Muse {
 
 	
 	public String[][] findInspiringLyricDBMatches(int inspiringFileCountLyricsDb) throws IOException {
-		System.out.println("Finding inspiring lyrics from the lyric database");
 //		printInspiringEmpathVecToFile();
-		if (!useExistingEmpaths) CommandlineExecutor.execute("python script/retrieveLyricsWithClosestLyrics.py " + inspiringEmotionFile + " /Users/norkish/Archive/2017_BYU/ComputationalCreativity/data/data/lyrics_db_empaths_deeper_dedup.txt " + inspiringFileCountLyricsDb + " " + all_tweet_empath_vecs_idx, matchingLyricsEmpathListFile);
 		String[][] matches = parseMatchingLyricsFromLyricsDB(inspiringFileCountLyricsDb);
 		
 		return matches;
@@ -571,7 +571,7 @@ public class Muse {
 		
 		String line;
 		int i = 0;
-		while((line=bf.readLine())!=null) {
+		while((line=bf.readLine())!=null && i < inspiringFileCountLyricsDb) {
 			String lyrics = parseLyricLine(line)[3];
 			lyrics = lyrics.substring(1, lyrics.length()-1).trim();
 			lyrics = lyrics.replaceAll(" *\\\\n *","\n");
@@ -821,5 +821,12 @@ public class Muse {
 		double rhythmDiversity = 0.0;
 		
 		return empathVecWeightInRating * empathVecDifferenceScore + lyricDiversityWeightInRating * lyricDiversityScore + lengthWeightInRating * words.length + harmonyDiversityWeightInRating * harmonyDiversity + pitchDiversityWeightInRating * pitchDiversity + rhythmDiversityWeightInRating * rhythmDiversity;
+	}
+
+	public void retreiveClosestLyrics(int inspiringFileCountLyricsDb) {
+		if (!useExistingEmpaths) {
+			System.out.println("Finding inspiring lyrics from the lyric database");
+			CommandlineExecutor.execute("python script/retrieveLyricsWithClosestLyrics.py " + inspiringEmotionFile + " /Users/norkish/Archive/2017_BYU/ComputationalCreativity/data/data/lyrics_db_empaths_deeper_dedup.txt " + inspiringFileCountLyricsDb + " " + all_tweet_empath_vecs_idx, matchingLyricsEmpathListFile);
+		}
 	}
 }
