@@ -581,6 +581,7 @@ public class Muse {
 			matches[i++] = lyrics.split("\n");
 		}
 		
+		assert i == inspiringFileCountLyricsDb: "Didn't find as many in the python-generated file as expected.";
 		System.out.println("TRAINING LYRICS ON " + i + " (of requested " + inspiringFileCountLyricsDb + ") LYRIC FILES ");
 		
 		bf.close();

@@ -500,7 +500,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 	public static DecimalFormat df4 = new DecimalFormat("#.####");
 
 	private static int INSPIRING_FILE_COUNT_WIKIFONIA = 100;
-	private static int INSPIRING_FILE_COUNT_LYRICS_DB = 3000;
+	private static int INSPIRING_FILE_COUNT_LYRICS_DB = 4000;
 	final private static boolean useWikifoniaLyrics = false;
 	final private static boolean useExternalLyrics = true;
 	final private static int MAX_SONGS_TO_CHOOSE_FROM = 10;
