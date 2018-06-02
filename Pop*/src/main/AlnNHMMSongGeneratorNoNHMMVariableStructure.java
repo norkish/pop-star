@@ -511,7 +511,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 	final private static int HARMONY_SEARCH_LIMIT = 10000;
 	final private static int PITCH_SEARCH_LIMIT = 5;
 	final private static int RHTYHM_SEARCH_LIMIT = 1000;
-	final private static int LYRIC_SEARCH_LIMIT = 5;
+	final private static int LYRIC_SEARCH_LIMIT = 3;
 	public static void main(String[] args) throws Exception {
 		
 		dbtb.main.Main.setRootPath("/Users/norkish/Archive/2017_BYU/ComputationalCreativity/");
@@ -557,7 +557,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 					rhythmMarkovOrder = 3;
 					lyricMarkovOrder = 3;
 					INSPIRING_FILE_COUNT_WIKIFONIA = 75;
-					INSPIRING_FILE_COUNT_LYRICS_DB = 2500;
+					INSPIRING_FILE_COUNT_LYRICS_DB = 3000;
 				} else if (structureChoice == 1) { 
 					structureFileName = "Harold Arlen, Yip Harburg - Over The Rainbow.xml";
 					harmonyMarkovOrder = 1;
@@ -565,7 +565,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 					rhythmMarkovOrder = 1;
 					lyricMarkovOrder = 1;
 					INSPIRING_FILE_COUNT_WIKIFONIA = 100;
-					INSPIRING_FILE_COUNT_LYRICS_DB = 3000;
+					INSPIRING_FILE_COUNT_LYRICS_DB = 3500;
 				} else if (structureChoice == 2) {
 					structureFileName = "John Lennon - Imagine.xml";
 					harmonyMarkovOrder = 1;
