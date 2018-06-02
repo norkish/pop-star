@@ -524,7 +524,10 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 			String dirName;
 			Muse muse = new Muse();
 			do {
-				muse.setTweetAndVecToNext();
+				if (!muse.setTweetAndVecToNext()) {// can't get another
+					muse = new Muse();
+					assert muse.setTweetAndVecToNext();
+				}
 				System.out.println("NEW MUSE: Muse's inspiration: " + muse.getInspiringEmotion());
 			} while ((dirName = createDirectoryForTweet(muse.getTweet(), muse.getEmpathSummary())) == null);
 			
