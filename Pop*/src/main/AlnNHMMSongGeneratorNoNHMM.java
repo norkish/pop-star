@@ -877,7 +877,7 @@ public class AlnNHMMSongGeneratorNoNHMM {
 					Files.write(Paths.get("./compositions/" + dirName + "/"  + title.replaceAll("\\W+", "_") + "." + fileSuffix + ".orchest.transp.xml"), composition.toString().getBytes());
 				}
 				
-				Files.write(Paths.get("./compositions/" + dirName + "/" + title.replaceAll("\\W+", "_") + "." + fileSuffix + ".descr.txt"), muse.composeDescription(muse.getEmpathVector(printSummary(lyricGenerate, 0.5)), printSummary(lyricGenerate, 0.5)).getBytes());
+				Files.write(Paths.get("./compositions/" + dirName + "/" + title.replaceAll("\\W+", "_") + "." + fileSuffix + ".descr.txt"), muse.composeDescription(muse.getEmpathVector(printSummary(lyricGenerate, 0.5)), printSummary(lyricGenerate, 0.5), title).getBytes());
 				fileSuffix++;
 				break;
 			}

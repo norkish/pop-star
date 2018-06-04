@@ -6,6 +6,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -113,7 +115,7 @@ public class Muse {
 
 	private Map<String, Double> defineRandomEmpathVector() {
 		Map<String, Double> vector = new LinkedHashMap<String, Double>(){{
-			put("help", 0.0);
+			put("help",0.0);
 			put("office", 0.0);
 			put("violence", 0.0);
 			put("dance", 0.0);
@@ -355,8 +357,17 @@ public class Muse {
 
 	Random rand = new Random();
 	
-	public String composeDescription(Pair<String, Map<String, Double>> empathVecForGenSong, String lyricString) throws InterruptedException, IOException {
+	public String composeDescription(Pair<String, Map<String, Double>> empathVecForGenSong, String lyricString, String title) throws InterruptedException, IOException {
 		StringBuilder str = new StringBuilder();
+		
+		str.append(title);
+		str.append('\n');
+		str.append("Words and music by Pop*\n");
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("LLLL dd, yyyy");//yyyy/MM/dd HH:mm:ss");  
+		LocalDateTime now = LocalDateTime.now();  
+		str.append(dtf.format(now));  
+		
+		str.append("\n\n");
 		
 		int i = rand.nextInt(4);
 		if(i==0)
@@ -456,6 +467,7 @@ public class Muse {
 		else if (i==3)
 			str.append(" I hope that you like it.");
 		
+		str.append("\n\nPop*");
 		return str.toString();
 	}
 
@@ -829,5 +841,18 @@ public class Muse {
 			System.out.println("Finding inspiring lyrics from the lyric database");
 			CommandlineExecutor.execute("python script/retrieveLyricsWithClosestLyrics.py " + inspiringEmotionFile + " /Users/norkish/Archive/2017_BYU/ComputationalCreativity/data/data/lyrics_db_empaths_deeper_dedup.txt " + inspiringFileCountLyricsDb + " " + all_tweet_empath_vecs_idx, matchingLyricsEmpathListFile);
 		}
+	}
+
+	private static Set<String> negativeEmotions = new HashSet<String>(Arrays.asList("violence","cold","hate","aggression","envy","crime","prison","dispute","nervousness","weakness","horror","suffering","kill","stealing","fear","monster","irritability","exasperation","confusion","death","neglect","deception","fight","dominant_personality","disgust","fire","rage","sadness","lust","shame","anger","ugliness","terrorism","poor","pain","negative_emotion","competing","disappointment","weapon"));
+		
+	public boolean isPositivelyMotivated() {
+		String[] summarizeEmpathVec = findTopN(inspiringEmpathVec, NUM_TOP);
+		
+		for (String string : summarizeEmpathVec) {
+			if (negativeEmotions.contains(string))
+				return false;
+		}
+		
+		return true;
 	}
 }

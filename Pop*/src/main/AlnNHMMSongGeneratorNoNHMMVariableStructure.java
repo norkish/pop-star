@@ -356,6 +356,29 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 		
 	}
 
+	public static class AcceptableDurationConstraint<T extends Token> implements StateConstraint<T> {
+		
+		public AcceptableDurationConstraint() {
+		}
+		
+		@Override
+		public boolean isSatisfiedBy(LinkedList<T> state, int i) {
+			final T t2 = state.get(i);
+			Token t;
+			if (t2 instanceof StateToken)
+				t = ((StateToken) t2).token;
+			else
+				t = t2;
+			
+			if (t instanceof RhythmToken) {
+				return ((RhythmToken) t).durationInQuarterNotes % 0.5 == 0.0;
+			} else {
+				throw new RuntimeException("Unreachable");
+			}
+		}
+		
+	}
+
 	public static class BeatConstraint<T extends Token> implements StateConstraint<T> {
 		
 		Double offset;
@@ -531,6 +554,8 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 				System.out.println("NEW MUSE: Muse's inspiration: " + muse.getInspiringEmotion());
 			} while ((dirName = createDirectoryForTweet(muse.getTweet(), muse.getEmpathSummary())) == null);
 			
+			boolean major = muse.isPositivelyMotivated();
+			
 			files = null;
 			
 			muse.retreiveWikifoniaFiles(LOAD_FILE_COUNT_WIKIFONIA);
@@ -651,22 +676,24 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 					harmonyConstraints.get(i).add(new ConditionedConstraint<>(new BeatConstraint<>(0.5*(i%(EVENTS_PER_BEAT*4)))));
 				}
 		
-				harmonyConstraints.get(0).add(new ConditionedConstraint<>(new ChordsConstraint<>(new Harmony[] {new Harmony(new Root(3), new Quality(), null), new Harmony(new Root(0), new Quality("min"), null)}))); // has to start with a C or Am chord
+				Harmony startFinishChord = major ? new Harmony(new Root(3), new Quality(), null) : new Harmony(new Root(0), new Quality("min"), null);
+				
+				harmonyConstraints.get(0).add(new ConditionedConstraint<>(new ChordConstraint<>(startFinishChord))); // has to start with a C or Am chord
 				// has to end with a C or Am chord
 				if (structureChoice == 0) {
-					harmonyConstraints.get(28).add(new ConditionedConstraint<>(new ChordsConstraint<>(new Harmony[] {new Harmony(new Root(3), new Quality(), null), new Harmony(new Root(0), new Quality("min"), null)}))); 
+					harmonyConstraints.get(28).add(new ConditionedConstraint<>(new ChordConstraint<>(startFinishChord))); 
 				} else if (structureChoice == 1){
-					harmonyConstraints.get(60).add(new ConditionedConstraint<>(new ChordsConstraint<>(new Harmony[] {new Harmony(new Root(3), new Quality(), null), new Harmony(new Root(0), new Quality("min"), null)})));
+					harmonyConstraints.get(60).add(new ConditionedConstraint<>(new ChordConstraint<>(startFinishChord)));
 				} else if (structureChoice == 2) {
-					harmonyConstraints.get(284).add(new ConditionedConstraint<>(new ChordsConstraint<>(new Harmony[] {new Harmony(new Root(3), new Quality(), null), new Harmony(new Root(0), new Quality("min"), null)})));
+					harmonyConstraints.get(284).add(new ConditionedConstraint<>(new ChordConstraint<>(startFinishChord)));
 				} else if (structureChoice == 3) {
-					harmonyConstraints.get(harmonyConstraints.size()-4).add(new ConditionedConstraint<>(new ChordsConstraint<>(new Harmony[] {new Harmony(new Root(3), new Quality(), null), new Harmony(new Root(0), new Quality("min"), null)})));
+					harmonyConstraints.get(harmonyConstraints.size()-4).add(new ConditionedConstraint<>(new ChordConstraint<>(startFinishChord)));
 				} else throw new RuntimeException("Structure not supported");
 				
 				System.out.println("Building Harmony Solution Iterator");
 				Iterator<List<HarmonyToken>> harmonyIterator = null;
 				try {
-					 harmonyIterator = MatchRandomIteratorBuilderDFS.buildEfficiently(harmonyMatchConstraintList, harmonyMatchConstraintOutcomeList, null, harmonyMarkovModel, harmonyConstraints, 2*harmonyMarkovLength);
+					 harmonyIterator = MatchRandomIteratorBuilderDFS.buildEfficiently(harmonyMatchConstraintList, harmonyMatchConstraintOutcomeList, null, harmonyMarkovModel, harmonyConstraints, 3*harmonyMarkovLength);
 				} catch (Exception e) {
 					continue;
 				}
@@ -694,6 +721,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 					rhythmConstraints.add(new ArrayList<ConditionedConstraint<RhythmToken>>());
 					// rhythm sequence has to start with beat 0 and can only be 0 every 8th element
 					rhythmConstraints.get(j).add(new ConditionedConstraint<>(new BeatConstraint<>(0.5*(j%(EVENTS_PER_BEAT*4)))));
+					rhythmConstraints.get(j).add(new ConditionedConstraint<>(new AcceptableDurationConstraint<>()));
 				}
 				rhythmConstraints.get(0).add(new ConditionedConstraint<RhythmToken>(new RhythmOnsetConstraint<>()));
 				if (structureChoice == 0) {
@@ -960,6 +988,9 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 									remainingDuration -= durationForCurrMeasure;
 									
 									final List<Note> currNote = MelodyEngineer.createTiedNoteWithDuration(measures.get(measure+i).beatsToDivs(durationForCurrMeasure), pitch, measures.get(measure+i).divisionsPerQuarterNote);
+									if (currNote.isEmpty()) {
+										System.err.println("Created note of duration " + durationForCurrMeasure + " (" + i + " = " + i + ")");
+									}
 									currNote.get(0).tie = NoteTie.NONE;
 									currNote.get(currNote.size()-1).tie = NoteTie.NONE;
 									createTiedNoteWithDuration.addAll(currNote); 
@@ -971,9 +1002,15 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 										
 										createTiedNoteWithDuration.get(0).setLyric(newNoteLyric, true);
 										if (addTitle && measure > 1 && (newNoteLyric.syllabic == Syllabic.BEGIN || newNoteLyric.syllabic == Syllabic.SINGLE)) addTitle = false;
-										if (addTitle && sToken.getPositionInContext() == 0) titleBuilder.append(newNoteLyric.text + " ");
+										if (addTitle && sToken.getPositionInContext() == 0) {
+											if (titleBuilder.length() == 0)
+												titleBuilder.append(StringUtils.capitalize(sToken.getStringRepresentation()) + " ");
+											else 
+												titleBuilder.append(sToken.getStringRepresentation() + " ");
+										}
 									}
 									lyricAdded = true;
+									i++;
 								} while(remainingDuration > 0.0);
 								
 								if (createTiedNoteWithDuration.size() > 1) {
@@ -1010,7 +1047,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 						composition.setMuse(muse);
 						composition.setTitle(title);
 						composition.setTempo(tempo);
-						Files.write(Paths.get("./compositions/" + dirName + "/"  + title.replaceAll("\\W+", "_") + "." + fileSuffix + ".xml"), composition.toString().getBytes());
+						Files.write(Paths.get("./compositions/" + dirName + "/"  + title.replaceAll("\\W+", "_") + "." + fileSuffix + ".lead.xml"), composition.toString().getBytes());
 						
 						Orchestrator orchestrator = new CompingMusicXMLOrchestrator();
 						orchestrator.orchestrate(composition);
@@ -1033,7 +1070,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 							bestSongSoFarScore = songRating;
 						}
 						
-						Files.write(Paths.get("./compositions/" + dirName + "/" + title.replaceAll("\\W+", "_") + "." + fileSuffix + ".descr.txt"), muse.composeDescription(empathVecForGenSong, lyricString).getBytes());
+						Files.write(Paths.get("./compositions/" + dirName + "/" + title.replaceAll("\\W+", "_") + "." + fileSuffix + ".descr.txt"), muse.composeDescription(empathVecForGenSong, lyricString, title).getBytes());
 						fileSuffix++;
 						break;
 					}
