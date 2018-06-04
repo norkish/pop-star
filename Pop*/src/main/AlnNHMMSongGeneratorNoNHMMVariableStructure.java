@@ -1508,7 +1508,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 				continue;
 			}
 			
-			if (musicXML.songTempo > 60.0) {
+			if (musicXML.songTempo > 60.0 && musicXML.songTempo < 140.0) {
 				Utils.incrementValueForKey(tempoFrequencies, musicXML.songTempo);
 				totalSongsWithTempoMarked++;
 			}
