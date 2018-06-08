@@ -536,7 +536,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 	final private static int HARMONY_SEARCH_LIMIT = 10000;
 	final private static int PITCH_SEARCH_LIMIT = 5;
 	final private static int RHTYHM_SEARCH_LIMIT = 1000;
-	final private static int LYRIC_SEARCH_LIMIT = 3;
+	final private static int LYRIC_SEARCH_LIMIT = 1;
 	public static void main(String[] args) throws Exception {
 		
 		dbtb.main.Main.setRootPath("/Users/norkish/Archive/2017_BYU/ComputationalCreativity/");
