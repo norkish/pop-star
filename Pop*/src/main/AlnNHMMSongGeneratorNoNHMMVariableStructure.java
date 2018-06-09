@@ -1003,10 +1003,12 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 										createTiedNoteWithDuration.get(0).setLyric(newNoteLyric, true);
 										if (addTitle && measure > 1 && (newNoteLyric.syllabic == Syllabic.BEGIN || newNoteLyric.syllabic == Syllabic.SINGLE)) addTitle = false;
 										if (addTitle && sToken.getPositionInContext() == 0) {
+											String stringRepresentation = sToken.getStringRepresentation();
+											stringRepresentation = stringRepresentation.equals("'s")?"is":(stringRepresentation.equals("'m")?"am":stringRepresentation);
 											if (titleBuilder.length() == 0)
-												titleBuilder.append(StringUtils.capitalize(sToken.getStringRepresentation()) + " ");
+												titleBuilder.append(StringUtils.capitalize(stringRepresentation) + " ");
 											else 
-												titleBuilder.append(sToken.getStringRepresentation() + " ");
+												titleBuilder.append(stringRepresentation + " ");
 										}
 									}
 									lyricAdded = true;
