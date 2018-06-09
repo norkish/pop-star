@@ -1220,7 +1220,8 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 			else if (token instanceof SyllableToken) {
 				SyllableToken sToken = (SyllableToken) token;
 				if (sToken.getPositionInContext() == 0) {
-					str.append(sToken.getStringRepresentation());
+					String stringRepresentation = sToken.getStringRepresentation();
+					str.append(stringRepresentation.equals("'s")?"is":(stringRepresentation.equals("'m")?"am":stringRepresentation));
 					str.append(" ");
 				}
 			}
