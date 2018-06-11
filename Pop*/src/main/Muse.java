@@ -811,10 +811,50 @@ public class Muse {
 	private static double harmonyDiversityWeightInRating = 0.5;
 	private static double pitchDiversityWeightInRating = 0.5;
 	private static double rhythmDiversityWeightInRating = 0.5;
-	private static double lengthWeightInRating = 0.1;
+	private static double vocalRangeWeightInRating = 1.0;
+	private static double energyWeightInRating = 0.5;
+	private static final int minRange = 48;
+	private static final int maxRange = 64;
 	
-	public double getRating(Pair<String, Map<String, Double>> empathVecForGenSong, String lyricString, List<HarmonyToken> harmonyGenerate, List<PitchToken> pitchGenerate, List<RhythmToken> rhythmGenerate) throws InterruptedException, IOException {
+	
+	public double getRating(Pair<String, Map<String, Double>> empathVecForGenSong, String lyricString, List<HarmonyToken> harmonyGenerate, List<PitchToken> pitchGenerate, List<RhythmToken> rhythmGenerate, int suggestedTransposition, int minNote, int maxNote) throws InterruptedException, IOException {
 
+		if (suggestedTransposition > 0) {
+			minNote += suggestedTransposition;
+			maxNote += suggestedTransposition;
+		}
+		
+		double percentVocalRangeAcceptable = 0.0;
+		double totalWindowEnergies = 0.0;
+		int totalWindows = 0;
+		
+		LinkedList<Integer> windowPitches = new LinkedList<Integer>();
+		int windowSize = 4*8; // 4 bars
+		
+		for (PitchToken pitchToken : pitchGenerate) {
+			if (windowPitches.size() == windowSize) { // if we've seen a full window
+				windowPitches.removeFirst(); //pop
+			}
+			windowPitches.add(pitchToken.normalizedPitch); // add a pitch to the window
+			if (windowPitches.size() == windowSize) { // if after adding we're seeing a full window
+				Set<Integer> uniqPitches = new HashSet<Integer>();
+				for (Integer integer : windowPitches) { 
+					uniqPitches.add(integer); // count how many unique pitches are in the window
+				}
+				totalWindowEnergies += 1.0 * uniqPitches.size() / windowSize; // add it to the tally
+				totalWindows++;
+			}
+			
+			if (pitchToken.normalizedPitch <= maxRange && pitchToken.normalizedPitch >= minRange) {
+				percentVocalRangeAcceptable++;
+			}
+		}
+
+		double windowEnergyAvg = totalWindowEnergies / totalWindows;
+		
+		percentVocalRangeAcceptable /= pitchGenerate.size();
+		
+		
 		double empathVecDifferenceScore = 0.0;
 		for (String key : inspiringEmpathVec.keySet()) {
 			empathVecDifferenceScore += Math.abs(inspiringEmpathVec.get(key) - empathVecForGenSong.getSecond().get(key));
@@ -833,7 +873,7 @@ public class Muse {
 		double pitchDiversity = 0.0;
 		double rhythmDiversity = 0.0;
 		
-		return empathVecWeightInRating * empathVecDifferenceScore + lyricDiversityWeightInRating * lyricDiversityScore + lengthWeightInRating * words.length + harmonyDiversityWeightInRating * harmonyDiversity + pitchDiversityWeightInRating * pitchDiversity + rhythmDiversityWeightInRating * rhythmDiversity;
+		return energyWeightInRating * windowEnergyAvg + vocalRangeWeightInRating * percentVocalRangeAcceptable + empathVecWeightInRating * empathVecDifferenceScore + lyricDiversityWeightInRating * lyricDiversityScore + harmonyDiversityWeightInRating * harmonyDiversity + pitchDiversityWeightInRating * pitchDiversity + rhythmDiversityWeightInRating * rhythmDiversity;
 	}
 
 	public void retreiveClosestLyrics(int inspiringFileCountLyricsDb) {

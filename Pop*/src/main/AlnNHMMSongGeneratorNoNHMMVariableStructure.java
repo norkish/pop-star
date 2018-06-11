@@ -591,10 +591,10 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 					INSPIRING_FILE_COUNT_LYRICS_DB = 3000;
 				} else if (structureChoice == 1) { 
 					structureFileName = "Harold Arlen, Yip Harburg - Over The Rainbow.xml";
-					harmonyMarkovOrder = 1;
-					pitchMarkovOrder = 1;
+					harmonyMarkovOrder = 3;
+					pitchMarkovOrder = 2;
 					rhythmMarkovOrder = 1;
-					lyricMarkovOrder = 1;
+					lyricMarkovOrder = 2;
 					INSPIRING_FILE_COUNT_WIKIFONIA = 100;
 					INSPIRING_FILE_COUNT_LYRICS_DB = 3500;
 				} else if (structureChoice == 2) {
@@ -1065,7 +1065,7 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 						
 						final Pair<String, Map<String, Double>> empathVecForGenSong = muse.getEmpathVector(lyricString);
 						
-						double songRating = muse.getRating(empathVecForGenSong, lyricString, harmonyGenerate, pitchGenerate, rhythmGenerate);
+						double songRating = muse.getRating(empathVecForGenSong, lyricString, harmonyGenerate, pitchGenerate, rhythmGenerate, suggestedTransposition, minNote, maxNote);
 						System.out.println("Song rating: " + songRating);
 						if (songRating > bestSongSoFarScore) { 
 							bestSongSoFar = title.replaceAll("\\W+", "_") + "." + fileSuffix;
