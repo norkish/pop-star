@@ -593,8 +593,8 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 					structureFileName = "Harold Arlen, Yip Harburg - Over The Rainbow.xml";
 					harmonyMarkovOrder = 3;
 					pitchMarkovOrder = 2;
-					rhythmMarkovOrder = 1;
-					lyricMarkovOrder = 2;
+					rhythmMarkovOrder = 2;
+					lyricMarkovOrder = 3;
 					INSPIRING_FILE_COUNT_WIKIFONIA = 100;
 					INSPIRING_FILE_COUNT_LYRICS_DB = 3500;
 				} else if (structureChoice == 2) {
