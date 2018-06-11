@@ -21,7 +21,7 @@ public class Score {
 	List<Measure> measures = new ArrayList<Measure>();
 	private boolean hasOrchestration = false;
 	private int transpose = 0;
-	private double tempo = 110; 
+	private int tempo = 110; 
 
 	public void addMeasures(List<Measure> instantiatedMeasures) {
 		measures.addAll(instantiatedMeasures);
@@ -44,7 +44,7 @@ public class Score {
 	}
 	
 	public void setTempo(double newTempo) {
-		tempo = newTempo;
+		tempo = (int) newTempo;
 	}
 
 	final static int measuresPerSystem = 3;
