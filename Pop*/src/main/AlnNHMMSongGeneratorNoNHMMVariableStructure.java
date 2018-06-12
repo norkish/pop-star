@@ -586,17 +586,17 @@ public class AlnNHMMSongGeneratorNoNHMMVariableStructure {
 					harmonyMarkovOrder = 3;
 					pitchMarkovOrder = 2;
 					rhythmMarkovOrder = 3;
-					lyricMarkovOrder = 3;
+					lyricMarkovOrder = 2;
 					INSPIRING_FILE_COUNT_WIKIFONIA = 75;
-					INSPIRING_FILE_COUNT_LYRICS_DB = 3000;
+					INSPIRING_FILE_COUNT_LYRICS_DB = 3500;
 				} else if (structureChoice == 1) { 
 					structureFileName = "Harold Arlen, Yip Harburg - Over The Rainbow.xml";
 					harmonyMarkovOrder = 3;
 					pitchMarkovOrder = 2;
 					rhythmMarkovOrder = 2;
-					lyricMarkovOrder = 3;
+					lyricMarkovOrder = 2;
 					INSPIRING_FILE_COUNT_WIKIFONIA = 100;
-					INSPIRING_FILE_COUNT_LYRICS_DB = 3500;
+					INSPIRING_FILE_COUNT_LYRICS_DB = 4000;
 				} else if (structureChoice == 2) {
 					structureFileName = "John Lennon - Imagine.xml";
 					harmonyMarkovOrder = 1;
