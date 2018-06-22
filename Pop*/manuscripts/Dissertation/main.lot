@@ -1,0 +1,15 @@
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {1.1}{\ignorespaces Survey of Existing Approaches to Structured Music Generation\relax }}{4}{table.caption.1}
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {3.1}{\ignorespaces $d$-order NHMMs with Floating and Dynamic Constraints for Solving the DBTB Problem\relax }}{41}{table.caption.26}
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {4.1}{\ignorespaces Features for a music sequence event\relax }}{50}{table.caption.31}
+\contentsline {table}{\numberline {4.2}{\ignorespaces \textit {Generalizability}. (Top) Shown are average F-scores for training and test sets resulting from a 5-fold cross-validation on a 5-song dataset (1000 generations). (Bottom) Results aggregated from 2 of the 5 cross-folds in which the holdout song is of simpler composition (\textit {Twinkle, Twinkle} and \textit {Over the Rainbow}). Results suggest that even with limited training, generalization is possible, particularly when generalizing to compositions with complexity less than or equal to that represented in the training set.\relax }}{61}{table.caption.43}
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {6.1}{\ignorespaces \textit {Emotion topics}. Scores for this subset of the default topic set for Empath \citep {Fast2016} are used to find tweets of interest that are emotionally charged.\relax }}{100}{table.caption.54}
+\contentsline {table}{\numberline {6.2}{\ignorespaces \textit {Results for Evaluation Based on Artefacts}. Shown are results based on the average ratings for each song. Columns correspond to survey questions 1 through 7. For each result is shown the average musicians' rating in italics followed by the average of all ratings. ``Best Song'' is the song with the highest overall rating score across all participants (shown in Figure\nobreakspace {}\ref {fig:cut_above}).\relax }}{111}{table.caption.59}
+\contentsline {table}{\numberline {6.3}{\ignorespaces \textit {Familiarity Bias}. Shown are the scores separated according to participants' answers to survey question 14 (familiarity with study designers). For each category is shown the average over all responses for each question as well as the highest individual average song scores for each of survey questions 1 through 7. With few exceptions the system was rated as more creative by those who are familiar with the system designers.\relax }}{112}{table.caption.60}
+\contentsline {table}{\numberline {6.4}{\ignorespaces \textit {Results for Evaluation Based on Process}. Shown are average scores for survey questions 8 through 12, broken down by demographic.\relax }}{113}{table.caption.62}
+\addvspace {10\p@ }

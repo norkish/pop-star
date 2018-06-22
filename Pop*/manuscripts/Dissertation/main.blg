@@ -1,0 +1,162 @@
+This is BibTeX, Version 0.99d (TeX Live 2016)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: main.aux
+The style file: plainnat.bst
+Database file #1: bib.bib
+I was expecting a `,' or a `}'---line 8 of file bib.bib
+ : 
+ : %    url = {https://pdfs.semanticscholar.org/51eb/ae710bf2c884b6c0b1479085604554fc9da4.pdf}
+(Error may have been on previous line)
+I'm skipping whatever remains of this entry
+You're missing a field name---line 19 of file bib.bib
+ :  
+ :  %   url = {https://link.springer.com/content/pdf/10.1007%2Fs11023-007-9066-2.pdf},
+(Error may have been on previous line)
+I'm skipping whatever remains of this entry
+I was expecting a `,' or a `}'---line 34 of file bib.bib
+ : 
+ : %    url = {https://researchcommons.waikato.ac.nz/bitstream/handle/10289/9913/uow-cs-wp-1993-12.pdf?sequence=7&isAllowed=y}
+(Error may have been on previous line)
+I'm skipping whatever remains of this entry
+You're missing a field name---line 43 of file bib.bib
+ : 
+ : %    url = {http://arxiv.org/abs/1602.06979%0Ahttp://dx.doi.org/10.1145/2858036.2858535},
+(Error may have been on previous line)
+I'm skipping whatever remains of this entry
+I was expecting a `,' or a `}'---line 72 of file bib.bib
+ : 
+ : %    url = {http://aclweb.org/anthology/P14-5010},
+(Error may have been on previous line)
+I'm skipping whatever remains of this entry
+You're missing a field name---line 122 of file bib.bib
+ :  
+ :  %   url = {https://www.doc.ic.ac.uk/~jwc04/papers/conferences/colton_iccc11.pdf},
+(Error may have been on previous line)
+I'm skipping whatever remains of this entry
+I was expecting a `,' or a `}'---line 140 of file bib.bib
+ : 
+ : %    url = {http://www.doc.gold.ac.uk/~mas02gw/papers/AISB99b.pdf}
+(Error may have been on previous line)
+I'm skipping whatever remains of this entry
+I was expecting a `,' or a `}'---line 165 of file bib.bib
+ : 
+ : %    url = {http://www.jstor.org/stable/3681508 http://www.jstor.org/stable/3681508}
+(Error may have been on previous line)
+I'm skipping whatever remains of this entry
+You're missing a field name---line 227 of file bib.bib
+ : 
+ : %    url = {https://s3.amazonaws.com/academia.edu.documents/41433044/Emotional_intelligence_not_music_trainin20160122-22094-n6toj6.pdf?AWSAccessKeyId=AKIAIWOWYYGZ2Y53UL3A&Expires=1507704635&Signature=hC1q46gSmrjQ9FTYKxMJJ5J3NZc%3D&response-content-disposition=inline%3B%20filename%3DEmotional_intelligence_not_music_trainin.pdf},
+(Error may have been on previous line)
+I'm skipping whatever remains of this entry
+I was expecting a `,' or a `}'---line 235 of file bib.bib
+ : 
+ : %    url = {https://s3.amazonaws.com/academia.edu.documents/1622001/1hz3a49b281m7p6a.pdf?AWSAccessKeyId=AKIAIWOWYYGZ2Y53UL3A&Expires=1508363260&Signature=D6%2FN1yuGsentSlSvIoQg9JQ1MM0%3D&response-content-disposition=inline%3B%20filename%3DMethods_for_Combining_Statis}
+(Error may have been on previous line)
+I'm skipping whatever remains of this entry
+You're missing a field name---line 241 of file bib.bib
+ :  
+ :  %   url = {https://link.springer.com/content/pdf/10.2991%2F978-94-6239-085-0_7.pdf},
+(Error may have been on previous line)
+I'm skipping whatever remains of this entry
+You're missing a field name---line 249 of file bib.bib
+ :  
+ :  %   url = {https://arxiv.org/pdf/1611.00138.pdf}
+(Error may have been on previous line)
+I'm skipping whatever remains of this entry
+Repeated entry---line 945 of file bib.bib
+ : @article{ackerman2016algorithmic
+ :                                 ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 952 of file bib.bib
+ : @article{gonccalo2015tra
+ :                         ,
+I'm skipping whatever remains of this entry
+Warning--I didn't find a database entry for "pachet2011finite-lengthConstraints"
+Warning--empty year in UCI
+Warning--empty journal in BalasubramanianRel-grams:Text
+Warning--empty year in BalasubramanianRel-grams:Text
+Warning--empty year in BalasubramanianRel-grams:Text
+Warning--empty journal in BasAutomaticAnalysis
+Warning--empty year in BasAutomaticAnalysis
+Warning--empty year in BasAutomaticAnalysis
+Warning--empty publisher in Boden2003TheEdition
+Warning--empty journal in bodily2018abstract
+Warning--empty journal in bodily2018floating
+Warning--empty journal in bodily2018relational
+Warning--empty journal in FastEmpath:Text
+Warning--empty year in FastEmpath:Text
+Warning--empty year in FastEmpath:Text
+Warning--empty journal in Fast2016
+Warning--empty journal in Gatys2015AStyle
+Warning--empty journal in HuAClassification
+Warning--empty year in HuAClassification
+Warning--empty year in HuAClassification
+Warning--empty school in Jaques2016
+Warning--empty journal in Kaliakatsos-PapakostasAnBlending
+Warning--empty year in Kaliakatsos-PapakostasAnBlending
+Warning--empty journal in Kaliakatsos-PapakostasAnBlendingb
+Warning--empty year in Kaliakatsos-PapakostasAnBlendingb
+Warning--empty journal in Loughran2017MyProject
+Warning--empty journal in PearceMethodsMusic
+Warning--empty year in PearceMethodsMusic
+Warning--empty year in PearceMethodsMusic
+Warning--empty journal in Raschka2014MusicMood:Learning
+Warning--empty year in ShenoyKeySignals
+Warning--empty year in ShenoyKeySignals
+Warning--empty journal in TrimmerEmotionalProsody
+Warning--empty year in TrimmerEmotionalProsody
+Warning--empty year in TrimmerEmotionalProsody
+Warning--empty journal in van2016wavenet
+Warning--there's a number but no volume in Ventura2016
+Warning--there's a number but no volume in Walker2004
+Warning--empty journal in WigginsIDyOT:Information
+Warning--empty year in WigginsIDyOT:Information
+Warning--empty year in WigginsIDyOT:Information
+Warning--empty journal in XuAutomaticMusic
+Warning--empty year in XuAutomaticMusic
+Warning--empty year in XuAutomaticMusic
+Warning--empty journal in YadollahiCurrentMining
+Warning--empty year in YadollahiCurrentMining
+Warning--empty year in YadollahiCurrentMining
+You've used 144 entries,
+            2773 wiz_defined-function locations,
+            1430 strings with 33579 characters,
+and the built_in function-call counts, 72152 in all, are:
+= -- 6599
+> -- 3900
+< -- 135
++ -- 1343
+- -- 1182
+* -- 5586
+:= -- 10705
+add.period$ -- 501
+call.type$ -- 144
+change.case$ -- 810
+chr.to.int$ -- 127
+cite$ -- 334
+duplicate$ -- 3523
+empty$ -- 5952
+format.name$ -- 1396
+if$ -- 15516
+int.to.chr$ -- 18
+int.to.str$ -- 1
+missing$ -- 148
+newline$ -- 772
+num.names$ -- 583
+pop$ -- 1811
+preamble$ -- 1
+purify$ -- 676
+quote$ -- 0
+skip$ -- 2695
+stack$ -- 0
+substring$ -- 2777
+swap$ -- 666
+text.length$ -- 60
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 1534
+warning$ -- 46
+while$ -- 671
+width$ -- 0
+write$ -- 1940
+(There were 14 error messages)
