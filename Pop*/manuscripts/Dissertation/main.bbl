@@ -1,74 +1,28 @@
-\begin{thebibliography}{144}
+\begin{thebibliography}{82}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
 
-\bibitem[Abgaz et~al.(2017)Abgaz, Chaudhry, O’Donoghue, Hurley, and
-  Zhang]{abgaz2017characteristics}
-Y~Abgaz, Ehtzaz Chaudhry, DP~O’Donoghue, D~Hurley, and Jian~J Zhang.
-\newblock Characteristics of pro-c analogies and blends between research
-  publications.
-\newblock In \emph{Proceedings of the 8th International Conference on
-  Computational Creativity}, pages 1--8, 2017.
-
-\bibitem[Ackerman and Loker(2016)]{ackerman2016algorithmic}
-Margareta Ackerman and David Loker.
-\newblock Algorithmic songwriting with alysia.
-\newblock \emph{arXiv preprint arXiv:1612.01058}, 2016.
-
 \bibitem[Ackerman et~al.(2017)Ackerman, Goel, Johnson, Jordanous, Le{\'{o}}n,
   P{\'{e}}rez~P{\'{e}}rez, Toivonen, and
   Ventura]{Ackerman2017TeachingCreativity}
 Margareta Ackerman, Ashok Goel, Colin~G Johnson, Anna Jordanous, Carlos
   Le{\'{o}}n, Rafael P{\'{e}}rez~P{\'{e}}rez, Hannu Toivonen, and Dan Ventura.
-\newblock {Teaching Computational Creativity}.
-\newblock In \emph{Eighth International Conference on Computational Creativity
-  (ICCC'17)}, pages 9--16, 2017.
-\newblock ISBN 9781107138049.
-\newblock \doi{DOI: 10.1017/9781316481165}.
-\newblock URL
-  \url{http://computationalcreativity.net/iccc2017/ICCC_17_accepted_submissions/ICCC-17_paper_8.pdf}.
+\newblock Teaching computational creativity.
+\newblock In \emph{Proceedings of the Eighth International Conference on
+  Computational Creativity}, pages 9--16, 2017.
 
-\bibitem[Asuncion and Newman()]{UCI}
-A.~Asuncion and D.J. Newman.
-\newblock {UCI} machine learning repository.
-\newblock University of California, Irvine, School of Information and Computer
-  Sciences.
-\newblock http://www.ics.uci.edu/~mlearn/MLRepository.html.
-
-\bibitem[Balasubramanian et~al.()Balasubramanian, Soderland, and
-  Etzioni]{BalasubramanianRel-grams:Text}
-Niranjan Balasubramanian, Stephen Soderland, and Oren Etzioni.
-\newblock {Rel-grams: A Probabilistic Model of Relations in Text}.
-\newblock pages 101--105.
-\newblock URL \url{http://www.aclweb.org/anthology/W12-3019}.
-
-\bibitem[Barbieri et~al.(2012{\natexlab{a}})Barbieri, Pachet, Roy, and
+\bibitem[Barbieri et~al.(2012)Barbieri, Pachet, Roy, and
   Esposti]{barbieri2012markov}
 Gabriele Barbieri, Fran{\c{c}}ois Pachet, Pierre Roy, and Mirko~Degli Esposti.
 \newblock Markov constraints for generating lyrics with style.
 \newblock In \emph{Proceedings of the Twentieth European Conference on
-  Artificial Intelligence}, pages 115--120. IOS Press, 2012{\natexlab{a}}.
-
-\bibitem[Barbieri et~al.(2012{\natexlab{b}})Barbieri, Pachet, Roy, and
-  Esposti]{Barbieri2012MarkovStyle}
-Gabriele Barbieri, François Pachet, Pierre Roy, and Mirko~Degli Esposti.
-\newblock {Markov constraints for generating lyrics with style}.
-\newblock In \emph{Frontiers in Artificial Intelligence and Applications},
-  2012{\natexlab{b}}.
-\newblock ISBN 9781614990970.
-\newblock \doi{10.3233/978-1-61499-098-7-115}.
-
-\bibitem[Bas et~al.()Bas, Haas, Magal, Wiering, and
-  Veltkamp]{BasAutomaticAnalysis}
-W~Bas, De~Haas, José~Pedro Magal, Frans Wiering, and Remco~C Veltkamp.
-\newblock {Automatic Functional Harmonic Analysis}.
-\newblock \doi{10.1162/COMJ}.
+  Artificial Intelligence}, pages 115--120. IOS Press, 2012.
 
 \bibitem[Bay et~al.(2017)Bay, Bodily, and Ventura]{bay2017ICCC}
-Benjamin Bay, Paul Bodily, and Dan Ventura.
+Benjamin Bay, Paul~M. Bodily, and Dan Ventura.
 \newblock Deterministic text transformation via constrained vector-word
   representation.
 \newblock \emph{Proceedings of the Eighth International Conference on
@@ -87,83 +41,66 @@ George~David Birkhoff.
 \newblock \emph{Aesthetic Measure}.
 \newblock Harvard University Press Cambridge, 1933.
 
-\bibitem[Boden(1992)]{boden92}
-Margaret Boden.
-\newblock \emph{The Creative Mind}.
-\newblock Abacus, London, 1992.
-
-\bibitem[Boden(2003)]{Boden2003TheEdition}
+\bibitem[Boden(2004)]{Boden2003TheEdition}
 Margaret~A. Boden.
-\newblock \emph{{The creative mind: Myths and mechanisms: Second edition}}.
-\newblock 2003.
-\newblock ISBN 0203508521.
-\newblock \doi{10.4324/9780203508527}.
+\newblock \emph{The Creative Mind: Myths and Mechanisms: Second Edition}.
+\newblock Routledge, 2004.
 
 \bibitem[Bodily and Ventura(2017)]{bodily2017Mume}
-Paul Bodily and Dan Ventura.
+Paul~M. Bodily and Dan Ventura.
 \newblock Musical metacreation using the hierarchical {B}ayesian program
   learning framework.
-\newblock \emph{Proceedings of the Fifth Workshop on Musical Metacreation},
-  2017.
-
-\bibitem[Bodily and Ventura(2018{\natexlab{a}})]{bodily2018abstract}
-Paul Bodily and Dan Ventura.
-\newblock Sequential structure inference via multiple self-alignment.
-\newblock 2018{\natexlab{a}}.
-\newblock Paper to be submitted to AAAI 2018.
-
-\bibitem[Bodily and Ventura(2018{\natexlab{b}})]{bodily2018floating}
-Paul Bodily and Dan Ventura.
-\newblock Floating and dynamic constraints in non-homogeneous markov models.
-\newblock 2018{\natexlab{b}}.
-\newblock Paper to be submitted to AAAI 2018.
-
-\bibitem[Bodily and Ventura(2018{\natexlab{c}})]{bodily2018relational}
-Paul Bodily and Dan Ventura.
-\newblock Binary relational constraints in non-homogeneous markov models.
-\newblock 2018{\natexlab{c}}.
-\newblock Paper to be submitted to AAAI 2018.
-
-\bibitem[Bodily et~al.(2017{\natexlab{a}})Bodily, Bay, and
-  Ventura]{bodily2017ICCC}
-Paul Bodily, Ben Bay, and Dan Ventura.
-\newblock Computational creativity via human-level concept learning.
-\newblock \emph{Proceedings of the Eighth International Conference on
-  Computational Creativity}, pages 57--64, 2017{\natexlab{a}}.
-
-\bibitem[Bodily et~al.(2017{\natexlab{b}})Bodily, Bay, and
-  Ventura]{Bodily2017ComputationalLearning}
-Paul Bodily, Benjamin Bay, and Dan Ventura.
-\newblock {Computational Creativity via Human-Level Concept Learning}.
-\newblock \emph{Eighth International Conference on Computational Creativity
-  (ICCC'17)}, pages 57--64, 2017{\natexlab{b}}.
+\newblock \emph{Proceedings of the Fifth International Workshop on Musical
+  Metacreation}, 2017.
 
 \bibitem[Bodily and
-  Ventura(2018{\natexlab{d}})]{Bodily2018ExplainabilitySystems}
-Paul~M Bodily and Dan Ventura.
-\newblock {Explainability : An Aesthetic for Aesthetics in Computational
-  Creative Systems}.
-\newblock In \emph{To appear in the Proceedings of the Ninth International
-  Conference on Computational Creativity, ICCC}, 2018{\natexlab{d}}.
+  Ventura(2018{\natexlab{a}})]{Bodily2018ExplainabilitySystems}
+Paul~M. Bodily and Dan Ventura.
+\newblock Explainability: An aesthetic for aesthetics in computational creative
+  systems.
+\newblock In \emph{Proceedings of the Ninth International Conference on
+  Computational Creativity}, pages 153--160, 2018{\natexlab{a}}.
 
-\bibitem[Bodily and Ventura(2018{\natexlab{e}})]{Bodily2018MusicalFuture}
-Paul~M Bodily and Dan Ventura.
-\newblock {Musical Metacreation : Past , Present , and Future}.
-\newblock In \emph{Proceedings of the Sixth Workshop on Musical Metacreation},
-  2018{\natexlab{e}}.
+\bibitem[Bodily and Ventura(2018{\natexlab{b}})]{Bodily2018MusicalFuture}
+Paul~M. Bodily and Dan Ventura.
+\newblock Musical metacreation: Past, present, and future.
+\newblock In \emph{Proceedings of the Sixth International Workshop on Musical
+  Metacreation}, 2018{\natexlab{b}}.
 
-\bibitem[Bodily and Ventura(2018{\natexlab{f}})]{bodily2018ComparativeAnalysis}
-Paul~M Bodily and Dan Ventura.
-\newblock {Comparative Analysis of Key Inference Models for Musical
-  Metacreation}.
-\newblock In \emph{To appear in the Proceedings of the Sixth Workshop on
-  Musical Metacreation}, 2018{\natexlab{f}}.
+\bibitem[Bodily and Ventura(2018{\natexlab{c}})]{bodily2018ComparativeAnalysis}
+Paul~M. Bodily and Dan Ventura.
+\newblock Comparative analysis of key inference models for musical
+  metacreation.
+\newblock In \emph{Proceedings of the Sixth International Workshop on Musical
+  Metacreation}, 2018{\natexlab{c}}.
 
-\bibitem[Chuan and Chew(2011)]{chuan2011generating}
-Ching-Hua Chuan and Elaine Chew.
-\newblock Generating and evaluating musical harmonizations that emulate style.
-\newblock \emph{Computer Music Journal}, 35\penalty0 (4):\penalty0 64--82,
-  2011.
+\bibitem[Bodily and Ventura(2018{\natexlab{d}})]{bodily2018abstract}
+Paul~M. Bodily and Dan Ventura.
+\newblock Sequential structure inference via multiple self-alignment.
+\newblock 2018{\natexlab{d}}.
+\newblock Paper to be submitted to Association for the Advancement of
+  Artificial Intelligence Conference on Artificial Intelligence.
+
+\bibitem[Bodily and Ventura(2018{\natexlab{e}})]{bodily2018floating}
+Paul~M. Bodily and Dan Ventura.
+\newblock Floating and dynamic constraints in non-homogeneous {M}arkov models.
+\newblock 2018{\natexlab{e}}.
+\newblock Paper to be submitted to Association for the Advancement of
+  Artificial Intelligence Conference on Artificial Intelligence.
+
+\bibitem[Bodily and Ventura(2018{\natexlab{f}})]{bodily2018relational}
+Paul~M. Bodily and Dan Ventura.
+\newblock Binary relational constraints in non-homogeneous {M}arkov models.
+\newblock 2018{\natexlab{f}}.
+\newblock Paper to be submitted to Association for the Advancement of
+  Artificial Intelligence Conference on Artificial Intelligence.
+
+\bibitem[Bodily et~al.(2017)Bodily, Bay, and
+  Ventura]{Bodily2017ComputationalLearning}
+Paul~M. Bodily, Benjamin Bay, and Dan Ventura.
+\newblock Computational creativity via human-level concept learning.
+\newblock In \emph{Proceedings of the Eighth International Conference on
+  Computational Creativity}, pages 57--64, 2017.
 
 \bibitem[Collins and Laney(2017)]{collins2017computer}
 Tom Collins and Robin Laney.
@@ -176,45 +113,36 @@ Tom Collins and Robin Laney.
 Tom Collins, Jeremy Thurlow, Robin Laney, Alistair Willis, and Paul Garthwaite.
 \newblock A comparative evaluation of algorithms for discovering translational
   patterns in baroque keyboard works.
-\newblock In \emph{Proceedings of the International Society for Music
-  Information Retrieval Conference}, 2010.
-\newblock URL \url{http://oro.open.ac.uk/21837/1/TomC_ISMIR_2010.pdf}.
+\newblock In \emph{Proceedings of the Eleventh International Society for Music
+  Information Retrieval Conference}, pages 3--8, 2010.
 
-\bibitem[Colton(2008{\natexlab{a}})]{Colton2008CreativitySystems}
-Simon Colton.
-\newblock {Creativity Versus the Perception of Creativity in Computational
-  Systems}.
-\newblock \emph{Proceedings of the AAAI Spring Symposium on Creative Systems},
-  2008{\natexlab{a}}.
-
-\bibitem[Colton(2008{\natexlab{b}})]{colton2008creativity}
+\bibitem[Colton(2008)]{colton2008creativity}
 Simon Colton.
 \newblock Creativity versus the perception of creativity in computational
   systems.
-\newblock In \emph{AAAI Spring Symposium: Creative Intelligent Systems},
-  volume~8, 2008{\natexlab{b}}.
+\newblock In \emph{Proceedings of the Association for the Advancement of
+  Artificial Intelligence Spring Symposium: Creative Intelligent Systems},
+  volume~8, 2008.
 
 \bibitem[Colton and Wiggins(2012)]{colton2012computational}
-Simon Colton and Geraint~A Wiggins.
+Simon Colton and Geraint~A. Wiggins.
 \newblock Computational creativity: The final frontier?
-\newblock In \emph{Proceedings of the 20th European conference on artificial
-  intelligence}, pages 21--26. IOS Press, 2012.
+\newblock In \emph{Proceedings of the Twentieth European Conference on
+  Artificial Intelligence}, pages 21--26. IOS Press, 2012.
 
 \bibitem[Colton et~al.(2010)Colton, Gow, Torres, and
   Cairns]{ColtonExperimentsBrowsing}
 Simon Colton, Jeremy Gow, Pedro Torres, and Paul Cairns.
-\newblock {Experiments in Objet Trouv{\'{e}} Browsing}.
-\newblock \emph{Proceedings of the International Conference on Computational
-  Creativity}, pages 238--247, 2010.
-\newblock URL
-  \url{https://s3.amazonaws.com/academia.edu.documents/4815452/10.1.1.159.654.pdf?AWSAccessKeyId=AKIAIWOWYYGZ2Y53UL3A&Expires=1528493601&Signature=YKVxPe212SX7sHrJvC%2FhXTlFtQk%3D&response-content-disposition=inline%3B%20filename%3DExperiments_in_objet_trouve_browsing.pdf}.
+\newblock Experiments in objet trouv{\'{e}} browsing.
+\newblock In \emph{Proceedings of the Second International Conference on
+  Computational Creativity}, pages 238--247, 2010.
 
 \bibitem[Colton et~al.(2011)Colton, Pease, and Charnley]{Colton2011}
 Simon Colton, Alison Pease, and John Charnley.
-\newblock {Computational creativity theory: The FACE and IDEA descriptive
-  models}.
-\newblock \emph{Second International Conference on Computational Creativity},
-  pages 90--95, 2011.
+\newblock Computational creativity theory: The {FACE} and {IDEA} descriptive
+  models.
+\newblock In \emph{Proceedings of the Second International Conference on
+  Computational Creativity}, pages 90--95, 2011.
 
 \bibitem[Colton et~al.(2015)Colton, Pease, Corneli, Cook, Hepworth, and
   Ventura]{colton2015stakeholder}
@@ -225,24 +153,10 @@ Simon Colton, Alison Pease, Joseph Corneli, Michael Cook, Rose Hepworth, and
   Machines}, pages 3--36. Springer, 2015.
 
 \bibitem[Conklin and Witten(1995)]{conklin1995multiple}
-Darrell Conklin and Ian~H Witten.
+Darrell Conklin and Ian~H. Witten.
 \newblock Multiple viewpoint systems for music prediction.
 \newblock \emph{Journal of New Music Research}, 24\penalty0 (1):\penalty0
   51--73, 1995.
-
-\bibitem[Cook and Colton(2015)]{cook2015generating}
-Michael Cook and Simon Colton.
-\newblock Generating code for expressing simple preferences: Moving on from
-  hardcoding and randomness.
-\newblock In \emph{Proceedings of the 6th International Conference on
-  Computational Creativity}, pages 8--16, 2015.
-
-\bibitem[Cope(1989)]{cope1989experiments}
-David Cope.
-\newblock Experiments in musical intelligence ({EMI}): Non-linear
-  linguistic-based composition.
-\newblock \emph{Journal of New Music Research}, 18\penalty0 (1-2):\penalty0
-  117--139, 1989.
 
 \bibitem[Csikszentmihalyi(1997)]{csikszentmihalyi1997flow}
 Mihaly Csikszentmihalyi.
@@ -257,93 +171,48 @@ Mark Davies.
   (2):\penalty0 159--190, 2009.
 
 \bibitem[Dayhoff et~al.(1978)Dayhoff, Schwartz, and Orcutt]{dayhoff197822}
-MO~Dayhoff, RM~Schwartz, and BC~Orcutt.
+Margaret~O. Dayhoff, Robert~M. Schwartz, and Bruce~C. Orcutt.
 \newblock A model of evolutionary change in proteins.
 \newblock In \emph{Atlas of Protein Sequence and Structure}, volume~5, pages
   345--352. National Biomedical Research Foundation Silver Spring, MD, 1978.
 
-\bibitem[Dixon et~al.(2010)Dixon, Mauch, and Anglade]{dixon2010probabilistic}
-Simon Dixon, Matthias Mauch, and Am{\'e}lie Anglade.
-\newblock Probabilistic and logic-based modelling of harmony.
-\newblock In \emph{Proceedings of the Seventh International Symposium on
-  Computer Music Modeling and Retrieval}, pages 1--19. Springer, 2010.
-
 \bibitem[Eigenfeldt et~al.(2017)Eigenfeldt, Bown, Brown, and
   Gifford]{eigenfeldt2017distributed}
-Arne Eigenfeldt, Oliver Bown, Andrew~R Brown, and Toby Gifford.
+Arne Eigenfeldt, Oliver Bown, Andrew~R. Brown, and Toby Gifford.
 \newblock Distributed musical decision-making in an ensemble of musebots:
   Dramatic changes and endings.
-\newblock In \emph{Proceedings of the 8th International Conference on
+\newblock In \emph{Proceedings of the Eighth International Conference on
   Computational Creativity. Association for Computational Creativity}, pages
   88--95, 2017.
 
 \bibitem[Englemann and Bruner(1974)]{englemann1974distar}
-S~Englemann and E~Bruner.
+Siegfried Englemann and Elaine~C. Bruner.
 \newblock \emph{DISTAR: Reading Level I}.
 \newblock Science Research Associates, Chicago, 1974.
 
-\bibitem[Fast et~al.()Fast, Chen, and Bernstein]{FastEmpath:Text}
-Ethan Fast, Binbin Chen, and Michael~S Bernstein.
-\newblock {Empath: Understanding Topic Signals in Large-Scale Text}.
-\newblock 16:\penalty0 978--1.
-\newblock \doi{10.1145/2858036.2858535}.
-\newblock URL \url{http://dx.doi.org/10.1145/2858036.2858535}.
-
-\bibitem[Fast et~al.(2016{\natexlab{a}})Fast, Chen, and Bernstein]{Fast2016}
-Ethan Fast, Binbin Chen, and Michael~S Bernstein.
-\newblock {Empath: Understanding Topic Signals in Large-Scale Text}.
-\newblock pages 4647--4657, 2016{\natexlab{a}}.
-
-\bibitem[Fast et~al.(2016{\natexlab{b}})Fast, Chen, and
-  Bernstein]{fast2016empath}
+\bibitem[Fast et~al.(2016)Fast, Chen, and Bernstein]{Fast2016}
 Ethan Fast, Binbin Chen, and Michael~S Bernstein.
 \newblock Empath: Understanding topic signals in large-scale text.
-\newblock In \emph{Proceedings of the 2016 CHI Conference on Human Factors in
-  Computing Systems}, pages 4647--4657. ACM, 2016{\natexlab{b}}.
+\newblock In \emph{Proceedings of the CHI Conference on Human Factors in
+  Computing Systems}, pages 4647--4657. ACM, 2016.
 
 \bibitem[Gao and Li(2015)]{gao2015octave}
 Sheng Gao and Haizhou Li.
 \newblock Octave-dependent probabilistic latent semantic analysis to chorus
   detection of popular song.
-\newblock In \emph{Proceedings of the 23rd ACM International Conference on
-  Multimedia}, pages 979--982. ACM, 2015.
-
-\bibitem[Gatys et~al.(2015)Gatys, Ecker, and Bethge]{Gatys2015AStyle}
-Leon~A Gatys, Alexander~S Ecker, and Matthias Bethge.
-\newblock {A Neural Algorithm of Artistic Style}.
-\newblock 2015.
-
-\bibitem[Gon{\c{c}}alo~Oliveira(2015)]{gonccalo2015tra}
-Hugo Gon{\c{c}}alo~Oliveira.
-\newblock Tra-la-lyrics 2.0: Automatic generation of song lyrics on a semantic
-  domain.
-\newblock \emph{Journal of Artificial General Intelligence}, 6\penalty0
-  (1):\penalty0 87--110, 2015.
+\newblock In \emph{Proceedings of the Twenty-Third ACM International Conference
+  on Multimedia}, pages 979--982. ACM, 2015.
 
 \bibitem[Guckelsberger et~al.(2017)Guckelsberger, Salge, and
   Colton]{guckelsberger2017addressing}
 Christian Guckelsberger, Christophe Salge, and Simon Colton.
-\newblock Addressing the “why?” in computational creativity: A
+\newblock Addressing the ``why?'' in computational creativity: A
   non-anthropocentric, minimal model of intentional creative agency.
-\newblock In \emph{Proceedings of the 8th International Conference on
+\newblock In \emph{Proceedings of the Eighth International Conference on
   Computational Creativity}, pages 128--135, 2017.
 
-\bibitem[Heath and Ventura(2016)]{heath2016creating}
-Derrall Heath and Dan Ventura.
-\newblock Creating images by learning image semantics using vector space
-  models.
-\newblock In \emph{Proceedings of the Association for the Advancement of
-  Artificial Intelligence}, pages 1202--1208, 2016.
-
-\bibitem[Hedges et~al.(2016)Hedges, Wiggins, et~al.]{hedges2016improving}
-TW~Hedges, Geraint~A Wiggins, et~al.
-\newblock Improving predictions of derived viewpoints in multiple viewpoint
-  systems.
-\newblock \emph{Proceedings of the Seventeenth International Society for Music
-  Information Retrieval Conference}, 2016.
-
 \bibitem[Henikoff and Henikoff(1992)]{henikoff1992amino}
-Steven Henikoff and Jorja~G Henikoff.
+Steven Henikoff and Jorja~G. Henikoff.
 \newblock Amino acid substitution matrices from protein blocks.
 \newblock \emph{Proceedings of the National Academy of Sciences}, 89\penalty0
   (22):\penalty0 10915--10919, 1992.
@@ -354,42 +223,10 @@ Hussein Hirjee and Daniel Brown.
   music.
 \newblock \emph{Empirical Musicology Review}, 5\penalty0 (4), 2010.
 
-\bibitem[Hofstadter(1980{\natexlab{a}})]{hofstadter1980godel}
-Douglas~H Hofstadter.
-\newblock \emph{G{\"o}del, Escher, Bach: An Eternal Golden Braid;[a Metaphoric
-  Fugue on Minds and Machines in the Spirit of Lewis Carroll].}
-\newblock Penguin Books, 1980{\natexlab{a}}.
-
-\bibitem[Hofstadter(1980{\natexlab{b}})]{Hofstadter1980GodelBach}
+\bibitem[Hofstadter(1980)]{Hofstadter1980GodelBach}
 Douglas~R. Hofstadter.
-\newblock \emph{{Godel, Escher, Bach}}.
-\newblock Vintage Books, New York, 1980{\natexlab{b}}.
-\newblock ISBN 8845905934.
-\newblock \doi{10.2307/1574423}.
-\newblock URL \url{http://www.jstor.org/stable/1574423?origin=crossref}.
-
-\bibitem[Hu and Saul(2003)]{Hu2003AKEY-PROFILES}
-Diane~J Hu and Lawrence~K Saul.
-\newblock {A PROBABILISTIC TOPIC MODEL FOR UNSUPERVISED LEARNING OF MUSICAL
-  KEY-PROFILES}.
-\newblock \emph{Journal of Machine Learning Research Computer Science},
-  34\penalty0 (2445), 2003.
-\newblock URL \url{http://www.jyu.fi/musica/miditoolbox/,
-  http://www.link.cs.cmu.edu/music-analysis/,}.
-
-\bibitem[Hu et~al.()Hu, Choi, and Downie]{HuAClassification}
-Xiao Hu, Kahyun Choi, and J~Stephen Downie.
-\newblock {A Framework for Evaluating Multimodal Music Mood Classification}.
-\newblock \doi{10.1002/asi.23649}.
-\newblock URL
-  \url{http://content.ebscohost.com/ContentServer.asp?T=P&P=AN&K=120845959&S=R&D=lih&EbscoContent=dGJyMMTo50Sep7Q4y9fwOLCmr1Cep7RSr6m4S7GWxWXS&ContentCustomer=dGJyMPGuskyurK5IuePfgeyx44Dt6fIA}.
-
-\bibitem[Hyer(2001)]{hyer2001}
-Brian Hyer.
-\newblock Tonality.
-\newblock In Stanley Sadie and John Tyrrell, editors, \emph{The New Grove
-  Dictionary of Music and Musicians}. Macmillan Publishers, London, 2 edition,
-  2001.
+\newblock \emph{Godel, {E}scher, {B}ach: An Eternal Golden Braid}.
+\newblock Vintage Books, New York, 1980.
 
 \bibitem[Jalongo and Ribblett(1997)]{jalongo1997using}
 Mary~Renck Jalongo and Deborah~McDonald Ribblett.
@@ -397,57 +234,29 @@ Mary~Renck Jalongo and Deborah~McDonald Ribblett.
 \newblock \emph{Childhood Education}, 74\penalty0 (1):\penalty0 15--22, 1997.
 
 \bibitem[Jaques et~al.(2016)Jaques, Gu, Turner, and Eck]{Jaques2016}
-Natasha Jaques, Shixiang Gu, Richard~E Turner, and Douglas Eck.
-\newblock \emph{{Tuning Recurrent Neural Networks with Reinforcement
-  Learning}}.
-\newblock PhD thesis, 2016.
+Natasha Jaques, Shixiang Gu, Richard~E. Turner, and Douglas Eck.
+\newblock \emph{Tuning Recurrent Neural Networks with Reinforcement Learning}.
+\newblock PhD thesis, Massachusetts Institute of Technology, 2016.
 
 \bibitem[Jennings(2010)]{Jennings2010DevelopingIntelligence}
 Kyle~E. Jennings.
-\newblock {Developing creativity: Artificial barriers in artificial
-  intelligence}.
+\newblock Developing creativity: Artificial barriers in artificial
+  intelligence.
 \newblock \emph{Minds and Machines}, 20\penalty0 (4):\penalty0 489--501, 2010.
-\newblock ISSN 09246495.
-\newblock \doi{10.1007/s11023-010-9206-y}.
 
 \bibitem[Jordanous(2012)]{Jordanous2012ACreative}
 Anna Jordanous.
-\newblock {A Standardised Procedure for Evaluating Creative Systems:
-  Computational Creativity Evaluation Based on What it is to be Creative}.
+\newblock A standardised procedure for evaluating creative systems:
+  Computational creativity evaluation based on what it is to be creative.
 \newblock \emph{Cognitive Computation}, 4\penalty0 (3):\penalty0 246--279,
   2012.
-\newblock ISSN 18669956.
-\newblock \doi{10.1007/s12559-012-9156-1}.
 
 \bibitem[Jordanous(2014)]{Jordanous2014}
 Anna Jordanous.
-\newblock {Stepping Back to Progress Forwards: Setting Standards for
-  Meta-Evaluation of Computational Creativity}.
-\newblock In \emph{Proceedings of the 5th International Conference on
+\newblock Stepping back to progress forwards: Setting standards for
+  meta-evaluation of computational creativity.
+\newblock In \emph{Proceedings of the Fifth International Conference on
   Computational Creativity}, pages 129--136, 2014.
-
-\bibitem[Kaliakatsos-Papakostas et~al.({\natexlab{a}})Kaliakatsos-Papakostas,
-  Confalonieri, Corneli, Zacharakis, and
-  Cambouropoulos]{Kaliakatsos-PapakostasAnBlending}
-Maximos Kaliakatsos-Papakostas, Roberto Confalonieri, Joseph Corneli, Asterios
-  Zacharakis, and Emilios Cambouropoulos.
-\newblock {An Argument-based Creative Assistant for Harmonic Blending}.
-\newblock {\natexlab{a}}.
-
-\bibitem[Kaliakatsos-Papakostas et~al.({\natexlab{b}})Kaliakatsos-Papakostas,
-  Confalonieri, Corneli, Zacharakis, and
-  Cambouropoulos]{Kaliakatsos-PapakostasAnBlendingb}
-Maximos Kaliakatsos-Papakostas, Roberto Confalonieri, Joseph Corneli, Asterios
-  Zacharakis, and Emilios Cambouropoulos.
-\newblock {An Argument-based Creative Assistant for Harmonic Blending}.
-\newblock {\natexlab{b}}.
-
-\bibitem[Kantrowitz(1990)]{OZ}
-Mark Kantrowitz.
-\newblock Natural language text generation in the {OZ} interactive fiction
-  project.
-\newblock Technical Report CMU-CS-90-158, School of Computer Science, Carnegie
-  Mellon University, Pittsburgh, PA, 1990.
 
 \bibitem[Kasof(1995)]{kasof1995explaining}
 Joseph Kasof.
@@ -455,45 +264,20 @@ Joseph Kasof.
 \newblock \emph{Creativity Research Journal}, 8\penalty0 (4):\penalty0
   311--366, 1995.
 
-\bibitem[Kazak{\c{c}}{\i} et~al.(2016)Kazak{\c{c}}{\i}, Mehdi, and
-  K{\'e}gl]{kazakcci2016digits}
-Ak{\i}n Kazak{\c{c}}{\i}, Cherti Mehdi, and Bal{\'a}zs K{\'e}gl.
-\newblock Digits that are not: Generating new types through deep neural nets.
-\newblock In \emph{International Conference on Computational Creativity}, pages
-  188--195, 2016.
-
 \bibitem[Kolb(1996)]{kolb1996read}
-Gayla~R Kolb.
+Gayla~R. Kolb.
 \newblock Read with a beat: Developing literacy through music and song.
 \newblock \emph{The Reading Teacher}, 50\penalty0 (1):\penalty0 76, 1996.
 
 \bibitem[Koren(2010)]{Koren2010WhichDefinitions}
 Leonard Koren.
-\newblock \emph{{Which "aesthetics" do you mean? : ten definitions}}.
+\newblock \emph{Which ``Aesthetics'' Do You Mean? : Ten Definitions}.
 \newblock Imperfect Publishing, Point Reyes, California, 2010.
 
-\bibitem[Lake(2014)]{lake2014thesis}
-Brendan~M. Lake.
-\newblock \emph{Towards more human-like concept learning in machines:
-  Compositionality, causality, and learning-to-learn}.
-\newblock PhD thesis, Massachusetts Institute of Technology, 2014.
-
-\bibitem[Lake et~al.(2015{\natexlab{a}})Lake, Salakhutdinov, and
-  Tenenbaum]{Lake2015}
+\bibitem[Lake et~al.(2015)Lake, Salakhutdinov, and Tenenbaum]{Lake2015}
 Brenden~M. Lake, Ruslan Salakhutdinov, and Joshua~B. Tenenbaum.
-\newblock {Human-level concept learning through probabilistic program
-  induction}.
-\newblock \emph{Science}, 350\penalty0 (6266):\penalty0 1332--1338,
-  2015{\natexlab{a}}.
-\newblock ISSN 10959203.
-\newblock \doi{10.1126/science.aab3050}.
-
-\bibitem[Lake et~al.(2015{\natexlab{b}})Lake, Salakhutdinov, and
-  Tenenbaum]{lake2015human}
-Brenden~M Lake, Ruslan Salakhutdinov, and Joshua~B Tenenbaum.
 \newblock Human-level concept learning through probabilistic program induction.
-\newblock \emph{Science}, 350\penalty0 (6266):\penalty0 1332--1338,
-  2015{\natexlab{b}}.
+\newblock \emph{Science}, 350\penalty0 (6266):\penalty0 1332--1338, 2015.
 
 \bibitem[Lattner et~al.(2015{\natexlab{a}})Lattner, Chac{\'o}n, and
   Grachten]{lattner2015pseudo}
@@ -507,7 +291,7 @@ Stefan Lattner, Carlos Eduardo~Cancino Chac{\'o}n, and Maarten Grachten.
 Stefan Lattner, Maarten Grachten, Kat Agres, and Carlos Eduardo~Cancino
   Chac{\'o}n.
 \newblock Probabilistic segmentation of musical sequences using restricted
-  boltzmann machines.
+  {B}oltzmann machines.
 \newblock In \emph{Mathematics and Computation in Music}, pages 323--334.
   Springer, 2015{\natexlab{b}}.
 
@@ -519,41 +303,27 @@ Yann LeCun, Yoshua Bengio, and Geoffrey Hinton.
 \bibitem[Likert(1932)]{likert1932technique}
 Rensis Likert.
 \newblock A technique for the measurement of attitudes.
-\newblock \emph{Archives of psychology}, 1932.
+\newblock \emph{Archives of Psychology}, 140:\penalty0 54--55, 1932.
 
 \bibitem[Linkola et~al.(2017)Linkola, Kantosalo, M{\"a}nnist{\"o}, and
   Toivonen]{linkola2017aspects}
 Simo Linkola, Anna Kantosalo, Tomi M{\"a}nnist{\"o}, and Hannu Toivonen.
 \newblock Aspects of self-awareness: An anatomy of metacreative systems.
-\newblock In \emph{Eighth International Conference on Computational Creativity,
-  ICCC, Atlanta}, pages 189--196, 2017.
-
-\bibitem[Loughran et~al.(2017)Loughran, Neill, and
-  Loughran]{Loughran2017MyProject}
-Roisin Loughran, Michael O~' Neill, and Róisín Loughran.
-\newblock {'My Little ChucKy': Towards Live-coding with Grammatical Evolution
-  The Composing Pony: Music Generation with Grammatical Evolution View project
-  PonyGE 2 View project}.
-\newblock 2017.
-\newblock URL \url{https://www.researchgate.net/publication/317598212}.
-
-\bibitem[Lyu et~al.(2004)Lyu, Rockmore, and Farid]{lyu04}
-Siwei Lyu, Daniel Rockmore, and Hany Farid.
-\newblock A digital technique for art authentication.
-\newblock \emph{Proceedings of the National Academy of Sciences}, 101\penalty0
-  (49):\penalty0 17006--17010, 2004.
+\newblock In \emph{Proceedings of the Eighth International Conference on
+  Computational Creativity}, pages 189--196, 2017.
 
 \bibitem[Manning et~al.(2014)Manning, Surdeanu, Bauer, Finkel, Bethard, and
   McClosky]{Manning2014}
 Christopher Manning, Mihai Surdeanu, John Bauer, Jenny Finkel, Steven Bethard,
   and David McClosky.
-\newblock {The Stanford CoreNLP Natural Language Processing Toolkit}.
-\newblock In \emph{Proceedings of 52nd Annual Meeting of the Association for
-  Computational Linguistics: System Demonstrations}, pages 55--60, 2014.
+\newblock The {S}tanford {C}ore{NLP} natural language processing toolkit.
+\newblock In \emph{Proceedings of Fifty-Second Annual Meeting of the
+  Association for Computational Linguistics: System Demonstrations}, pages
+  55--60, 2014.
 
 \bibitem[Meredith et~al.(2002)Meredith, Lemstr{\"o}m, and
   Wiggins]{meredith2002algorithms}
-David Meredith, Kjell Lemstr{\"o}m, and Geraint~A Wiggins.
+David Meredith, Kjell Lemstr{\"o}m, and Geraint~A. Wiggins.
 \newblock Algorithms for discovering repeated patterns in multidimensional
   representations of polyphonic music.
 \newblock \emph{Journal of New Music Research}, 31\penalty0 (4):\penalty0
@@ -566,56 +336,24 @@ Leonard~B Meyer.
 
 \bibitem[Mikolov et~al.(2013)Mikolov, Sutskever, Chen, Corrado, and
   Dean]{mikolov2013distributed}
-Tomas Mikolov, Ilya Sutskever, Kai Chen, Greg~S Corrado, and Jeff Dean.
+Tomas Mikolov, Ilya Sutskever, Kai Chen, Greg~S. Corrado, and Jeff Dean.
 \newblock Distributed representations of words and phrases and their
   compositionality.
 \newblock In \emph{Proceedings of the Advances in Neural Information Processing
   Systems}, pages 3111--3119, 2013.
 
-\bibitem[Monteith et~al.(2010)Monteith, Martinez, and
-  Ventura]{monteith2010automatic}
-Kristine Monteith, Tony~R Martinez, and Dan Ventura.
-\newblock Automatic generation of music for inducing emotive response.
-\newblock In \emph{Proceedings of the 1st International Conference on
-  Computational Creativity}, pages 140--149, 2010.
-
-\bibitem[Monteith et~al.(2012)Monteith, Martinez, and
-  Ventura]{monteith2012automatic}
-Kristine Monteith, Tony Martinez, and Dan Ventura.
-\newblock Automatic generation of melodic accompaniments for lyrics.
-\newblock In \emph{Proceedings of the International Conference on Computational
-  Creativity}, pages 87--94, 2012.
-
-\bibitem[Morris et~al.(2012{\natexlab{a}})Morris, Burton, Bodily, and
-  Ventura]{Morris2012SoupChef}
-Richard~G Morris, Scott~H Burton, Paul~M Bodily, and Dan Ventura.
-\newblock {Soup Over Bean of Pure Joy : Culinary Ruminations of an Artificial
-  Chef}.
-\newblock \emph{International Conference on Computational Creativity}, pages
-  119--125, 2012{\natexlab{a}}.
-\newblock URL
-  \url{http://computationalcreativity.net/iccc2012/wp-content/uploads/2012/05/119-Morris.pdf}.
-
-\bibitem[Morris et~al.(2012{\natexlab{b}})Morris, Burton, Bodily, and
-  Ventura]{Morris2012SoupChefb}
-Richard~G Morris, Scott~H Burton, Paul~M Bodily, and Dan Ventura.
-\newblock {Soup Over Bean of Pure Joy : Culinary Ruminations of an Artificial
-  Chef}.
-\newblock \emph{International Conference on Computational Creativity},
-  2012{\natexlab{b}}.
-
-\bibitem[Morris et~al.(2012{\natexlab{c}})Morris, Burton, Bodily, and
+\bibitem[Morris et~al.(2012)Morris, Burton, Bodily, and
   Ventura]{morris2012soup}
-Richard~G Morris, Scott~H Burton, Paul~M Bodily, and Dan Ventura.
+Richard~G. Morris, Scott~H. Burton, Paul~M. Bodily, and Dan Ventura.
 \newblock Soup over bean of pure joy: Culinary ruminations of an artificial
   chef.
 \newblock In \emph{Proceedings of the Third International Conference on
-  Computational Creativity}, pages 119--125, 2012{\natexlab{c}}.
+  Computational Creativity}, pages 119--125, 2012.
 
 \bibitem[Mothersill(2004)]{Mothersill2004}
 Mary Mothersill.
-\newblock {The Blackwell Guide to Aesthetics}.
-\newblock In {Peter Kivy}, editor, \emph{Beauty and the Critic's Judgment:
+\newblock The {B}lackwell guide to aesthetics.
+\newblock In Peter Kivy, editor, \emph{Beauty and the Critic's Judgment:
   Remapping Aesthetics}, pages 152--166. Blackwell Publishing Ltd, 2004.
 
 \bibitem[Mumford and Ventura(2015)]{mumford2015man}
@@ -623,10 +361,10 @@ Martin Mumford and Dan Ventura.
 \newblock The man behind the curtain: Overcoming skepticism about creative
   computing.
 \newblock In \emph{Proceedings of the Sixth International Conference on
-  Computational Creativity June}, volume~1, pages 1--6, 2015.
+  Computational Creativity}, pages 1--6, 2015.
 
 \bibitem[Needleman and Wunsch(1970)]{needleman1970general}
-Saul~B Needleman and Christian~D Wunsch.
+Saul~B. Needleman and Christian~D. Wunsch.
 \newblock A general method applicable to the search for similarities in the
   amino acid sequence of two proteins.
 \newblock \emph{Journal of Molecular Biology}, 48\penalty0 (3):\penalty0
@@ -640,42 +378,28 @@ David Norton, Derrall Heath, and Dan Ventura.
 
 \bibitem[Nunes et~al.(2014)Nunes, Ordanini, and Valsesia]{Nunes2014}
 Joseph~C. Nunes, Andrea Ordanini, and Francesca Valsesia.
-\newblock {The power of repetition: Repetitive lyrics in a song increase
-  processing fluency and drive market success}.
+\newblock The power of repetition: Repetitive lyrics in a song increase
+  processing fluency and drive market success.
 \newblock \emph{Journal of Consumer Psychology}, 25\penalty0 (2):\penalty0
   187--199, 2014.
-\newblock ISSN 10577408.
-\newblock \doi{10.1016/j.jcps.2014.12.004}.
-
-\bibitem[Pachet(1991)]{pachet1991representing}
-Fran{\c{c}}ois Pachet.
-\newblock Representing knowledge used by jazz musicians.
-\newblock In \emph{Proceedings of the International Computer Music Conference},
-  pages 285--285. International Computer Music Association, 1991.
 
 \bibitem[Pachet and Roy(2014)]{pachet2014imitative}
 Fran{\c{c}}ois Pachet and Pierre Roy.
 \newblock Imitative leadsheet generation with user constraints.
-\newblock In \emph{Proceedings of the Twenty-first European Conference on
+\newblock In \emph{Proceedings of the Twenty-First European Conference on
   Artificial Intelligence}, pages 1077--1078. IOS Press, 2014.
 
-\bibitem[Pachet et~al.(2011)Pachet, Roy, Barbieri, and Paris]{pachet2011finite}
-Fran{\c{c}}ois Pachet, Pierre Roy, Gabriele Barbieri, and Sony~CSL Paris.
+\bibitem[Pachet et~al.(2011)Pachet, Roy, and Barbieri]{pachet2011finite}
+Fran{\c{c}}ois Pachet, Pierre Roy, and Gabriele Barbieri.
 \newblock Finite-length {M}arkov processes with constraints.
 \newblock In \emph{Proceedings of the Twenty-Second International Joint
   Conference on Artificial Intelligence}, pages 635--642, 2011.
 
-\bibitem[Pachet et~al.(2017)Pachet, Paris, Papadopoulos, and
-  Roy]{pachet2017sampling}
-Fran{\c{c}}ois Pachet, Sony~CSL Paris, Alexandre Papadopoulos, and Pierre Roy.
+\bibitem[Pachet et~al.(2017)Pachet, Papadopoulos, and Roy]{pachet2017sampling}
+Fran{\c{c}}ois Pachet, Alexandre Papadopoulos, and Pierre Roy.
 \newblock Sampling variations of sequences for structured music generation.
 \newblock In \emph{Proceedings of the International Society for Music
   Information Retrieval Conference}, pages 167--173, 2017.
-
-\bibitem[Paiement et~al.(2005)Paiement, Eck, and Bengio]{paiement2005chord}
-Jean-Fran{\c{c}}ois Paiement, Douglas Eck, and Samy Bengio.
-\newblock Chord representations for probabilistic models.
-\newblock Technical report, IDIAP, 2005.
 
 \bibitem[Papadopoulos et~al.(2014)Papadopoulos, Roy, and
   Pachet]{papadopoulos2014avoiding}
@@ -689,36 +413,22 @@ Alexandre Papadopoulos, Pierre Roy, and Fran{\c{c}}ois Pachet.
   Sakellariou]{papadopoulos2015exact}
 Alexandre Papadopoulos, Fran{\c{c}}ois Pachet, Pierre Roy, and Jason
   Sakellariou.
-\newblock Exact sampling for regular and markov constraints with belief
+\newblock Exact sampling for regular and {M}arkov constraints with belief
   propagation.
 \newblock In \emph{Proceedings of the International Conference on Principles
   and Practice of Constraint Programming}, pages 341--350. Springer, 2015.
 
-\bibitem[Papadopoulos et~al.(2016)Papadopoulos, Roy, and
-  Pachet]{papadopoulos2016assisted}
-Alexandre Papadopoulos, Pierre Roy, and Fran{\c{c}}ois Pachet.
-\newblock Assisted lead sheet composition using flowcomposer.
-\newblock In \emph{Proceedings of the International Conference on Principles
-  and Practice of Constraint Programming}, pages 769--785. Springer, 2016.
-
-\bibitem[Papadopoulos and Wiggins(1999{\natexlab{a}})]{Papadopoulos1999}
-George Papadopoulos and Geraint Wiggins.
-\newblock {AI Methods for Algorithmic Composition : A Survey, a Critical View
-  and Future Prospects}.
-\newblock \emph{AISB Symposium on Musical Creativity}, pages 110--117,
-  1999{\natexlab{a}}.
-
-\bibitem[Papadopoulos and Wiggins(1999{\natexlab{b}})]{papadopoulos1999ai}
-George Papadopoulos and Geraint Wiggins.
-\newblock {AI} methods for algorithmic composition: A survey, a critical view
+\bibitem[Papadopoulos and Wiggins(1999)]{Papadopoulos1999}
+George Papadopoulos and Geraint~A. Wiggins.
+\newblock {AI} methods for algorithmic composition : A survey, a critical view
   and future prospects.
-\newblock In \emph{Proceedings of the AISB Symposium on Musical Creativity},
-  pages 110--117. Edinburgh, UK, 1999{\natexlab{b}}.
+\newblock \emph{Artificial Intelligence and Simulation of Behaviour Symposium
+  on Musical Creativity}, pages 110--117, 1999.
 
 \bibitem[Paris et~al.(2013)Paris, Swartout, and Mann]{paris2013natural}
-Cecile Paris, William~R Swartout, and William~C Mann.
-\newblock \emph{Natural language generation in artificial intelligence and
-  computational linguistics}, volume 119.
+Cecile Paris, William~R. Swartout, and William~C. Mann.
+\newblock \emph{Natural Language Generation in Artificial Intelligence and
+  Computational Linguistics}, volume 119.
 \newblock Springer Science \& Business Media, 2013.
 
 \bibitem[Pasiali(2004)]{pasiali2004use}
@@ -729,25 +439,16 @@ Varvara Pasiali.
 \newblock \emph{Music Therapy Perspectives}, 22\penalty0 (1):\penalty0 11--20,
   2004.
 
-\bibitem[Pearce et~al.()Pearce, Conklin, and Wiggins]{PearceMethodsMusic}
-Marcus Pearce, Darrell Conklin, and Geraint Wiggins.
-\newblock {Methods for Combining Statistical Models of Music}.
-
 \bibitem[Perez and R{\'e}gin(2017)]{perez2017mdds}
 Guillaume Perez and Jean-Charles R{\'e}gin.
-\newblock Mdds: Sampling and probability constraints.
-\newblock In \emph{International Conference on Principles and Practice of
-  Constraint Programming}, pages 226--242. Springer, 2017.
-
-\bibitem[P{\'e}rez~y P{\'e}rez(2015)]{perez2015computer}
-Rafael P{\'e}rez~y P{\'e}rez.
-\newblock A computer-based model for collaborative narrative generation.
-\newblock \emph{Cognitive Systems Research}, 36:\penalty0 30--48, 2015.
+\newblock {MDD}s: Sampling and probability constraints.
+\newblock In \emph{Proceedings of the International Conference on Principles
+  and Practice of Constraint Programming}, pages 226--242. Springer, 2017.
 
 \bibitem[P{\'e}rez~y P{\'e}rez and Sharples(2004)]{perez2004three}
 Rafael P{\'e}rez~y P{\'e}rez and Mike Sharples.
-\newblock Three computer-based models of storytelling: Brutus, minstrel and
-  mexica.
+\newblock Three computer-based models of storytelling: {BRUTUS}, {MINSTREL} and
+  {MEXICA}.
 \newblock \emph{Knowledge-based systems}, 17\penalty0 (1):\penalty0 15--29,
   2004.
 
@@ -755,61 +456,27 @@ Rafael P{\'e}rez~y P{\'e}rez and Mike Sharples.
 Gilles Pesant.
 \newblock A regular language membership constraint for finite sequences of
   variables.
-\newblock \emph{Proceedings of the International Conference on Principles and
-  Practice of Constraint Programming}, 3258:\penalty0 482--495, 2004.
+\newblock In \emph{Proceedings of the International Conference on Principles
+  and Practice of Constraint Programming}, pages 482--495. Springer, 2004.
 
-\bibitem[Ramakrishnan~A et~al.(2009)Ramakrishnan~A, Kuppan, and
-  Devi]{ramakrishnan2009automatic}
-Ananth Ramakrishnan~A, Sankar Kuppan, and Sobha~Lalitha Devi.
-\newblock Automatic generation of {T}amil lyrics for melodies.
-\newblock In \emph{Proceedings of the Workshop on Computational Approaches to
-  Linguistic Creativity}, pages 40--46. Association for Computational
-  Linguistics, 2009.
-
-\bibitem[Raphael and Stoddard(2004)]{Raphael2004FunctionalModels}
-Christopher Raphael and Joshua Stoddard.
-\newblock {Functional Harmonic Analysis Using Probabilistic Models}.
-\newblock \emph{Source: Computer Music Journal}, 28187116\penalty0 (3), 2004.
-
-\bibitem[Raschka(2014)]{Raschka2014MusicMood:Learning}
-Sebastian Raschka.
-\newblock {MusicMood: Predicting the mood of music from song lyrics using
-  machine learning}.
-\newblock 2014.
-
-\bibitem[Revuz(1992)]{Revuz1992MinimisationTime}
-Dominique Revuz.
-\newblock {Minimisation of acyclic deterministic automata in linear time}.
-\newblock \emph{Theoretical Computer Science}, 92\penalty0 (92):\penalty0
-  181--189, 1992.
-\newblock URL
-  \url{https://ac.els-cdn.com/0304397592901423/1-s2.0-0304397592901423-main.pdf?_tid=c87407e8-a79d-4fc1-a30f-83be8a1749f7&acdnat=1524072979_a90895c748856e6f0c0f77836f01d447}.
-
-\bibitem[Ritchie(2007{\natexlab{a}})]{Ritchie2007}
-Graeme Ritchie.
-\newblock {Some empirical criteria for attributing creativity to a computer
-  program}.
-\newblock \emph{Minds and Machines}, 17\penalty0 (1):\penalty0 67--99,
-  2007{\natexlab{a}}.
-
-\bibitem[Ritchie(2007{\natexlab{b}})]{ritchie07}
+\bibitem[Ritchie(2007)]{Ritchie2007}
 Graeme Ritchie.
 \newblock Some empirical criteria for attributing creativity to a computer
   program.
-\newblock \emph{Minds and Machines}, 17:\penalty0 76--99, 2007{\natexlab{b}}.
+\newblock \emph{Minds and Machines}, 17\penalty0 (1):\penalty0 67--99, 2007.
 
 \bibitem[Robb et~al.(2008)Robb, Clair, Watanabe, Monahan, Azzouz, Stouffer,
-  Ebberts, Darsie, Whitmer, Walker, et~al.]{robb2008randomized}
-Sheri~L Robb, Alicia~A Clair, Masayo Watanabe, Patrick~O Monahan, Faouzi
+  Ebberts, Darsie, Whitmer, and Walker]{robb2008randomized}
+Sheri~L. Robb, Alicia~A. Clair, Masayo Watanabe, Patrick~O. Monahan, Faouzi
   Azzouz, Janice~W Stouffer, Allison Ebberts, Emily Darsie, Courtney Whitmer,
-  Joey Walker, et~al.
+  and Joey Walker.
 \newblock Randomized controlled trial of the active music engagement ({AME})
   intervention on children with cancer.
 \newblock \emph{Psycho-Oncology}, 17\penalty0 (7):\penalty0 699--708, 2008.
 
 \bibitem[Roy and Pachet(2013)]{roy2013enforcing}
 Pierre Roy and Fran{\c{c}}ois Pachet.
-\newblock Enforcing meter in finite-length markov sequences.
+\newblock Enforcing meter in finite-length {M}arkov sequences.
 \newblock In \emph{Proceedings of the Association for the Advancement of
   Artificial Intelligence Conference on Artificial Intelligence}, pages
   854--861, 2013.
@@ -818,22 +485,9 @@ Pierre Roy and Fran{\c{c}}ois Pachet.
   Marchini]{roy2016enforcing}
 Pierre Roy, Guillaume Perez, Jean-Charles R{\'e}gin, Alexandre Papadopoulos,
   Fran{\c{c}}ois Pachet, and Marco Marchini.
-\newblock Enforcing structure on temporal sequences: the allen constraint.
-\newblock In \emph{International conference on principles and practice of
-  constraint programming}, pages 786--801. Springer, 2016.
-
-\bibitem[Ruch(2007)]{Ruch07}
-Willibald Ruch, editor.
-\newblock \emph{The Sense of Humor: Explorations of a Personality
-  Characteristic}.
-\newblock Mouton Select. Mouton de Gruyter, Berlin, 2007.
-
-\bibitem[Scirea et~al.(2015)Scirea, Barros, Shaker, and
-  Togelius]{scirea2015smug}
-Marco Scirea, Gabriella~AB Barros, Noor Shaker, and Julian Togelius.
-\newblock {SMUG}: Scientific music generator.
-\newblock In \emph{Proceedings of the Sixth International Conference on
-  Computational Creativity June}, pages 204--211, 2015.
+\newblock Enforcing structure on temporal sequences: the {A}llen constraint.
+\newblock In \emph{Proceedings of the International Conference on Principles
+  and Practice of Constraint Programming}, pages 786--801. Springer, 2016.
 
 \bibitem[Shannon(2001)]{shannon2001mathematical}
 Claude~Elwood Shannon.
@@ -841,45 +495,14 @@ Claude~Elwood Shannon.
 \newblock \emph{ACM SIGMOBILE Mobile Computing and Communications Review},
   5\penalty0 (1):\penalty0 3--55, 2001.
 
-\bibitem[Sharma et~al.(2016)Sharma, Agarwal, Dhir, and
-  Sikka]{Sharma2016SentimentsSentiWordNet}
-Vivek Sharma, Apoorv Agarwal, Renu Dhir, and Geeta Sikka.
-\newblock {Sentiments mining and classification of music lyrics using
-  SentiWordNet}.
-\newblock In \emph{2016 Symposium on Colossal Data Analysis and Networking
-  (CDAN)}, pages 1--6. IEEE, 3 2016.
-\newblock ISBN 978-1-5090-0669-4.
-\newblock \doi{10.1109/CDAN.2016.7570965}.
-\newblock URL \url{http://ieeexplore.ieee.org/document/7570965/}.
-
-\bibitem[Shenoy et~al.()Shenoy, Mohapatra, and {Ye Wang}]{ShenoyKeySignals}
-A.~Shenoy, R.~Mohapatra, and {Ye Wang}.
-\newblock {Key determination of acoustic musical signals}.
-\newblock In \emph{2004 IEEE International Conference on Multimedia and Expo
-  (ICME) (IEEE Cat. No.04TH8763)}, pages 1771--1774. IEEE.
-\newblock ISBN 0-7803-8603-5.
-\newblock \doi{10.1109/ICME.2004.1394598}.
-\newblock URL
-  \url{http://ieeexplore.ieee.org/lpdocs/epic03/wrapper.htm?arnumber=1394598}.
-
-\bibitem[Shukla et~al.(2017)Shukla, Khanna, and Agrawal]{Shukla2017ReviewMusic}
-Stuti Shukla, Pooja Khanna, and Krishna~Kant Agrawal.
-\newblock {Review on sentiment analysis on music}.
-\newblock In \emph{2017 International Conference on Infocom Technologies and
-  Unmanned Systems (Trends and Future Directions) (ICTUS)}, pages 777--780.
-  IEEE, 12 2017.
-\newblock ISBN 978-1-5386-0514-1.
-\newblock \doi{10.1109/ICTUS.2017.8286111}.
-\newblock URL \url{http://ieeexplore.ieee.org/document/8286111/}.
-
 \bibitem[Silver et~al.(2016)Silver, Huang, Maddison, Guez, Sifre, Van
-  Den~Driessche, Schrittwieser, Antonoglou, Panneershelvam, Lanctot,
-  et~al.]{silver2016mastering}
-David Silver, Aja Huang, Chris~J Maddison, Arthur Guez, Laurent Sifre, George
+  Den~Driessche, Schrittwieser, Antonoglou, Panneershelvam, and
+  Lanctot]{silver2016mastering}
+David Silver, Aja Huang, Chris~J. Maddison, Arthur Guez, Laurent Sifre, George
   Van Den~Driessche, Julian Schrittwieser, Ioannis Antonoglou, Veda
-  Panneershelvam, Marc Lanctot, et~al.
+  Panneershelvam, and Marc Lanctot.
 \newblock Mastering the game of go with deep neural networks and tree search.
-\newblock \emph{nature}, 529\penalty0 (7587):\penalty0 484--489, 2016.
+\newblock \emph{Nature}, 529\penalty0 (7587):\penalty0 484--489, 2016.
 
 \bibitem[Smith and Waterman(1981)]{smith1981identification}
 Temple~F Smith and Michael~S Waterman.
@@ -888,57 +511,27 @@ Temple~F Smith and Michael~S Waterman.
   195--197, 1981.
 
 \bibitem[Steedman(1984)]{steedman1984generative}
-Mark~J Steedman.
+Mark~J. Steedman.
 \newblock A generative grammar for jazz chord sequences.
 \newblock \emph{Music Perception: An Interdisciplinary Journal}, 2\penalty0
   (1):\penalty0 52--77, 1984.
 
-\bibitem[Toivanen et~al.(2013)Toivanen, Toivonen, Valitutti,
-  et~al.]{toivanen2013automatical}
-Jukka~M Toivanen, Hannu Toivonen, Alessandro Valitutti, et~al.
-\newblock Automatical composition of lyrical songs.
-\newblock In \emph{Proceedings of the Fourth International Conference on
-  Computational Creativity}, pages 87--91, 2013.
-
 \bibitem[Towell(1999)]{towell1999motivating}
-Janet~H Towell.
+Janet~H. Towell.
 \newblock Motivating students through music and literature.
 \newblock \emph{The Reading Teacher}, 53\penalty0 (4):\penalty0 284--287, 1999.
 
-\bibitem[Trimmer and Cuddy()]{TrimmerEmotionalProsody}
-Christopher~G Trimmer and Lola~L Cuddy.
-\newblock {Emotional Intelligence, Not Music Training, Predicts Recognition of
-  Emotional Speech Prosody}.
-
-\bibitem[van~den Oord et~al.(2016)van~den Oord, Dieleman, Zen, Simonyan,
-  Vinyals, Graves, Kalchbrenner, Senior, and Kavukcuoglu]{van2016wavenet}
-A{\"a}ron van~den Oord, Sander Dieleman, Heiga Zen, Karen Simonyan, Oriol
-  Vinyals, Alex Graves, Nal Kalchbrenner, Andrew Senior, and Koray Kavukcuoglu.
-\newblock Wavenet: A generative model for raw audio.
-\newblock 2016.
-\newblock ArXiv e-prints 1609.03499.
-
-\bibitem[Veale and Hao(2007)]{veale07}
-Tony Veale and Yanfen Hao.
-\newblock Comprehending and generating apt metaphors: A web-driven, case-based
-  approach to figurative language.
-\newblock In \emph{Proceedings of the Twenty-Second AAAI Conference on
-  Artificial Intelligence}, pages 1471--1476, Vancouver, British Columbia,
-  2007. AAAI Press.
-
 \bibitem[Ventura(2016)]{Ventura2016}
 Dan Ventura.
-\newblock {Mere Generation: Essential Barometer or Dated Concept}.
-\newblock \emph{Proceedings of the Seventh International Conference on
-  Computational Creativity, ICCC}, \penalty0 (June):\penalty0 17--24, 2016.
+\newblock Mere generation: Essential barometer or dated concept?
+\newblock In \emph{Proceedings of the Seventh International Conference on
+  Computational Creativity}, pages 17--24, 2016.
 
 \bibitem[Ventura(2017)]{Ventura2017HowSystem}
 Dan Ventura.
-\newblock {How to Build a CC System}.
-\newblock \emph{Eighth International Conference on Computational Creativity
-  (ICCC'17)}, pages 253--260, 2017.
-\newblock URL
-  \url{http://computationalcreativity.net/iccc2017/ICCC_17_accepted_submissions/ICCC-17_paper_20.pdf}.
+\newblock How to build a {CC} system.
+\newblock In \emph{Proceedings of the Eighth International Conference on
+  Computational Creativity}, pages 253--260, 2017.
 
 \bibitem[Volioti et~al.(2016)Volioti, Hadjidimitriou, Manitsaris,
   Hadjileontiadis, Charisis, and Manitsaris]{volioti2016mapping}
@@ -947,68 +540,20 @@ Christina Volioti, Stelios Hadjidimitriou, Sotiris Manitsaris, Leontios
 \newblock On mapping emotional states and implicit gestures to sonification
   output from the `intangible musical instrument'.
 \newblock In \emph{Proceedings of the Third International Symposium on Movement
-  and Computing}, page~30. ACM, 2016.
-
-\bibitem[Vos and Van~Geenen(1996)]{Vos1996AModel}
-Piet~G Vos and Erwin~W Van~Geenen.
-\newblock {A Parallel-Processing Key-Finding Model}.
-\newblock \emph{Source: Music Perception An Interdisciplinary Journal Music
-  Perception Winter}, 14\penalty0 (2):\penalty0 185--223, 1996.
-\newblock URL \url{http://www.jstor.org/stable/40285717
-  http://about.jstor.org/terms:30:35 http://about.jstor.org/terms}.
+  and Computing}, pages 1--5. ACM, 2016.
 
 \bibitem[Walker et~al.(2004)Walker, Lamere, Kwok, Raj, Singh, Gouvea, Wolf, and
   Woelfel]{Walker2004}
 Willie Walker, Paul Lamere, Philip Kwok, Bhiksha Raj, Rita Singh, Evandro
   Gouvea, Peter Wolf, and Joe Woelfel.
-\newblock {Sphinx-4 : A Flexible Open Source Framework for Speech Recognition}.
-\newblock \emph{Smli}, \penalty0 (TR-2004-139):\penalty0 1--9, 2004.
-\newblock \doi{10.1.1.91.4704}.
-
-\bibitem[Widmer(2017)]{widmer2017getting}
-Gerhard Widmer.
-\newblock Getting closer to the essence of music: The con espressione
-  manifesto.
-\newblock \emph{ACM Transactions on Intelligent Systems and Technology (TIST)},
-  8\penalty0 (2):\penalty0 19, 2017.
+\newblock \emph{{S}phinx-4: A flexible open source framework for speech
+  recognition}, 2004.
 
 \bibitem[Wiggins(2006)]{Wiggins2006ASystems}
 Geraint~A. Wiggins.
-\newblock {A preliminary framework for description, analysis and comparison of
-  creative systems}.
-\newblock \emph{Knowledge-Based Systems}, 2006.
-\newblock ISSN 09507051.
-\newblock \doi{10.1016/j.knosys.2006.04.009}.
-
-\bibitem[Wiggins et~al.()Wiggins, Forth, Wiggins, and
-  Forth]{WigginsIDyOT:Information}
-Geraint~A Wiggins, Jamie Forth, G~A Wiggins, and J~Forth.
-\newblock {IDyOT: A Computational Theory of Creativity as Everyday Reasoning
-  from Learned Information}.
-
-\bibitem[Witten and Conklin(1995)]{Witten1995}
-Ian~H Witten and Darrell Conklin.
-\newblock {Multiple viewpoints system for Music Prediction}.
-\newblock \emph{Journal of New Music Research}, 24\penalty0 (1):\penalty0
-  51--73, 1995.
-
-\bibitem[Woods(1981)]{Woods81}
-W.A. Woods.
-\newblock Procedural semantics as a theory of meaning.
-\newblock In A.K. Joshi, B.L. Webber, and I.~Sag, editors, \emph{Elements of
-  Discourse Understanding}, pages 300--334. Cambridge University Press,
-  Cambridge, UK, 1981.
-
-\bibitem[Xu et~al.()Xu, Maddage, and Kankanhalli]{XuAutomaticMusic}
-Changsheng Xu, Namunu~C Maddage, and Mohan~S Kankanhalli.
-\newblock {Automatic Structure Detection for Popular Music}.
-
-\bibitem[Yadollahi et~al.()Yadollahi, Shahraki, and
-  Zaiane]{YadollahiCurrentMining}
-Ali Yadollahi, Gholipour Shahraki, and Osmar~R Zaiane.
-\newblock {Current State of Text Sentiment Analysis from Opinion to Emotion
-  Mining}.
-\newblock \doi{10.1145/3057270}.
-\newblock URL \url{http://dx.doi.org/10.1145/3057270}.
+\newblock A preliminary framework for description, analysis and comparison of
+  creative systems.
+\newblock \emph{Knowledge-Based Systems}, 19\penalty0 (7):\penalty0 449--458,
+  2006.
 
 \end{thebibliography}
